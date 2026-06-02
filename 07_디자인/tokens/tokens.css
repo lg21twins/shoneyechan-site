@@ -1,0 +1,1054 @@
+/* ============================================================================
+   하루안부 · Design Tokens
+   ============================================================================
+   v3.2.9 · 2026.05.23 — Danger Red를 iOS System Red #FF3B30로 재통일 (세 앱 일관성)
+   v3.2.8 · 2026.05.17 — 다크 모드 코드 자체 제거 (라이트 단일 운영)
+   v3.2.7 · 2026.05.17 — Danger Red 재정의 (rose → Rivian Alarm #E32B25) — v3.2.9에서 다시 swap
+   Source of Truth. 화면 코드는 반드시 이 파일만 import 할 것.
+
+   구조 (3계층 + 2축):
+     Layer 1 · PRIMITIVE  — 원시 팔레트. 화면에서 직접 사용 금지.
+     Layer 2 · SEMANTIC   — 의미 기반. 화면은 이 층만 쓴다.
+     Layer 3 · COMPONENT  — 컴포넌트 전용 (탭바 등).
+
+     Theme A · data-role     — 보호자 / 의료진 / 환자 / 요양보호사
+     Theme B · data-platform — mobile / web
+
+     ** Cascade 순서가 중요하다. 이 파일은 다음 순서로 정의된다:
+        :root → role(A) → platform(B) → role+platform(combined).
+        platform 규칙이 role의 환자 접근성 토큰을 덮지 않도록
+        [data-role="patient"][data-platform="mobile"] 결합 규칙으로
+        다시 한 번 환자 토큰을 잠근다.
+
+   사용 예:
+     <html data-role="guardian" data-platform="mobile">
+
+   변경 이력:
+     v3.2.9 (2026.05.23): Danger Red를 iOS System Red #FF3B30으로 재통일.
+                          세 앱(보호자/요양보호사/의료진모바일)의 SOS·긴급·위험
+                          시그널을 같은 값으로 맞춤. 사용자 결정.
+                          --color-danger = #FF3B30 (v3.2.7의 Rivian #E32B25에서 swap).
+                          --palette-red-* 스케일은 과거 Rivian 계열이 남아 있으나,
+                          실제 컴포넌트는 항상 --color-danger를 기준으로 사용한다.
+                          v0.2 컴포넌트 보드(role-component-board.html) 기준값.
+     v3.2.8 (2026.05.17): 다크 모드 코드 제거. v3.2.3에서 봉인했던 @media
+                          (prefers-color-scheme: dark) / [data-theme="dark"] /
+                          관련 역할별 다크 액센트 블록을 전부 삭제. 라이트 단일.
+                          _app-theme.js / _preview-controls.js / _preview-shared.css
+                          에서도 다크 분기·강제 light 코드 제거.
+     v3.2.7 (2026.05.17): Danger Red 재정의. Mobbin 응급 CTA 8종 비교 후 Rivian Alarm
+                          (#E32B25)로 swap. --palette-red 스케일 전체 재조정
+                          (500=#E32B25, 600=#C8231E, 700=#A51B16, 100=#FEE2E2).
+                          하드코딩된 rose 그래디언트(#F43F5E↔#E11D48) 단색 var(--color-danger)로
+                          통일. v11/v12/v15/v10/07_디자인 모두 반영.
+     v3.2.5 (2026.05.15): Borderless 전환. 카드·탭바·AI 카드의 1px stroke 제거,
+                          surface 톤 차이(canvas→surface-muted→surface 3단) +
+                          hairline shadow로 위계 표현. stroke는 입력 affordance(인풋·
+                          체크박스·라디오·에러·포커스 링)에만 유지.
+                          신규 토큰: --shadow-hairline, --shadow-card-borderless,
+                          --shadow-card-floating. 변경: --card-border=0,
+                          --tabbar-border=0, --ai-border=0.
+                          이유: stroke 노이즈 감소, iOS/Linear 톤의 깔끔한 위계.
+     v3.2.3 (2026.05.11): 다크 모드 봉인 (v3.2.8에서 코드 자체 제거).
+                          이유: v9.5 페이지의 hex 직접 사용이 다크 토큰과 충돌해 화면 깨짐.
+     v3.2 (2026.05.11): 외부 레퍼런스 3사이트(KRDS·Fluent 2·KT Seamless) 갭 15건 반영.
+                        신규 토큰: --ai-*(AI), --chart-1~8 + 의미별칭(차트), 다크 모드
+                        (@prefers-color-scheme + [data-theme]), --state-*(웹 hover),
+                        --neutral-10~90/strong(KRDS 매직넘버), --skeleton-*(스켈레톤),
+                        @prefers-reduced-transparency 폴백, [data-a11y-text="large"] +
+                        [data-a11y-contrast="high"] (환자 접근성 모드).
+     v3.1 (2026.05.10): flat-first 정책 명시화. --color-bg-glass를 OPTIONAL로 격하,
+                        --color-success를 green-700로 격하(의료진 accent와 분리),
+                        --tabbar-bg 모든 역할 공통(흰 반투명), 환자 그라디언트 약화,
+                        의료진/요양보호사 surface density 차별화.
+     v3.0 (2026.05.10): --color-accent-rgb 추가, patient/mobile cascade 수정,
+                        Noto Sans SC 폰트 chain 추가 (요양보호사 다국어).
+     v1.0 (2026.04.18): 최초 SoT 도입.
+   ============================================================================ */
+
+
+/* ----------------------------------------------------------------------------
+   CDN · Pretendard Variable
+   ---------------------------------------------------------------------------- */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css');
+
+
+/* ============================================================================
+   LAYER 1 · PRIMITIVE
+   원시 팔레트. 이 층의 토큰은 화면에서 직접 쓰지 않는다.
+   (Semantic 토큰이 이 값들을 참조하게 한다.)
+   ============================================================================ */
+:root {
+
+  /* --- Color · Brand Blue (보호자) ------------------------------------- */
+  --brand-blue-50:  #EFF6FF;
+  --brand-blue-100: #DBEAFE;
+  --brand-blue-200: #BFDBFE;
+  --brand-blue-300: #93C5FD;
+  --brand-blue-400: #5B9BFF;
+  --brand-blue-500: #2C7AFC;   /* 하루안부 로고 원색 (메인) */
+  --brand-blue-600: #1E5FD6;
+  --brand-blue-700: #1D4ED8;
+  --brand-blue-900: #1E3A8A;
+
+  /* --- Color · Brand Green (의료진 — 의사·간호사·요양보호사 공통) ------
+     v6.2 (2026-04-18) · Tailwind green-* 스케일 채택. 메인은 -500.
+     이전: emerald-* 계열 (#059669 케어 그린) → Lime-shifted #22C55E로 전환.    */
+  --brand-green-50:  #F0FDF4;
+  --brand-green-100: #DCFCE7;
+  --brand-green-200: #BBF7D0;
+  --brand-green-300: #86EFAC;
+  --brand-green-400: #4ADE80;
+  --brand-green-500: #22C55E;   /* 케어 그린 (의료진 메인) */
+  --brand-green-600: #16A34A;
+  --brand-green-700: #15803D;
+  --brand-green-900: #14532D;
+
+  /* --- Color · Brand Orange (환자) ------------------------------------- */
+  --brand-orange-50:  #FFF7ED;
+  --brand-orange-100: #FFEDD5;
+  --brand-orange-200: #FED7AA;
+  --brand-orange-300: #FDBA74;
+  --brand-orange-400: #FB923C;   /* 편안 오렌지 (환자 메인) */
+  --brand-orange-500: #F97316;
+  --brand-orange-600: #EA580C;
+  --brand-orange-700: #C2410C;
+  --brand-orange-900: #7C2D12;
+
+  /* --- Color · Medical Blue (의료진 보조 — v3.2.4 신설) -------------------
+     의료진 메인은 그린(#22C55E)이지만, "신뢰·진단·정보 카드" 컨텍스트에서는
+     의료의 국제 표준 톤인 medical blue가 더 적절하다 (UX MAX 권장).
+     사용처: 의료진 웹 환자 상세 카드 헤더, 진단 정보 박스, 의료 차트 라벨.
+     주의: 보호자 블루(#2C7AFC)와 시각 충돌 방지 위해 한 단계 darker 톤 사용. */
+  --medical-blue-50:  #E0F2FE;
+  --medical-blue-100: #BAE6FD;
+  --medical-blue-300: #7DD3FC;
+  --medical-blue-500: #0EA5E9;   /* tailwind sky-500 */
+  --medical-blue-600: #0284C7;
+  --medical-blue-700: #0369A1;   /* Medical Blue — 신뢰 기조색 */
+  --medical-blue-900: #0C4A6E;
+
+  /* --- Color · Accent Yellow (포인트) ---------------------------------- */
+  --brand-yellow-50:  #FEFCE8;
+  --brand-yellow-100: #FEF9C3;
+  --brand-yellow-300: #FDE047;
+  --brand-yellow-400: #F5D310;   /* 선샤인 옐로우 (포인트) */
+  --brand-yellow-600: #CA8A04;
+  --brand-yellow-900: #713F12;
+
+  /* --- Color · Semantic Red (위험·긴급) -------------------------------- */
+  /* v3.2.7: Rivian Alarm Red 계열로 swap — Mobbin 응급 CTA 8종 비교 후 선정.
+     보호자(고령) 사용자에게 위협감 줄이면서도 명확한 긴급 시그널.
+     --palette-red-* 변수명은 유지. */
+  --palette-red-50:  #FEF2F2;  /* 배경 soft */
+  --palette-red-100: #FEE2E2;  /* 배경 soft 진함 */
+  --palette-red-300: #F5A6A3;  /* 라이트 알람 */
+  --palette-red-500: #E32B25;  /* Rivian Alarm Red · CTA·뱃지 main */
+  --palette-red-600: #C8231E;  /* SOS·차트 critical (한 단계 진함) */
+  --palette-red-700: #A51B16;  /* 텍스트 on soft (대비 4.5↑) */
+
+  /* --- Color · Semantic Amber (주의) ----------------------------------- */
+  --palette-amber-50:  #FFFBEB;
+  --palette-amber-100: #FEF3C7;
+  --palette-amber-300: #FCD34D;
+  --palette-amber-400: #FBBF24;
+  --palette-amber-500: #F59E0B;
+  --palette-amber-600: #D97706;
+  --palette-amber-700: #B45309;
+
+  /* --- Color · Guardian (보호자앱 고유 톤) -------------------------------
+     보호자앱(v11)에서 사용하는 옅은 블루그레이 배경 tint와 다크 텍스트 톤. */
+  --guardian-bg-tint:        #F2F6FF;   /* 보호자 카드/캔버스 옅은 블루 tint */
+  --guardian-bg-tint-soft:   #ECF2FA;   /* 약간 더 진한 tint (호버/대비) */
+  --guardian-text-dark:      #111827;   /* 진한 본문 텍스트 */
+  --guardian-text-warm-dark: #2A1810;   /* 따뜻한 어두운 브라운 */
+  --guardian-warm-cream:     #F3E9DC;   /* 따뜻한 크림 surface */
+  --guardian-blue-bright:    #1D6AF2;   /* 보호자 강조 블루 */
+  --guardian-emerald-soft:   #34D399;   /* 보호자 감정/성공 보조 emerald */
+  --guardian-mint-light:     #6EE7B7;   /* 보호자 emerald-300 변형 */
+  --guardian-teal:           #2DD4BF;   /* 보호자 위생/care teal */
+  --guardian-cream-light:    #FAFAF6;   /* 보호자 배경 매우 옅은 크림 */
+  --guardian-gray-tint:      #F2F4F8;   /* 보호자 회색 tint (아이콘 버튼 배경) */
+  --guardian-sky-1:          #1BE7EA;   /* 보호자 hero 그라디언트 cyan */
+  --guardian-sky-2:          #46A8FF;   /* 보호자 hero 그라디언트 blue */
+
+  /* --- Color · Patient (환자앱 고유 따뜻한 톤) --------------------------
+     환자앱(v12)은 따뜻한 크림/브라운 톤을 사용. 보호자·의료진과 분리. */
+  --patient-canvas-warm:    #FFF5E8;   /* 환자 화면 배경 — 따뜻한 크림 */
+  --patient-text-warm:      #4A4135;   /* 본문 텍스트 (브라운) */
+  --patient-text-warm-soft: #6B5F4F;   /* 보조 텍스트 */
+  --patient-amber-soft:     #FDE68A;   /* amber-200 그라디언트 안쪽 */
+  --patient-cream-warm:     #FFE4C4;   /* brand-orange 보조 그라디언트 */
+  --patient-avatar-sage-1:  #B8CEA0;   /* 가족 아바타 sage 시작 */
+  --patient-avatar-sage-2:  #6E9456;   /* 가족 아바타 sage 끝 */
+  --patient-avatar-dusty-1: #ADBED2;   /* 가족 아바타 dusty blue 시작 */
+  --patient-avatar-dusty-2: #5C7891;   /* 가족 아바타 dusty blue 끝 */
+  --patient-avatar-offline: #CBD5E1;   /* 오프라인 가족 아바타 (slate-300) */
+  --patient-ghost-bg:       #F1EBE3;   /* ghost 버튼 배경 — warm beige */
+  --patient-ghost-hover:    #E8E0D5;   /* ghost 버튼 hover */
+
+  /* --- Color · Avatar Role (역할 식별 배경) -----------------------------
+     채팅·소통 화면의 발신자 아바타 배경. accent 색과 별개로 발신자 역할을
+     식별하기 위한 보조 팔레트. 가족/관리자/외부 의료진 등 비-주요 역할용. */
+  --avatar-manager: #7C3AED;   /* violet-600 — 시설 관리자 */
+
+  /* --- Color · Shift (요양보호사 시프트 식별) ----------------------------
+     근무 일정 화면에서 시프트 종류(데이/이브닝/나이트)를 시각적으로 구분.
+     accent와 별개 — 일정/시간 도메인 한정. */
+  --shift-night:        #6366F1;   /* indigo-500 — 야간 */
+  --shift-night-text:   #4338CA;   /* indigo-700 — 야간 텍스트/dot */
+  --shift-day:          #047857;   /* emerald-700 — 데이 */
+  --shift-evening:      #BE185D;   /* pink-700 — 이브닝 */
+
+  /* --- Color · OAuth Brand (외부 브랜드 식별색) -------------------------
+     로그인/연결 버튼 등 외부 서비스의 브랜드 식별이 필요한 곳에서만 사용.
+     하루안부 자체 컬러 시스템과는 분리. 새 OAuth 제공자 추가 시 여기에 정의. */
+  --brand-kakao-yellow: #FEE500;
+  --brand-kakao-text:   #1A1A1A;
+
+  /* --- Color · Gray (중립) --------------------------------------------- */
+  --palette-white:    #FFFFFF;
+  --palette-gray-50:  #FAFAFA;
+  --palette-gray-100: #F4F4F5;
+  --palette-gray-150: #F0F4F8;   /* 하루안부 앱 배경 (블루그레이 계열) */
+  --palette-gray-200: #E5E5EA;
+  --palette-gray-300: #D4D4D8;
+  --palette-gray-350: #B8BCC4;   /* cool gray — collapsed/disabled 보조 */
+  --palette-gray-400: #9E9E9E;
+  --palette-gray-500: #8E8E93;
+  --palette-gray-700: #3F3F46;
+  --palette-gray-800: #27272A;
+  --palette-gray-900: #1C1C1E;
+
+  /* --- Magic-Number Contrast Steps (v3.2 신설, KRDS 차용) -----------------
+     KRDS의 명도 사다리(40/50/70/90)를 하루안부 그레이 스케일에 매핑.
+     "본문 텍스트는 -90, 보조 텍스트는 -70, 배경은 -50" 같은 규칙으로
+     컨텍스트별 명도를 매직넘버로 통일. 다크 모드에서도 동일 의미를
+     유지(반전 매핑). */
+  --neutral-90:       var(--palette-gray-900);  /* 본문 텍스트 — 라이트 */
+  --neutral-70:       var(--palette-gray-500);  /* 보조 텍스트 */
+  --neutral-50:       var(--palette-gray-200);  /* 보더, 디바이더 */
+  --neutral-40:       var(--palette-gray-150);  /* 페이지 배경 */
+  --neutral-10:       var(--palette-white);     /* 카드 표면 */
+
+  /* 환자 고대비 모드용 (KRDS 매직 90, 7:1 대비) */
+  --neutral-strong:   #0A0A0C;                   /* 본문 텍스트 강화 */
+
+  /* --- Spacing · 4px grid ---------------------------------------------- */
+  --space-0:  0;
+  --space-1:  2px;
+  --space-2:  4px;
+  --space-3:  8px;
+  --space-4:  12px;
+  --space-5:  16px;
+  --space-6:  20px;
+  --space-7:  24px;
+  --space-8:  32px;
+  --space-9:  40px;
+  --space-10: 48px;
+  --space-11: 64px;
+  --space-12: 96px;
+
+  /* --- Radius ---------------------------------------------------------- */
+  --radius-0:    0;
+  --radius-1:    4px;
+  --radius-2:    8px;
+  --radius-3:    12px;
+  --radius-4:    14px;
+  --radius-5:    18px;
+  --radius-6:    24px;
+  --radius-7:    28px;
+  --radius-full: 9999px;
+
+  /* --- Typography · Font Family ----------------------------------------
+     Pretendard는 한글·라틴·숫자만. 중국어(CJK Han)는 Noto Sans SC로 폴백.
+     일본어(가나)는 -apple-system이 자동 처리.
+     v11_요양보호사앱은 다국어 사용자(중국 출신 보호사) 비율이 높아
+     Noto Sans SC를 추가 로드(HTML <link>)하지만, 폰트 패밀리 체인은
+     모든 앱이 공유한다. 다른 앱은 chain만 길고 실제 다운로드는 없음. */
+  --font-family-base:
+    'Pretendard Variable', 'Pretendard',
+    'Noto Sans SC', 'Noto Sans',
+    -apple-system, BlinkMacSystemFont,
+    'Helvetica Neue', 'Segoe UI', Roboto, sans-serif;
+  --font-family-mono:
+    ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* --- Typography · Size (px 기반 scale) ------------------------------- */
+  --font-11: 11px;
+  --font-13: 13px;
+  --font-14: 14px;
+  --font-16: 16px;
+  --font-17: 17px;
+  --font-18: 18px;
+  --font-20: 20px;
+  --font-22: 22px;
+  --font-24: 24px;
+  --font-28: 28px;
+  --font-32: 32px;
+  --font-40: 40px;
+
+  /* --- Typography · Weight --------------------------------------------- */
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+
+  /* --- Typography · Role-based Weight (v15 system, 2026-05-10) -------------
+     화면 컴포넌트는 이 토큰만 사용한다. 800은 의도적으로 없음 (heavy 톤 회피).
+     hero / title / strong / body / meta 5단계로 시각적 위계 표현.
+     ------------------------------------------------------------------------ */
+  --w-hero:    700;   /* 화면당 1개 — 가장 강조 (alert main, 환자명, urgent msg) */
+  --w-title:   700;   /* 섹션 타이틀, 큰 데이터 (한 화면에 여러 개 가능) */
+  --w-strong:  600;   /* 카드 안 주제, 라벨, eyebrow */
+  --w-body:    500;   /* 본문, 설명 */
+  --w-meta:    500;   /* 캡션, 시간, 메타데이터 */
+
+  /* --- Typography · Line Height ---------------------------------------- */
+  --leading-tight:   1.2;
+  --leading-normal:  1.4;
+  --leading-relaxed: 1.6;
+
+  /* --- Shadow ---------------------------------------------------------- */
+  --shadow-1: 0 1px 4px  rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.04);
+  --shadow-2: 0 4px 16px rgba(0, 0, 0, 0.08), 0 0 1px rgba(0, 0, 0, 0.04);
+  --shadow-3: 0 8px 28px rgba(0, 0, 0, 0.12), 0 0 1px rgba(0, 0, 0, 0.04);
+  --shadow-glass:
+    0 4px 20px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+
+  /* --- Shadow · Borderless (v3.2.5 신설) -------------------------------
+     1px stroke를 대체하는 hairline shadow + 카드용 borderless 조합.
+     hairline 단독은 stroke처럼 보이되 sub-pixel 가능 — 인풋·체크박스
+     같은 affordance가 필요한 곳엔 쓰지 말 것(여긴 진짜 border 유지).
+     사용처: 카드, 탭바, AI 카드(중립), 헤더 분리선 */
+  --shadow-hairline:          0 0 0 1px rgba(0, 0, 0, 0.04);
+  --shadow-card-borderless:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 0 0 1px rgba(0, 0, 0, 0.03);
+  --shadow-card-floating:
+    0 4px 12px rgba(0, 0, 0, 0.06),
+    0 0 0 1px rgba(0, 0, 0, 0.03);
+
+  /* --- Blur ------------------------------------------------------------ */
+  --blur-card: 20px;
+  --blur-tab:  24px;
+
+  /* --- Motion ---------------------------------------------------------- */
+  --duration-fast:    150ms;
+  --duration-normal:  250ms;
+  --duration-slow:    350ms;
+  --easing-standard:  cubic-bezier(0.2, 0, 0, 1);
+  --easing-emphasize: cubic-bezier(0.2, 0, 0, 1.2);
+
+  /* --- Z-Index --------------------------------------------------------- */
+  --z-base:    0;
+  --z-raised:  1;
+  --z-sticky:  10;
+  --z-overlay: 100;
+  --z-modal:   200;
+  --z-toast:   300;
+
+
+  /* ==========================================================================
+     LAYER 2 · SEMANTIC
+     의미 기반 토큰. 화면 코드는 오직 이 층만 쓴다.
+     (역할/플랫폼이 바뀌어도 이름은 그대로, 값만 오버라이드된다.)
+     ========================================================================== */
+
+  /* --- Color · Text ---------------------------------------------------- */
+  --color-text-primary:     var(--palette-gray-900);
+  --color-text-secondary:   var(--palette-gray-500);
+  --color-text-tertiary:    var(--palette-gray-400);
+  --color-text-disabled:    var(--palette-gray-300);
+  --color-text-on-accent:   var(--palette-white);
+  --color-text-on-dark:     var(--palette-white);
+  --color-text-link:        var(--color-accent);
+
+  /* --- Color · Surface & Background ------------------------------------
+     v3.1 정책: flat default. 일반 정보 카드는 --color-bg-surface(흰색) 사용.
+     --color-bg-glass는 OPTIONAL — 플로팅 탭바·모달 오버레이·특수 강조 4종 한정. */
+  --color-bg-canvas:        var(--palette-gray-150);   /* 앱 전체 배경 */
+  --color-bg-surface:       var(--palette-white);      /* 카드·시트 기본 */
+  --color-bg-surface-muted: var(--palette-gray-50);    /* 낮은 강조 카드 */
+  --color-bg-glass:         rgba(255, 255, 255, 0.85); /* OPTIONAL · 탭바·모달·특수 강조 한정 */
+  --color-bg-overlay:       rgba(0, 0, 0, 0.40);       /* 모달 딤 */
+
+  /* --- Clinical (요양보호사·의료진 모바일) 캔버스 ----------------------
+     v3.2.13: 임상 모바일 페이지 전용 그린 캔버스 + 부드러운 그라디언트.
+     캐어기버앱 c01-c04 / 의료진앱 d01-d05가 동일하게 사용.
+     기본 토큰의 --color-bg-canvas(블루그레이)와 별도로 운용. */
+  --clinical-canvas:        #F4FAF6;
+  --clinical-surface:       #F8FAF9;   /* 클리닉 위 한 단계 떠보이는 표면 */
+  --clinical-surface-muted: #F4F6F8;   /* 클리닉 위 컴팩트 표면(인풋·버튼 배경) */
+  --clinical-linear-canvas: var(--clinical-canvas);
+  --clinical-bg-image: var(--clinical-canvas);
+
+  /* --- Color · Border -------------------------------------------------- */
+  --color-border-subtle:    var(--palette-gray-200);
+  --color-border-strong:    var(--palette-gray-300);
+  --color-border-focus:     var(--color-accent);
+  --color-border-glass:     rgba(255, 255, 255, 0.55);
+
+  /* --- Color · Accent (역할 테마가 오버라이드하는 앵커) ----------------- */
+  /* 기본값은 보호자. data-role="..."이 실제 화면에서 바꿈. */
+  --color-accent:           var(--brand-blue-500);
+  --color-accent-soft:      var(--brand-blue-100);
+  --color-accent-strong:    var(--brand-blue-600);
+  --color-accent-on:        var(--palette-white);
+  /* RGB 채널만 따로 노출 — rgba(var(--color-accent-rgb), 0.25) 형태로
+     역할별 색 그림자/틴트 보더를 만들 때 사용. */
+  --color-accent-rgb:       44, 122, 252;     /* guardian fallback */
+
+  /* --- Color · Semantic (상태) -----------------------------------------
+     상태색은 역할 accent와 독립적 의미를 가진다. 의료진 화면(green accent)에서
+     success(green) 충돌이 보이지 않도록, success는 -700 어두운 그린으로 격하해
+     배지/아이콘 위주로만 쓴다. 큰 면 success는 --color-success-soft로 처리. */
+  --color-success:          var(--brand-green-700);    /* #15803D · 의료진 accent와 시각적 분리 */
+  --color-success-soft:     var(--brand-green-100);
+  --color-warning:          var(--palette-amber-500);
+  --color-warning-soft:     var(--palette-amber-100);
+  --color-danger:           #FF3B30;                    /* v3.2.9 (2026-05-23): iOS System Red로 통일 — 세 앱 일관성 (사용자 결정) */
+  --color-danger-soft:      var(--palette-red-100);
+  --color-danger-rgb:       255, 59, 48;                /* rgba(var(--color-danger-rgb), .x) 형태로 알파 합성 — accent-rgb와 동일 패턴 */
+  --color-warning-rgb:      245, 158, 11;               /* amber-500 채널 */
+  --brand-green-500-rgb:    34, 197, 94;                /* 의료진/요양 accent + 보호자앱 semantic OK 인디케이터 알파 합성용 */
+  --brand-blue-500-rgb:     59, 130, 246;               /* 보호자앱 accent + 의료진웹 vital 톤 알파 합성용 */
+  --color-info:             var(--color-accent);       /* accent와 alias */
+  --color-info-soft:        var(--color-accent-soft);
+  --color-point:            var(--brand-yellow-400);   /* 포인트 강조 */
+
+  /* 의료 신뢰 톤 — 의료진 화면에서 "진단·정보·환자 상세" 컨텍스트 한정.
+     역할 accent와 분리된 보조 anchor. 보호자/환자 화면에선 사용하지 않는다. */
+  --color-medical-info:      var(--medical-blue-700);
+  --color-medical-info-soft: var(--medical-blue-100);
+  --color-medical-info-deep: var(--medical-blue-900);
+
+  /* --- Spacing · Inset (컴포넌트 내부 패딩) ---------------------------- */
+  --space-inset-compact:    var(--space-3);   /*  8px */
+  --space-inset-default:    var(--space-5);   /* 16px */
+  --space-inset-loose:      var(--space-7);   /* 24px */
+
+  /* --- Spacing · Stack (세로 간격) ------------------------------------- */
+  --space-stack-tight:      var(--space-2);   /*  4px */
+  --space-stack-default:    var(--space-4);   /* 12px */
+  --space-stack-loose:      var(--space-7);   /* 24px */
+  --space-stack-section:    var(--space-8);   /* 32px */
+
+  /* --- Spacing · Inline (가로 간격) ------------------------------------ */
+  --space-inline-tight:     var(--space-2);
+  --space-inline-default:   var(--space-3);
+  --space-inline-loose:     var(--space-5);
+
+  /* --- Spacing · Layout (v15 system, 2026-05-10) ------------------------
+     모바일 페이지 패딩을 22px로 상향, 섹션간 32px 유지.
+     v15 디자인 시스템(보호자앱 g-guardian-live 톤 기준)에서 검증됨. */
+  --space-page-margin:      22px;             /* mobile 기본 (was 16px) */
+  --space-section-gap:      var(--space-8);   /* 32px */
+  --space-card-padding:     20px;             /* v15 표준 카드 padding */
+  --space-card-padding-lg:  24px;             /* hero 카드 padding */
+
+  /* --- Radius (v15 system) -----------------------------------------------
+     소프트한 라운드 + 통일감. 14px → 18~20px로 상향. */
+  --radius-control:         var(--radius-2);  /* 인풋, 소형 버튼 */
+  --radius-button:          var(--radius-5);  /* 기본 버튼 (was -4) */
+  --radius-card:            18px;             /* v15 카드 기본 (was 14) */
+  --radius-card-lg:         20px;             /* v15 큰 카드 (was 18) */
+  --radius-card-hero:       24px;             /* v15 hero 카드 */
+  --radius-modal:           24px;             /* 모달·바텀시트 */
+  --radius-hero:            var(--radius-6);  /* 히어로 카드 */
+  --radius-pill:            var(--radius-full);
+
+  /* --- Size · Touch / Component (플랫폼이 오버라이드) ----------------- */
+  --size-touch-target:      44px;   /* mobile 기본 (iOS HIG) */
+  --size-button-default:    48px;
+  --size-button-compact:    44px;
+  --size-button-large:      56px;
+  --size-input:             48px;
+  --size-row:               56px;
+  --size-row-compact:       44px;
+  --size-header:            44px;
+  --size-tab-bar:           56px;
+  --size-icon-sm:           20px;
+  --size-icon-md:           24px;
+  --size-icon-lg:           28px;
+  --size-icon-xl:           32px;
+  --size-avatar-sm:         32px;
+  --size-avatar-md:         40px;
+  --size-avatar-lg:         56px;
+  --size-avatar-xl:         72px;
+
+  /* --- Typography · Role -> Size 매핑 ---------------------------------- */
+  --text-display:           var(--font-32);
+  --text-title:             var(--font-22);
+  --text-headline:          var(--font-17);
+  --text-body:              var(--font-16);
+  --text-body-lg:           var(--font-18);
+  --text-callout:           var(--font-14);
+  --text-caption:           var(--font-13);
+  --text-mini:              var(--font-11);
+
+  /* --- Motion · Role (semantic duration) ------------------------------- */
+  --motion-micro:           var(--duration-fast);   /* 버튼 누름, 토글 */
+  --motion-transition:      var(--duration-normal); /* 카드 펼침 */
+  --motion-enter:           var(--duration-slow);   /* 모달 등장 */
+
+
+  /* ==========================================================================
+     LAYER 3 · COMPONENT
+     특정 컴포넌트가 쓰는 토큰. 재사용이 많을 때만 여기에 올린다.
+     ========================================================================== */
+
+  /* --- Tab Bar (Floating Pill) -----------------------------------------
+     v3.1 정책: 탭바 배경은 모든 역할에서 동일한 흰색/반투명 흰색.
+     역할별 surface tint는 사용하지 않는다. 활성 아이콘과 라벨만 역할색. */
+  --tabbar-height:          var(--size-tab-bar);       /* 56px mobile */
+  --tabbar-bg:              rgba(255, 255, 255, 0.85); /* 모든 역할 공통 */
+  --tabbar-blur:            var(--blur-tab);
+  --tabbar-shadow:          var(--shadow-card-floating); /* v3.2.5: hairline shadow로 분리선 대체 */
+  --tabbar-border:          0;                            /* v3.2.5: stroke 제거 → tabbar-shadow의 hairline이 대신 */
+  --tabbar-radius:          var(--radius-pill);
+  --tabbar-bottom:          calc(var(--space-5) + env(safe-area-inset-bottom));
+  --tabbar-side-inset:      var(--space-5);
+  --tabbar-label-size:      var(--font-11);
+  --tabbar-icon-size:       var(--size-icon-md);
+
+  /* --- Card (Flat default — Glass는 OPTIONAL) -------------------------
+     v3.1 정책: 일반 정보 카드는 flat 흰 surface가 기본. card-bg는 항상 surface.
+     glass 변형은 OPTIONAL 토큰으로 — 사용은 탭바·모달·특수 강조 한정. */
+  --card-bg:                var(--color-bg-surface);   /* 기본 = 흰색 surface */
+  --card-bg-glass:          var(--color-bg-glass);     /* OPTIONAL · 일반 카드에 쓰지 말 것 */
+  --card-border:            0;                          /* v3.2.5: borderless. surface 톤 차이 + card-shadow가 경계 표현 */
+  --card-border-glass:      1px solid var(--color-border-glass); /* glass 변형은 빛 반사 효과상 유지 */
+  --card-radius:            var(--radius-card);
+  --card-padding:           var(--space-inset-default);
+  --card-shadow:            var(--shadow-card-borderless); /* v3.2.5: hairline 포함 borderless 조합 */
+  --card-shadow-glass:      var(--shadow-glass);        /* OPTIONAL */
+
+  /* --- Header ---------------------------------------------------------- */
+  --header-height:          var(--size-header);
+  --header-padding-x:       var(--space-page-margin);
+
+  /* --- SOS Banner ------------------------------------------------------ */
+  --sos-bg:                 var(--color-danger);
+  --sos-text:               var(--color-text-on-dark);
+  --sos-radius:             var(--radius-card);
+
+  /* --- Focus Ring (접근성) --------------------------------------------- */
+  --focus-ring:             0 0 0 2px var(--color-border-focus);
+
+  /* --- Skeleton (v3.2 신설) -------------------------------------------
+     스피너보다 스켈레톤 우선. 회색 블록이 실제 카드 형태를 미리 보여줘
+     레이아웃 점프(layout shift)를 막는다. 토큰 통일로 화면별 색·간격 일관. */
+  --skeleton-bg:            rgba(0, 0, 0, 0.05);
+  --skeleton-shimmer:       rgba(0, 0, 0, 0.10);
+  --skeleton-radius:        var(--radius-card);
+  --skeleton-line-height:   16px;                /* 본문 1줄 스켈레톤 */
+  --skeleton-line-height-lg: 22px;               /* 헤딩 스켈레톤 */
+  --skeleton-row-height:    var(--size-row);     /* 리스트 행 스켈레톤 */
+  --skeleton-duration:      1.5s;                /* shimmer 사이클 */
+
+  /* --- Chart · 데이터 시각화 팔레트 (v3.2 신설) -----------------------
+     색맹 안전 8단계(Okabe-Ito 기반 변형). 의료/돌봄 데이터 시각화 전용.
+     역할 accent와 시각적으로 분리(자체 anchor) — 차트는 데이터 자체가
+     의미를 갖기 때문에 역할별로 색이 흔들리면 안 된다.
+     순서: 기본 시리즈 시작점이며, 카테고리가 많아질수록 다음 인덱스로. */
+  --chart-1:                #2C7AFC;    /* 보호자 블루 (시리즈 1·메인 라인) */
+  --chart-2:                #22C55E;    /* 의료진 그린 (시리즈 2) */
+  --chart-3:                #F59E0B;    /* 앰버 (시리즈 3) */
+  --chart-4:                #8B5CF6;    /* 바이올렛 (시리즈 4) */
+  --chart-5:                #EC4899;    /* 핑크 (시리즈 5) */
+  --chart-6:                #14B8A6;    /* 틸 (시리즈 6) */
+  --chart-7:                #F97316;    /* 오렌지 (시리즈 7) */
+  --chart-8:                #64748B;    /* 슬레이트 (시리즈 8·기타·평균선) */
+
+  /* 의미 기반 별칭 (의료/돌봄 도메인) */
+  --chart-positive:         var(--brand-green-600);   /* "정상", "완료" 시리즈 */
+  --chart-attention:        var(--palette-amber-500); /* "주의", "미완료" */
+  --chart-critical:         var(--palette-red-600);   /* "위험", "이상" */
+  --chart-baseline:         var(--palette-gray-400);  /* "평균", "기준선" — dashed로 표현 */
+  --chart-prediction:       var(--brand-blue-300);    /* "예측", "추세" — dashed */
+
+  /* 차트 보조 토큰 */
+  --chart-grid:             var(--color-border-subtle);  /* 그리드 라인 */
+  --chart-axis:             var(--color-text-tertiary);  /* 축 라벨 */
+  --chart-bar-radius:       var(--radius-1);             /* 막대 모서리 4px */
+  --chart-line-width:       2px;                          /* 라인 차트 굵기 */
+  --chart-line-width-bold:  3px;                          /* 강조 라인 */
+  --chart-dot-size:         8px;                          /* 데이터 포인트 점 */
+  --chart-dot-size-lg:      12px;                         /* 강조 포인트 */
+
+  /* --- AI · 하루안부 심볼 기반 (v3.2 신설) -----------------------------
+     AI 컴포넌트 전용 토큰. 일반 카드와 시각적으로 분리되어
+     "이건 AI가 생성한 콘텐츠"임을 한눈에 알 수 있도록 한다.
+     색은 accent와 별도 — 역할이 바뀌어도 AI 표면 톤은 동일(중립).
+     인용·근거·확신도 표시는 우측 보조 라벨로 처리한다. */
+  --ai-mark-size-sm:        20px;                       /* 인라인 (텍스트 옆) */
+  --ai-mark-size-md:        24px;                       /* 카드 상단 (기본) */
+  --ai-mark-size-lg:        32px;                       /* 리포트 표지 */
+  --ai-surface:             var(--palette-white);       /* AI 카드 본문 배경 */
+  --ai-surface-soft:        var(--palette-gray-50);     /* AI 응답 영역(긴 출력) 배경 */
+  --ai-border:              0;                                    /* v3.2.5: borderless. ai-surface-soft 톤이 일반 카드와 분리 */
+  --ai-border-emphasis:     1px solid var(--color-accent-soft);  /* AI 강조 카드 — 의미적 강조라 유지 */
+  --ai-radius:              var(--radius-card);          /* AI 카드 = 일반 카드와 동일 라운드 */
+  --ai-radius-bubble:       18px 18px 18px 4px;          /* AI 챗 버블 (좌측 꼬리) */
+  --ai-padding:             var(--card-padding);
+  --ai-citation-color:      var(--color-text-secondary); /* 인용·출처 텍스트 */
+  --ai-uncertainty-color:   var(--palette-amber-700);    /* "확신 없음" 라벨 */
+  --ai-refuse-bg:           var(--palette-gray-50);      /* 거절 카드는 중립 */
+  --ai-refuse-border:       0;                            /* v3.2.5: borderless. ai-refuse-bg가 surface와 분리 */
+  --ai-mark-color:          var(--color-accent);         /* 심볼 단색 처리 시 */
+
+  /* AI 시각 시그니처 — AI Purple hairline (v3.2.4 신설)
+     AI 카드 표면은 중립(흰색·gray-50) 유지하되, 인용·근거 footer의 dashed
+     top-border와 AI Output 좌측 1px 보조선에 살짝 보라 톤을 띄워 "AI다움"의
+     시각 신호를 강화한다. 큰 면이 아니므로 역할 accent와 충돌하지 않음.
+     UX MAX "AI/Chatbot Platform" 패턴의 AI Purple(#6366F1) 차용. */
+  --ai-accent-hairline:     #818CF8;                      /* indigo-400 — 1px hairline */
+  --ai-accent-hairline-soft: rgba(99, 102, 241, 0.08);   /* 매우 옅은 보조 배경 */
+}
+
+
+/* ============================================================================
+   THEME A · ROLE (역할별 accent 컬러 오버라이드)
+   ============================================================================ */
+
+[data-role="guardian"] {
+  --color-accent:           var(--brand-blue-500);
+  --color-accent-soft:      var(--brand-blue-100);
+  --color-accent-strong:    var(--brand-blue-600);
+  --color-accent-on:        var(--palette-white);
+  --color-accent-rgb:       44, 122, 252;
+  --color-bg-role-gradient: var(--color-bg-canvas);
+}
+
+/* 의료진 통합 테마. 의사·간호사·요양보호사 모두 여기에 해당.
+   v6.2: 메인 accent를 -500(#22C55E)으로 갱신. strong은 -600(#16A34A). */
+[data-role="medical"] {
+  --color-accent:           var(--brand-green-500);
+  --color-accent-soft:      var(--brand-green-100);
+  --color-accent-strong:    var(--brand-green-600);
+  --color-accent-on:        var(--palette-white);
+  --color-accent-rgb:       34, 197, 94;
+  --color-bg-role-gradient: var(--color-bg-canvas);
+}
+
+/* medical의 직군 별칭 — 동일 accent 테마, 선택자만 다름.
+   단, 의료진웹(doctor/nurse·데스크톱)은 dense·calm 표면,
+   요양보호사앱(caregiver·현장 모바일)은 warmer surface tint로 구분한다.
+   accent와 그라디언트는 모두 그린 -500 / -100. */
+[data-role="doctor"],
+[data-role="nurse"] {
+  --color-accent:           var(--brand-green-500);
+  --color-accent-soft:      var(--brand-green-100);
+  --color-accent-strong:    var(--brand-green-600);
+  --color-accent-on:        var(--palette-white);
+  --color-accent-rgb:       34, 197, 94;
+  --color-bg-role-gradient: var(--color-bg-canvas);
+
+  /* 의료진웹 — dense, calm. 카드 패딩·행 컴팩트 */
+  --space-stack-default:    var(--space-3);   /* 8px — 테이블·리스트 dense */
+  --card-padding:           var(--space-5);   /* 16px — 빽빽한 정보 밀도 */
+}
+
+[data-role="caregiver"] {
+  --color-accent:           var(--brand-green-500);
+  --color-accent-soft:      var(--brand-green-100);
+  --color-accent-strong:    var(--brand-green-600);
+  --color-accent-on:        var(--palette-white);
+  --color-accent-rgb:       34, 197, 94;
+  --color-bg-role-gradient: var(--color-bg-canvas);
+
+  /* 요양보호사앱 — 현장 한 손 조작, 큰 터치 */
+  --size-touch-target:      48px;             /* 장갑 끼고도 정확 */
+  --size-button-default:    52px;
+  --size-row:               60px;
+  --space-stack-default:    var(--space-4);
+  --card-padding:           var(--space-5);
+}
+
+[data-role="patient"] {
+  --color-accent:           var(--brand-orange-400);
+  --color-accent-soft:      var(--brand-orange-100);
+  --color-accent-strong:    var(--brand-orange-600);
+  --color-accent-on:        var(--palette-white);
+  --color-accent-rgb:       251, 146, 60;
+  --color-bg-role-gradient: var(--color-bg-canvas);
+
+  /* 환자는 접근성 스케일 자동 적용 — 더 큰 UI, 더 강한 색은 아님 */
+  --text-body:              var(--font-18);
+  --text-headline:          var(--font-20);
+  --text-title:             var(--font-24);
+  --size-touch-target:      56px;
+  --size-button-default:    56px;
+  --size-row:               64px;
+  --card-padding:           var(--space-7);    /* 24px — 환자 카드는 더 여유 */
+}
+
+
+/* ============================================================================
+   THEME B · PLATFORM (기기 폼팩터별 치수 오버라이드)
+   ============================================================================ */
+
+[data-platform="mobile"] {
+  --space-page-margin:      var(--space-5);   /* 16px */
+  --size-touch-target:      44px;
+  --size-header:            44px;
+  --size-tab-bar:           56px;
+  --tabbar-height:          var(--size-tab-bar);
+  --card-padding:           var(--space-5);
+  --text-body:              var(--font-16);
+}
+
+/* 환자 + 모바일 조합은 환자 룰이 이미 텍스트/터치 상향하므로 여기선 추가 없음 */
+
+/* v3.2.13: 의료진앱 모바일(d01~d05)은 요양보호사앱과 디자인 토큰 1:1 정렬.
+   본문 18px / 터치 48px / 버튼 52px / row 60px — 임상 현장 가독성·터치 정확도. */
+[data-role="medical"][data-platform="mobile"],
+[data-role="nurse"][data-platform="mobile"],
+[data-role="doctor"][data-platform="mobile"] {
+  --text-body:              var(--font-18);
+  --size-touch-target:      48px;
+  --size-button-default:    52px;
+  --size-row:               60px;
+  --card-padding:           var(--space-5);
+}
+
+[data-platform="web"] {
+  --space-page-margin:      var(--space-7);   /* 24px */
+  --size-touch-target:      36px;              /* 마우스 기준 */
+  --size-header:            64px;              /* 데스크톱 헤더 */
+  --size-tab-bar:           60px;              /* 사이드바 있으므로 탭바는 보조 */
+  --tabbar-height:          var(--size-tab-bar);
+  --card-padding:           var(--space-6);    /* 20px */
+  --text-body:              var(--font-16);
+  --size-sidebar-width:     240px;
+  --size-topbar-height:     64px;
+  --size-content-max:       1280px;            /* 본문 최대 폭 */
+
+  /* --- Hover (v3.2 신설) -----------------------------------------------
+     v3.1까지 "호버 정의 안 함"이 모바일 우선 원칙이었으나, 의료진 웹은
+     마우스 인터랙션이 필수다. 다음 토큰을 데스크톱에서만 활성. */
+  --state-hover-overlay:    rgba(0, 0, 0, 0.04);        /* 카드·리스트 행 */
+  --state-hover-accent:     rgba(34, 197, 94, 0.08);    /* accent 영역 hover (의료진 그린 기본) */
+  --state-hover-border:     var(--color-border-strong); /* hover 시 보더 강조 */
+  --state-active-overlay:   rgba(0, 0, 0, 0.06);        /* pressed (mouse down) */
+  --state-selected-bg:      var(--color-accent-soft);   /* 선택된 행/탭 */
+  --state-focus-bg:         transparent;                 /* focus는 ring으로만 표시 */
+}
+
+/* (v3.2.8) 다크 모드 hover overlay 분기 제거 — 라이트 단일 운영 */
+
+
+/* ============================================================================
+   THEME C · ROLE × PLATFORM (결합 규칙)
+   platform 규칙이 role의 환자 접근성 토큰을 덮지 않도록
+   환자 + mobile 조합을 다시 한 번 명시적으로 잠근다.
+   ============================================================================ */
+
+[data-role="patient"][data-platform="mobile"] {
+  --text-body:              var(--font-18);
+  --text-headline:          var(--font-20);
+  --text-title:             var(--font-24);
+  --size-touch-target:      56px;
+  --size-button-default:    56px;
+  --size-row:               64px;
+  --card-padding:           var(--space-6);    /* 20px — 환자는 카드도 살짝 여유 */
+}
+
+/* 환자 + 웹 조합도 정의 (드물지만 태블릿 거치형 가로모드 대비) */
+[data-role="patient"][data-platform="web"] {
+  --text-body:              var(--font-18);
+  --text-headline:          var(--font-20);
+  --text-title:             var(--font-24);
+  --size-touch-target:      56px;
+  --size-button-default:    56px;
+  --size-row:               64px;
+}
+
+
+/* ============================================================================
+   THEME E · ACCESSIBILITY MODES (v3.2 신설)
+   ----------------------------------------------------------------------------
+   환자앱에서 사용자가 직접 활성화하는 접근성 모드 2종:
+     · data-a11y-text="large"     — 글자 크기 +1단계 추가 상향
+     · data-a11y-contrast="high"  — 본문 대비 7:1 (KRDS magic 90)
+   이 두 속성은 환자앱뿐 아니라 어떤 역할에서도 활성 가능 (보호자 시니어 등).
+   ============================================================================ */
+
+[data-a11y-text="large"] {
+  /* 모든 텍스트 한 단계 위로 — 환자 18px → 20px, headline 20 → 22 등 */
+  --text-body:              var(--font-20);
+  --text-headline:          var(--font-22);
+  --text-title:             var(--font-28);
+  --text-callout:           var(--font-16);
+  --text-caption:           var(--font-14);
+  /* 터치도 함께 키움 */
+  --size-touch-target:      60px;
+  --size-button-default:    60px;
+  --size-row:               68px;
+}
+
+[data-a11y-contrast="high"] {
+  /* 본문 7:1 대비 — KRDS magic 90 */
+  --color-text-primary:     var(--neutral-strong);    /* #0A0A0C */
+  --color-text-secondary:   var(--palette-gray-700);  /* 한 단계 어둡게 */
+  --color-border-subtle:    var(--palette-gray-300);  /* 보더도 강하게 */
+  /* 글래스 폴백 (가독성 우선) */
+  --color-bg-glass:         var(--color-bg-surface);
+  --blur-card:              0;
+  --blur-tab:               0;
+}
+
+/* (v3.2.8) 다크 + 고대비 분기 제거 — 라이트 단일 운영 */
+
+/* 고대비 모드에서 글래스 끔 (가독성 우선) */
+[data-a11y-contrast="high"] .tabbar,
+[data-a11y-contrast="high"] .bottom-sheet,
+[data-a11y-contrast="high"] .ai-output,
+[data-a11y-contrast="high"] .u-bg-glass {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: var(--color-bg-surface) !important;
+}
+
+
+/* ============================================================================
+   THEME D · (제거 · v3.2.8, 2026-05-17)
+   ----------------------------------------------------------------------------
+   하루안부는 **라이트 모드 단일**. 다크 모드 블록 전체 삭제.
+   히스토리:
+     v3.2   (2026-04) 다크 도입
+     v3.2.3 (2026-05-11) v9.5 hex 충돌로 봉인(라이트 강제)
+     v3.2.8 (2026-05-17) 코드 자체 제거 — 사용자 지시
+   ============================================================================ */
+
+
+/* ============================================================================
+   RESET · 최소 리셋만 (미드리셋, opinionated 리셋 아님)
+   ============================================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  /* v3.2.8: 다크 모드 제거 후에도 OS 다크 모드에서 Chrome force-dark가
+     UA 컨트롤·body 기본 배경을 다크로 그릴 수 있어 명시. 라이트 단일 운영. */
+  color-scheme: light;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family-base);
+  font-size: var(--text-body);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-normal);
+  color: var(--color-text-primary);
+  background: var(--color-bg-canvas);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img, svg, video { display: block; max-width: 100%; }
+
+button, input, select, textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button { cursor: pointer; background: none; border: 0; padding: 0; }
+
+a { color: inherit; text-decoration: none; }
+
+
+/* ============================================================================
+   UTILITY CLASSES (선택적 — 자주 쓰이는 패턴만 최소 제공)
+   컴포넌트 스타일은 화면 CSS에서 직접 쓰되, 값은 반드시 토큰을 참조할 것.
+   ============================================================================ */
+
+.u-text-body       { font-size: var(--text-body);      }
+.u-text-headline   { font-size: var(--text-headline);  font-weight: var(--weight-semibold); }
+.u-text-title      { font-size: var(--text-title);     font-weight: var(--weight-semibold); }
+.u-text-caption    { font-size: var(--text-caption);   color: var(--color-text-secondary); }
+.u-text-accent     { color: var(--color-accent); }
+.u-text-success    { color: var(--color-success); }
+.u-text-warning    { color: var(--color-warning); }
+.u-text-danger     { color: var(--color-danger); }
+
+.u-bg-surface      { background: var(--color-bg-surface); }
+.u-bg-glass        { background: var(--color-bg-glass); backdrop-filter: blur(var(--blur-card)); -webkit-backdrop-filter: blur(var(--blur-card)); }
+.u-bg-accent       { background: var(--color-accent); color: var(--color-accent-on); }
+
+.u-radius-card     { border-radius: var(--radius-card); }
+.u-radius-pill     { border-radius: var(--radius-pill); }
+
+.u-shadow-card     { box-shadow: var(--card-shadow); }
+.u-shadow-glass    { box-shadow: var(--card-shadow-glass); }
+
+.u-role-gradient   { background: var(--color-bg-role-gradient); }
+
+/* --- Layout utility (inline 대체) ----------------------------------- */
+.u-flex-1          { flex: 1; }
+.u-pt-5            { padding-top: var(--space-5); }
+.u-mt-3            { margin-top: var(--space-3); }
+.u-mt-4            { margin-top: var(--space-4); }
+.u-mb-1            { margin-bottom: 4px; }
+.u-tr              { text-align: right; }
+.u-fs-26           { font-size: 26px; }
+.u-fs-18           { font-size: 18px; }
+.u-fs-12           { font-size: 12px; }
+.u-icon-sm         { font-size: var(--size-icon-sm); }
+.u-img-cover       { width: 100%; height: 100%; object-fit: cover; }
+.u-avatar-img-fill { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.u-no-pad-overflow { overflow: hidden; padding: 0; }
+.u-no-pad-block    { padding: 0; display: block; }
+.u-h-8             { height: 8px; }
+.u-h-10            { height: 10px; }
+.u-h-12            { height: 12px; }
+.u-h-14            { height: 14px; }
+.u-h-16            { height: 16px; }
+.u-h-18            { height: 18px; }
+.u-h-20            { height: 20px; }
+.u-h-22            { height: 22px; }
+.u-no-pad          { padding: 0; }
+.u-w-22            { width: 22px; height: 22px; }
+.u-w-40            { width: 40px; height: 40px; border-radius: 50%; display: block; flex-shrink: 0; padding: 0; }
+.u-mb-7            { margin-bottom: var(--space-7); }
+.u-mt-3-pl-0       { margin-top: var(--space-3); padding-left: 0; }
+.u-mt-4-pl-0       { margin-top: var(--space-4); padding-left: 0; }
+.u-gap-3           { gap: var(--space-3); }
+.u-fs-22           { font-size: 22px; }
+.u-fs-20           { font-size: 20px; }
+.u-w-full          { width: 100%; }
+.u-text-display    { font-size: var(--text-display); font-weight: var(--weight-bold); letter-spacing: -0.6px; }
+.u-text-callout    { font-size: var(--text-callout); line-height: var(--leading-normal); }
+
+
+/* ============================================================================
+   SKELETON · 로딩 자리표시 (v3.2.4 표준 클래스)
+   ----------------------------------------------------------------------------
+   토큰은 별도로 정의(--skeleton-*). 여기서는 모든 앱이 공유할 수 있는
+   기본 클래스 5종을 제공한다. 사용:
+     <div class="skeleton skeleton--card"></div>
+     <div class="skeleton skeleton--line" style="width: 70%;"></div>
+   ============================================================================ */
+
+.skeleton {
+  background: var(--skeleton-bg);
+  animation: haru-skeleton-shimmer var(--skeleton-duration) infinite;
+  border-radius: var(--skeleton-radius);
+}
+.skeleton--line    { height: var(--skeleton-line-height); border-radius: var(--radius-1); }
+.skeleton--heading { height: var(--skeleton-line-height-lg); border-radius: var(--radius-1); width: 60%; }
+.skeleton--row     { height: var(--skeleton-row-height); }
+.skeleton--card    { min-height: 120px; padding: var(--card-padding); }
+.skeleton--avatar  { width: var(--size-avatar-md); height: var(--size-avatar-md); border-radius: var(--radius-pill); }
+
+@keyframes haru-skeleton-shimmer {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: .55; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton { animation: none; background: var(--skeleton-bg); }
+}
+
+
+/* ============================================================================
+   AI DISCLAIMER · 표준 면책 컴포넌트 (v3.2.4 신설)
+   ----------------------------------------------------------------------------
+   의료 관련 AI 응답·리포트에 자동으로 박히는 면책 문구.
+   사용:
+     <p class="ai-disclaimer">최종 판단은 의료진이 합니다</p>
+     <p class="ai-disclaimer ai-disclaimer--full">최종 판단은 의료진이 합니다. ...</p>
+   ============================================================================ */
+
+.ai-disclaimer {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font: var(--text-caption)/1.5 var(--font-family-base);
+  color: var(--ai-citation-color);
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px dashed var(--ai-accent-hairline);
+}
+.ai-disclaimer::before {
+  content: "ⓘ";
+  font: var(--w-strong) var(--text-caption)/1.4 var(--font-family-base);
+  color: var(--ai-accent-hairline);
+  flex-shrink: 0;
+}
+.ai-disclaimer--full {
+  font-size: var(--text-callout);
+  padding-top: var(--space-4);
+}
+.ai-disclaimer--inline {
+  /* 면책을 footer 분리 없이 본문 끝에 인라인으로 — H4 거절 카드 등 */
+  border-top: 0;
+  padding-top: 0;
+  margin-top: var(--space-3);
+}
+
+
+/* ============================================================================
+   ACCESSIBILITY
+   ============================================================================ */
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-control);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================================================
+   LOW-POWER / TRANSPARENCY FALLBACK (v3.2 신설)
+   ----------------------------------------------------------------------------
+   Safari 저전력 모드 / Windows '투명 효과 끄기' / 사용자 명시 설정에서
+   backdrop-filter가 비활성된다. 이때 글래스 표면(탭바·모달·AI 카드·환자
+   가족사진 카드 4곳)이 반투명한 채로 본문이 비쳐 가독성을 해친다.
+   해결: glass alpha를 0.97로 올리고 backdrop-filter를 none으로 폴백.
+   ============================================================================ */
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --color-bg-glass:       rgba(255, 255, 255, 0.97);
+    --tabbar-bg:            rgba(255, 255, 255, 0.97);
+    --blur-card:            0;
+    --blur-tab:             0;
+  }
+  /* 글래스 사용 4곳 모두 backdrop-filter 끔 */
+  .tabbar, .bottom-sheet, .modal-overlay, .u-bg-glass,
+  .header-mobile, .ai-output, .ai-prompt {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+/* (v3.2.8) prefers-color-scheme: dark + transparency-reduce 결합 분기 제거 */
+
+/* 헬퍼 클래스 — JS에서 저전력 감지 시 <html>에 추가하면 모든 글래스 차단 */
+.no-blur,
+.no-blur * {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.no-blur {
+  --color-bg-glass:         var(--color-bg-surface);
+  --tabbar-bg:              var(--color-bg-surface);
+}
+
+
+/* ============================================================================
+   끝.
+   화면 CSS는 이 파일 import 후, Layer 2(Semantic) 토큰만 참조할 것.
+   ============================================================================ */

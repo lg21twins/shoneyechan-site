@@ -1,0 +1,245 @@
+<!doctype html>
+<!--
+  ================================================================
+  하루안부 · 화면 스켈레톤 v1.0
+  ================================================================
+  복사해서 새 화면으로 시작할 때 쓰는 최소 템플릿.
+
+  체크포인트
+    1. <html data-role="..." data-platform="..."> 둘 다 설정
+    2. tokens.css 1개만 import
+    3. <style>에서는 Layer 2/3 토큰만 쓸 것
+    4. 값 하드코딩 금지 (px, #HEX 직접 쓰지 않기)
+
+  data-role     : guardian | medical | doctor | nurse | caregiver | patient
+  data-platform : mobile | web
+  ================================================================
+-->
+<html lang="ko" data-role="guardian" data-platform="mobile">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#d4e4ff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>하루안부</title>
+
+  <!-- 파비콘 / 앱 아이콘 -->
+  <link rel="icon" type="image/svg+xml" href="../logo/brand-system/01_심볼단독.svg">
+  <link rel="apple-touch-icon" href="../logo/brand-system/01_심볼단독.svg">
+
+  <!-- 유일하게 허용되는 스타일 import -->
+  <link rel="stylesheet" href="./tokens.css">
+
+  <!-- 아이콘 (Fluent Filled 24px) -->
+  <script src="../_iconify-icon.min.js"></script>
+
+  <style>
+    /* ------- 화면 전용 스타일 --------------------------------------
+       토큰만 사용. 하드코딩 금지.
+       --------------------------------------------------------------- */
+
+    body {
+      background: var(--color-bg-canvas);
+      color: var(--color-text-primary);
+      min-height: 100dvh;
+      padding-bottom: calc(var(--tabbar-height) + var(--space-stack-loose)
+                          + env(safe-area-inset-bottom));
+    }
+
+    .app-header {
+      height: var(--header-height);
+      display: flex;
+      align-items: center;
+      padding: 0 var(--header-padding-x);
+      background: var(--color-bg-role-gradient,
+                  linear-gradient(180deg,
+                    var(--color-accent-soft) 0%,
+                    var(--color-bg-canvas) 120px));
+    }
+
+    .app-main {
+      padding: var(--space-inset-default) var(--space-page-margin);
+      display: grid;
+      gap: var(--space-stack-default);
+    }
+
+    /* ------- 카드 -------------------------------------------------- */
+    .card {
+      background: var(--card-bg);
+      border: var(--card-border);
+      border-radius: var(--card-radius);
+      padding: var(--card-padding);
+      box-shadow: var(--card-shadow);
+    }
+    .card-glass {
+      background: var(--card-bg-glass);
+      border: var(--card-border-glass);
+      backdrop-filter: blur(var(--blur-card));
+      -webkit-backdrop-filter: blur(var(--blur-card));
+    }
+
+    /* ------- 버튼 (accent) ----------------------------------------- */
+    .btn {
+      height: var(--size-button-default);
+      padding: 0 var(--space-inset-loose);
+      border-radius: var(--radius-button);
+      background: var(--color-accent);
+      color: var(--color-accent-on);
+      font: var(--weight-semibold) var(--text-body) / 1 var(--font-family-base);
+      border: 0;
+      cursor: pointer;
+    }
+    .btn:hover { background: var(--color-accent-strong); }
+    .btn-soft {
+      background: var(--color-accent-soft);
+      color: var(--color-accent-strong);
+    }
+
+    /* ------- SOS 배너 ---------------------------------------------- */
+    .sos-banner {
+      background: var(--sos-bg);
+      color: var(--sos-text);
+      border-radius: var(--sos-radius);
+      padding: var(--space-inset-default);
+      font-weight: var(--weight-semibold);
+    }
+
+    /* ------- 플로팅 AI 버튼 ---------------------------------------- */
+    .ai-fab {
+      position: fixed;
+      right: var(--space-page-margin);
+      bottom: calc(var(--tabbar-height)
+                  + var(--space-stack-loose)
+                  + env(safe-area-inset-bottom));
+      width: 52px;
+      height: 52px;
+      border-radius: var(--radius-full);
+      background: var(--color-accent);
+      color: var(--color-accent-on);
+      display: grid;
+      place-items: center;
+      box-shadow: var(--shadow-2);
+      border: 0;
+      z-index: var(--z-fixed);
+      cursor: pointer;
+    }
+
+    /* ------- 탭바 (Floating Pill, 모바일만) ------------------------ */
+    .tabbar {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: var(--tabbar-bottom);
+      height: var(--tabbar-height);
+      background: var(--tabbar-bg);
+      backdrop-filter: blur(var(--tabbar-blur));
+      -webkit-backdrop-filter: blur(var(--tabbar-blur));
+      box-shadow: var(--tabbar-shadow);
+      border-radius: var(--tabbar-radius);
+      display: flex;
+      align-items: center;
+      padding: 0 var(--space-4);
+      gap: var(--space-1);
+      z-index: var(--z-fixed);
+      width: min(calc(100vw - 2 * var(--tabbar-side-inset)), 370px);
+    }
+    .tab {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      text-decoration: none;
+      color: var(--color-text-secondary);
+      font-size: var(--tabbar-label-size);
+      font-weight: var(--weight-medium);
+    }
+    .tab iconify-icon { font-size: var(--tabbar-icon-size); }
+    .tab.is-active { color: var(--color-accent); }
+
+    /* ------- 데스크톱 웹 전용 레이아웃 ----------------------------- */
+    [data-platform="web"] body {
+      padding-bottom: 0;
+    }
+    [data-platform="web"] .app-main {
+      max-width: var(--size-content-max);
+      margin: 0 auto;
+      padding: var(--space-inset-loose) var(--space-page-margin);
+    }
+    [data-platform="web"] .tabbar { display: none; } /* 웹은 사이드바가 대신 */
+  </style>
+</head>
+<body>
+
+  <!-- 헤더 (역할 그라디언트 자동 적용) -->
+  <header class="app-header">
+    <!-- 브랜드: 심볼 + 워드마크 -->
+    <a href="#" style="display: inline-flex; align-items: center; gap: var(--space-3);
+                       text-decoration: none; color: inherit;"
+       aria-label="하루안부 홈">
+      <img src="../logo/brand-system/01_심볼단독.svg" alt=""
+           width="28" height="28" style="display: block;">
+      <span style="font: var(--weight-bold) var(--text-headline) / 1.2 var(--font-family-base);
+                   color: var(--color-text-primary); letter-spacing: -0.02em;">
+        하루안부
+      </span>
+    </a>
+  </header>
+
+  <!-- 본문 -->
+  <main class="app-main">
+
+    <!-- 카드 예시 -->
+    <section class="card">
+      <h2 style="font: var(--weight-semibold) var(--text-headline) / 1.3 var(--font-family-base);
+                 margin: 0 0 var(--space-stack-tight);">
+        카드 제목
+      </h2>
+      <p style="color: var(--color-text-secondary);
+                font: var(--weight-regular) var(--text-callout) / 1.5 var(--font-family-base);
+                margin: 0;">
+        카드 내용 — 모든 색·간격은 토큰에서만.
+      </p>
+    </section>
+
+    <!-- CTA -->
+    <button class="btn">확인</button>
+
+  </main>
+
+  <!-- 플로팅 AI 버튼 (모든 페이지 공통) -->
+  <button class="ai-fab" aria-label="AI 채팅 열기">
+    <iconify-icon icon="fluent:chat-sparkle-24-filled"></iconify-icon>
+  </button>
+
+  <!-- 하단 탭바 (모바일 전용, 웹에서는 자동으로 숨겨짐) -->
+  <nav class="tabbar">
+    <a class="tab is-active" href="#">
+      <iconify-icon icon="fluent:home-24-filled"></iconify-icon>
+      <span>홈</span>
+    </a>
+    <a class="tab" href="#">
+      <iconify-icon icon="fluent:shield-checkmark-24-filled"></iconify-icon>
+      <span>가이드</span>
+    </a>
+    <a class="tab" href="#">
+      <iconify-icon icon="fluent:chat-24-filled"></iconify-icon>
+      <span>소통</span>
+    </a>
+    <a class="tab" href="#">
+      <iconify-icon icon="fluent:document-text-24-filled"></iconify-icon>
+      <span>기록</span>
+    </a>
+    <a class="tab" href="#">
+      <iconify-icon icon="fluent:person-24-filled"></iconify-icon>
+      <span>마이</span>
+    </a>
+  </nav>
+
+</body>
+</html>

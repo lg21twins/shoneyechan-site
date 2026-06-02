@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>v3 Preview — 긴급 알림 + 미니 캘린더</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --green:#47B881;
+  --green-bg:#F0FAF4;
+  --green-border:#C3E8D3;
+  --red:#E53E3E;
+  --red-bg:#FFF5F5;
+  --red-border:#FED7D7;
+  --yellow:#D97706;
+  --yellow-bg:#FFFBEB;
+  --yellow-border:#FDE68A;
+  --ink:#111111;
+  --ink2:#374151;
+  --ink3:#6B7280;
+  --ink4:#9CA3AF;
+  --border:#E4E6EB;
+  --surface:#F4F5F7;
+  --white:#FFFFFF;
+  --font:'Pretendard Variable',Pretendard,-apple-system,sans-serif;
+}
+body{font-family:var(--font);background:var(--surface);color:var(--ink);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;padding:32px;}
+
+.section-label{
+  font-size:11px;font-weight:700;color:var(--ink3);
+  text-transform:uppercase;letter-spacing:.6px;
+  margin-bottom:10px;display:flex;align-items:center;gap:8px;
+}
+.section-label span{color:var(--red);font-size:11px;font-weight:700;background:var(--red-bg);border:1px solid var(--red-border);padding:1px 8px;border-radius:4px;}
+
+/* ── 알림 카드 행 ── */
+.alert-row{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  margin-bottom:24px;
+}
+
+.alert-card{
+  background:var(--white);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:14px 16px;
+  cursor:pointer;
+  transition:box-shadow .15s;
+  position:relative;
+}
+.alert-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.08);}
+
+.alert-card.critical{
+  background:var(--red-bg);
+  border-color:var(--red-border);
+}
+
+.ac-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+
+.ac-status{
+  font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;
+}
+.ac-status.received{background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE;}
+.ac-status.ongoing {background:#FEF9C3;color:#92400E;border:1px solid #FDE68A;}
+.ac-status.done    {background:var(--green-bg);color:#166534;border:1px solid var(--green-border);}
+.ac-status.sos     {background:var(--red-bg);color:var(--red);border:1px solid var(--red-border);}
+
+.ac-room{font-size:11px;color:var(--ink3);font-weight:500;}
+
+.ac-title{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:3px;line-height:1.35;}
+.alert-card.critical .ac-title{color:var(--red);}
+
+.ac-desc{font-size:12px;color:var(--ink3);line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+.ac-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-top:10px;padding-top:10px;
+  border-top:1px solid var(--border);
+}
+.alert-card.critical .ac-footer{border-top-color:var(--red-border);}
+
+.ac-time{font-size:11px;color:var(--ink4);}
+.ac-btn{
+  font-size:11px;font-weight:700;padding:4px 10px;border-radius:4px;
+  border:none;cursor:pointer;font-family:var(--font);
+}
+.ac-btn.primary{background:var(--red);color:#fff;}
+.ac-btn.default{background:var(--surface);color:var(--ink2);border:1px solid var(--border);}
+
+/* ── 메인 2컬럼 ── */
+.main-cols{display:grid;grid-template-columns:1fr 280px;gap:16px;}
+
+/* ── 타임라인 카드 ── */
+.card{
+  background:var(--white);
+  border:1px solid var(--border);
+  border-radius:8px;
+  overflow:hidden;
+}
+.card-header{
+  padding:12px 16px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.card-title{font-size:13px;font-weight:700;color:var(--ink2);display:flex;align-items:center;gap:6px;}
+.card-title-dot{width:6px;height:6px;border-radius:50%;background:var(--green);}
+.card-more{font-size:12px;color:var(--ink3);cursor:pointer;padding:3px 8px;border-radius:4px;background:var(--surface);}
+
+.tl-body{padding:14px 16px;}
+.tl-now{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 12px;margin-bottom:14px;
+  background:var(--surface);border:1px solid var(--border);border-radius:6px;
+  font-size:12px;font-weight:700;color:var(--ink2);
+}
+.tl-dot-live{width:7px;height:7px;border-radius:50%;background:var(--red);animation:blink 1.5s infinite;flex-shrink:0;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+.tl-row{display:flex;gap:0;align-items:stretch;margin-bottom:0;}
+.tl-time{width:44px;font-size:11px;color:var(--ink4);padding-top:4px;text-align:right;flex-shrink:0;font-weight:500;}
+.tl-node{width:28px;display:flex;flex-direction:column;align-items:center;flex-shrink:0;padding-top:3px;}
+.tl-nd{width:9px;height:9px;border-radius:50%;flex-shrink:0;z-index:1;}
+.tl-nd.done    {background:var(--green);}
+.tl-nd.current {background:var(--ink);box-shadow:0 0 0 3px rgba(17,17,17,.15);width:11px;height:11px;margin-top:-1px;}
+.tl-nd.upcoming{background:var(--white);border:2px solid var(--border);}
+.tl-nd.alert   {background:var(--red);}
+.tl-vline{width:1.5px;flex:1;min-height:8px;background:var(--border);border-radius:1px;margin-top:4px;}
+.tl-row:last-child .tl-vline{opacity:0;}
+.tl-content{flex:1;padding:2px 0 14px 8px;}
+.tl-row.is-current .tl-content{
+  background:var(--surface);border:1px solid var(--border);border-radius:6px;
+  padding:8px 10px;margin-bottom:14px;
+}
+.tl-name{font-size:12.5px;font-weight:600;color:var(--ink2);}
+.tl-name.done{color:var(--ink3);text-decoration:line-through;font-weight:400;}
+.tl-name.current{color:var(--ink);font-weight:700;}
+.tl-sub{font-size:11px;color:var(--ink4);margin-top:2px;}
+.tl-tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;margin-left:6px;vertical-align:middle;}
+.tl-tag.done    {background:var(--surface);color:var(--ink3);border:1px solid var(--border);}
+.tl-tag.current {background:var(--ink);color:#fff;}
+.tl-tag.alert   {background:var(--red-bg);color:var(--red);border:1px solid var(--red-border);}
+.tl-tag.upcoming{background:var(--surface);color:var(--ink3);border:1px solid var(--border);}
+
+/* ── 미니 캘린더 ── */
+.mini-cal{padding:16px;}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.cal-month{font-size:13px;font-weight:700;color:var(--ink);}
+.cal-nav-btn{
+  width:26px;height:26px;border-radius:4px;border:1px solid var(--border);
+  background:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:var(--ink3);
+}
+.cal-nav-btn svg{width:14px;height:14px;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.cal-dow{font-size:10px;font-weight:700;color:var(--ink4);text-align:center;padding:4px 0;}
+.cal-day{
+  aspect-ratio:1;border-radius:4px;display:flex;align-items:center;justify-content:center;
+  font-size:12px;color:var(--ink2);cursor:pointer;position:relative;
+}
+.cal-day:hover{background:var(--surface);}
+.cal-day.other{color:var(--ink4);}
+.cal-day.today{background:var(--ink);color:#fff;font-weight:700;}
+.cal-day.has-event::after{
+  content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);
+  width:4px;height:4px;border-radius:50%;background:var(--green);
+}
+.cal-day.today.has-event::after{background:#fff;}
+.cal-day.has-alert::after{background:var(--red);}
+
+/* ── 오늘 일정 ── */
+.today-events{padding:0 16px 16px;}
+.today-events-label{font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+.ev-item{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:6px;margin-bottom:6px;border:1px solid var(--border);}
+.ev-bar{width:3px;border-radius:2px;flex-shrink:0;align-self:stretch;min-height:32px;}
+.ev-bar.vital {background:var(--green);}
+.ev-bar.med   {background:#3B82F6;}
+.ev-bar.care  {background:var(--yellow);}
+.ev-title{font-size:12px;font-weight:600;color:var(--ink2);}
+.ev-time {font-size:11px;color:var(--ink4);margin-top:1px;}
+</style>
+</head>
+<body>
+
+<!-- 긴급 알림 레이블 -->
+<div class="section-label">
+  긴급 알림
+  <span>3건 미처리</span>
+</div>
+
+<!-- 알림 카드 4개 -->
+<div class="alert-row">
+
+  <div class="alert-card critical">
+    <div class="ac-top">
+      <span class="ac-status sos">SOS</span>
+      <span class="ac-room">201호 · 이순자</span>
+    </div>
+    <div class="ac-title">낙상 위험 감지</div>
+    <div class="ac-desc">침대 이탈 센서 연속 3회 반응</div>
+    <div class="ac-footer">
+      <span class="ac-time">10:18 · 6분 전</span>
+      <button class="ac-btn primary">즉시 확인</button>
+    </div>
+  </div>
+
+  <div class="alert-card">
+    <div class="ac-top">
+      <span class="ac-status received">접수</span>
+      <span class="ac-room">205호 · 박철수</span>
+    </div>
+    <div class="ac-title">혈압 이상 수치</div>
+    <div class="ac-desc">수축기 168 mmHg — 기준치 초과</div>
+    <div class="ac-footer">
+      <span class="ac-time">09:52 · 32분 전</span>
+      <button class="ac-btn default">처리하기</button>
+    </div>
+  </div>
+
+  <div class="alert-card">
+    <div class="ac-top">
+      <span class="ac-status ongoing">진행중</span>
+      <span class="ac-room">208호 · 김영희</span>
+    </div>
+    <div class="ac-title">투약 거부</div>
+    <div class="ac-desc">아침 혈압약 복용 거부 — 보호자 연락 중</div>
+    <div class="ac-footer">
+      <span class="ac-time">08:30 · 1시간 54분 전</span>
+      <button class="ac-btn default">기록보기</button>
+    </div>
+  </div>
+
+  <div class="alert-card">
+    <div class="ac-top">
+      <span class="ac-status done">처리완료</span>
+      <span class="ac-room">212호 · 최대원</span>
+    </div>
+    <div class="ac-title">식사 섭취 불량</div>
+    <div class="ac-desc">점심 30% 미만 섭취 — 영양사 협진 완료</div>
+    <div class="ac-footer">
+      <span class="ac-time">07:00 · 3시간 전</span>
+      <button class="ac-btn default">기록보기</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- 타임라인 + 미니 캘린더 -->
+<div class="main-cols">
+
+  <!-- 타임라인 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <span class="card-title-dot"></span>
+        오늘 업무 타임라인
+      </div>
+      <span class="card-more">전체보기</span>
+    </div>
+    <div class="tl-body">
+
+      <div class="tl-now">
+        <div class="tl-dot-live"></div>
+        현재 10:24 — 상처 드레싱 진행 중 · 201호
+      </div>
+
+      <div class="tl-row">
+        <div class="tl-time">06:00</div>
+        <div class="tl-node"><div class="tl-nd done"></div><div class="tl-vline"></div></div>
+        <div class="tl-content">
+          <div class="tl-name done">아침 투약 <span class="tl-tag done">완료</span></div>
+          <div class="tl-sub">25명 중 23명 완료 · 2명 거부 기록</div>
+        </div>
+      </div>
+
+      <div class="tl-row">
+        <div class="tl-time">07:00</div>
+        <div class="tl-node"><div class="tl-nd done"></div><div class="tl-vline"></div></div>
+        <div class="tl-content">
+          <div class="tl-name done">아침 식사 체크 <span class="tl-tag done">완료</span></div>
+          <div class="tl-sub">섭취율 기록 완료</div>
+        </div>
+      </div>
+
+      <div class="tl-row">
+        <div class="tl-time">08:30</div>
+        <div class="tl-node"><div class="tl-nd alert"></div><div class="tl-vline"></div></div>
+        <div class="tl-content">
+          <div class="tl-name done">바이탈 측정 <span class="tl-tag alert">이상 2건</span></div>
+          <div class="tl-sub">혈압·체온·맥박 — 201호, 205호 이상</div>
+        </div>
+      </div>
+
+      <div class="tl-row is-current">
+        <div class="tl-time">10:00</div>
+        <div class="tl-node"><div class="tl-nd current"></div><div class="tl-vline"></div></div>
+        <div class="tl-content">
+          <div class="tl-name current">상처 드레싱 <span class="tl-tag current">진행중</span></div>
+          <div class="tl-sub">201호 이순자 · 담당 간호사 김코디</div>
+        </div>
+      </div>
+
+      <div class="tl-row">
+        <div class="tl-time">12:00</div>
+        <div class="tl-node"><div class="tl-nd upcoming"></div><div class="tl-vline"></div></div>
+        <div class="tl-content">
+          <div class="tl-name upcoming">점심 투약 <span class="tl-tag upcoming">예정</span></div>
+          <div class="tl-sub">25명 대상</div>
+        </div>
+      </div>
+
+      <div class="tl-row">
+        <div class="tl-time">14:00</div>
+        <div class="tl-node"><div class="tl-nd upcoming"></div><div class="tl-vline"></div></div>
+        <div class="tl-content">
+          <div class="tl-name upcoming">오후 바이탈 측정 <span class="tl-tag upcoming">예정</span></div>
+          <div class="tl-sub">전체 환자</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 미니 캘린더 + 일정 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <span class="card-title-dot"></span>
+        캘린더
+      </div>
+    </div>
+    <div class="mini-cal">
+      <div class="cal-nav">
+        <button class="cal-nav-btn">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+        </button>
+        <span class="cal-month">2026년 4월</span>
+        <button class="cal-nav-btn">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+        </button>
+      </div>
+      <div class="cal-grid">
+        <div class="cal-dow">일</div><div class="cal-dow">월</div><div class="cal-dow">화</div>
+        <div class="cal-dow">수</div><div class="cal-dow">목</div><div class="cal-dow">금</div><div class="cal-dow">토</div>
+
+        <div class="cal-day other">30</div>
+        <div class="cal-day other">31</div>
+        <div class="cal-day">1</div>
+        <div class="cal-day has-event">2</div>
+        <div class="cal-day has-event">3</div>
+        <div class="cal-day">4</div>
+        <div class="cal-day">5</div>
+
+        <div class="cal-day">6</div>
+        <div class="cal-day has-event">7</div>
+        <div class="cal-day">8</div>
+        <div class="cal-day">9</div>
+        <div class="cal-day has-event">10</div>
+        <div class="cal-day">11</div>
+        <div class="cal-day">12</div>
+
+        <div class="cal-day">13</div>
+        <div class="cal-day">14</div>
+        <div class="cal-day">15</div>
+        <div class="cal-day">16</div>
+        <div class="cal-day">17</div>
+        <div class="cal-day today has-event">18</div>
+        <div class="cal-day">19</div>
+
+        <div class="cal-day">20</div>
+        <div class="cal-day has-event">21</div>
+        <div class="cal-day">22</div>
+        <div class="cal-day">23</div>
+        <div class="cal-day">24</div>
+        <div class="cal-day has-alert">25</div>
+        <div class="cal-day">26</div>
+
+        <div class="cal-day">27</div>
+        <div class="cal-day">28</div>
+        <div class="cal-day">29</div>
+        <div class="cal-day">30</div>
+        <div class="cal-day other">1</div>
+        <div class="cal-day other">2</div>
+        <div class="cal-day other">3</div>
+      </div>
+    </div>
+
+    <div class="today-events">
+      <div class="today-events-label">오늘 주요 일정</div>
+      <div class="ev-item">
+        <div class="ev-bar vital"></div>
+        <div>
+          <div class="ev-title">오전 바이탈 측정</div>
+          <div class="ev-time">08:30 — 09:30</div>
+        </div>
+      </div>
+      <div class="ev-item">
+        <div class="ev-bar med"></div>
+        <div>
+          <div class="ev-title">점심 투약</div>
+          <div class="ev-time">12:00 — 12:30</div>
+        </div>
+      </div>
+      <div class="ev-item">
+        <div class="ev-bar care"></div>
+        <div>
+          <div class="ev-title">오후 케어 라운드</div>
+          <div class="ev-time">14:00 — 16:00</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

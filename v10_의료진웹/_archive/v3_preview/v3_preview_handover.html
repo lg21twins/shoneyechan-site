@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>v3 Preview — 인수인계 탭 폼</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --green:#47B881;--green-bg:#F0FAF4;--green-border:#C3E8D3;
+  --red:#E53E3E;--red-bg:#FFF5F5;--red-border:#FED7D7;
+  --yellow:#D97706;--yellow-bg:#FFFBEB;--yellow-border:#FDE68A;
+  --blue:#3B82F6;--blue-bg:#EFF6FF;--blue-border:#BFDBFE;
+  --ink:#111111;--ink2:#374151;--ink3:#6B7280;--ink4:#9CA3AF;
+  --border:#E4E6EB;--surface:#F4F5F7;--white:#FFFFFF;
+  --font:'Pretendard Variable',Pretendard,-apple-system,sans-serif;
+}
+body{font-family:var(--font);background:var(--surface);color:var(--ink);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;padding:32px;}
+
+/* ── 페이지 헤더 ── */
+.pg-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.pg-title{font-size:18px;font-weight:800;color:var(--ink);letter-spacing:-.3px;}
+.pg-meta{font-size:12px;color:var(--ink4);}
+.btn-primary{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 18px;border-radius:6px;background:var(--ink);color:#fff;
+  border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);
+}
+.btn-secondary{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 14px;border-radius:6px;background:var(--white);color:var(--ink2);
+  border:1px solid var(--border);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);
+}
+
+/* ── WINI mini 스타일 탭 바 ── */
+.tab-bar{
+  display:flex;gap:0;
+  background:var(--white);border:1px solid var(--border);
+  border-radius:8px 8px 0 0;border-bottom:none;
+  overflow:hidden;
+}
+.tab{
+  flex:1;padding:11px 16px;text-align:center;
+  font-size:13px;font-weight:600;color:var(--ink3);
+  cursor:pointer;border-right:1px solid var(--border);
+  background:var(--surface);transition:background .12s,color .12s;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.tab:last-child{border-right:none;}
+.tab.active{
+  background:var(--white);color:var(--ink);font-weight:700;
+  border-bottom:2px solid var(--ink);
+  margin-bottom:-1px;position:relative;z-index:1;
+}
+.tab-badge{font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;}
+.tab-badge.red{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border);}
+.tab-badge.green{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);}
+
+/* ── 본문 카드 ── */
+.card{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:0 0 8px 8px;overflow:hidden;
+}
+
+/* ── 2컬럼 레이아웃 ── */
+.form-layout{display:grid;grid-template-columns:220px 1fr;gap:0;}
+
+/* 왼쪽 환자 목록 */
+.pt-list{border-right:1px solid var(--border);}
+.pt-list-header{
+  padding:10px 14px;border-bottom:1px solid var(--border);
+  font-size:11px;font-weight:700;color:var(--ink3);
+  text-transform:uppercase;letter-spacing:.5px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.pt-list-search{
+  width:100%;padding:7px 12px;border:none;border-bottom:1px solid var(--border);
+  font-size:12px;color:var(--ink2);font-family:var(--font);
+  background:var(--surface);outline:none;
+}
+.pt-list-search::placeholder{color:var(--ink4);}
+.pt-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 14px;cursor:pointer;
+  border-bottom:1px solid var(--border);
+  transition:background .12s;
+}
+.pt-item:last-child{border-bottom:none;}
+.pt-item:hover:not(.sel){background:var(--surface);}
+.pt-item.sel{background:var(--surface);border-left:3px solid var(--ink);}
+
+.pt-av{
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;flex-shrink:0;
+}
+.pt-av.critical{background:var(--red-bg);color:var(--red);}
+.pt-av.caution {background:var(--yellow-bg);color:var(--yellow);}
+.pt-av.stable  {background:var(--green-bg);color:var(--green);}
+
+.pt-nm{font-size:12.5px;font-weight:700;color:var(--ink2);}
+.pt-rm{font-size:11px;color:var(--ink4);margin-top:1px;}
+.pt-flag{margin-left:auto;width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.pt-flag.red{background:var(--red);}
+.pt-flag.yellow{background:var(--yellow);}
+
+/* 오른쪽 폼 */
+.form-body{padding:20px 24px;display:flex;flex-direction:column;gap:20px;}
+
+/* 섹션 구분 — WINI mini 스타일 */
+.form-section{}
+.fs-header{
+  display:flex;align-items:center;gap:10px;
+  padding-bottom:10px;margin-bottom:14px;
+  border-bottom:1px solid var(--border);
+}
+.fs-label-box{
+  width:24px;height:24px;border-radius:4px;
+  background:var(--ink);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;flex-shrink:0;
+}
+.fs-title{font-size:13px;font-weight:700;color:var(--ink);}
+.fs-sub{font-size:11px;color:var(--ink4);margin-left:auto;}
+
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.field-row.full{grid-template-columns:1fr;}
+.field-row.three{grid-template-columns:1fr 1fr 1fr;}
+
+.field{}
+.field-label{font-size:11px;font-weight:700;color:var(--ink3);margin-bottom:5px;display:block;}
+.field-input{
+  width:100%;padding:8px 12px;border-radius:6px;
+  border:1px solid var(--border);background:var(--white);
+  font-size:13px;color:var(--ink2);font-family:var(--font);outline:none;
+}
+.field-input:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(17,17,17,.06);}
+.field-input::placeholder{color:var(--ink4);}
+.field-input.filled{background:var(--surface);}
+.field-select{
+  width:100%;padding:8px 12px;border-radius:6px;
+  border:1px solid var(--border);background:var(--white);
+  font-size:13px;color:var(--ink2);font-family:var(--font);outline:none;
+  appearance:none;cursor:pointer;
+}
+.field-textarea{
+  width:100%;padding:10px 12px;border-radius:6px;
+  border:1px solid var(--border);background:var(--white);
+  font-size:13px;color:var(--ink2);font-family:var(--font);outline:none;
+  resize:none;line-height:1.6;
+}
+.field-textarea:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(17,17,17,.06);}
+
+/* 상태 토글 버튼 — WINI mini 스타일 */
+.toggle-group{display:flex;gap:6px;flex-wrap:wrap;}
+.tgl-btn{
+  padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;
+  border:1px solid var(--border);background:var(--white);color:var(--ink3);
+  cursor:pointer;font-family:var(--font);transition:all .12s;
+}
+.tgl-btn.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+.tgl-btn.active.red{background:var(--red);border-color:var(--red);}
+.tgl-btn.active.yellow{background:var(--yellow);border-color:var(--yellow);}
+.tgl-btn.active.green{background:var(--green);border-color:var(--green);}
+
+/* 태그 입력 */
+.tag-wrap{
+  display:flex;flex-wrap:wrap;gap:6px;
+  padding:8px 12px;border-radius:6px;border:1px solid var(--border);
+  background:var(--white);min-height:40px;align-items:center;
+}
+.tag{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 10px;border-radius:4px;font-size:12px;font-weight:600;
+}
+.tag.red{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border);}
+.tag.yellow{background:var(--yellow-bg);color:var(--yellow);border:1px solid var(--yellow-border);}
+.tag.blue{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border);}
+.tag-x{font-size:14px;cursor:pointer;opacity:.6;line-height:1;}
+
+/* AI 제안 박스 */
+.ai-box{
+  padding:12px 14px;border-radius:6px;
+  background:var(--surface);border:1px solid var(--border);
+  display:flex;gap:10px;
+}
+.ai-badge{
+  font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;
+  background:var(--ink);color:#fff;flex-shrink:0;align-self:flex-start;margin-top:1px;
+  white-space:nowrap;
+}
+.ai-text{font-size:12px;color:var(--ink2);line-height:1.6;}
+.ai-text strong{font-weight:700;color:var(--ink);}
+
+/* 하단 액션 바 */
+.form-footer{
+  padding:14px 24px;border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--surface);
+}
+.footer-left{display:flex;align-items:center;gap:8px;}
+.footer-right{display:flex;align-items:center;gap:8px;}
+.save-draft{
+  font-size:12px;font-weight:600;color:var(--ink3);
+  padding:7px 14px;border-radius:6px;background:var(--white);
+  border:1px solid var(--border);cursor:pointer;font-family:var(--font);
+}
+.submit-btn{
+  padding:9px 20px;border-radius:6px;background:var(--ink);color:#fff;
+  border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);
+}
+.ai-gen-btn{
+  font-size:12px;font-weight:600;color:var(--ink2);
+  padding:7px 14px;border-radius:6px;background:var(--white);
+  border:1px solid var(--border);cursor:pointer;font-family:var(--font);
+  display:inline-flex;align-items:center;gap:5px;
+}
+</style>
+</head>
+<body>
+
+<!-- 페이지 헤더 -->
+<div class="pg-header">
+  <div>
+    <div class="pg-title">인수인계</div>
+    <div class="pg-meta">2026.04.18 오전 근무 → 오후 근무 인계</div>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <button class="btn-secondary">이전 기록 불러오기</button>
+    <button class="btn-primary">인계 완료 서명</button>
+  </div>
+</div>
+
+<!-- WINI mini 스타일 탭 바 -->
+<div class="tab-bar">
+  <div class="tab active">
+    환자별 인계
+    <span class="tab-badge red">3건 미작성</span>
+  </div>
+  <div class="tab">특이사항 총괄</div>
+  <div class="tab">
+    투약 미완료
+    <span class="tab-badge red">2건</span>
+  </div>
+  <div class="tab">
+    인계 완료 목록
+    <span class="tab-badge green">22명</span>
+  </div>
+</div>
+
+<!-- 본문 -->
+<div class="card">
+  <div class="form-layout">
+
+    <!-- 환자 목록 -->
+    <div class="pt-list">
+      <div class="pt-list-header">
+        환자 목록 <span style="font-weight:400;color:var(--ink4);">25명</span>
+      </div>
+      <input class="pt-list-search" type="text" placeholder="환자명 검색">
+
+      <div class="pt-item">
+        <div class="pt-av critical">이</div>
+        <div>
+          <div class="pt-nm">이순자</div>
+          <div class="pt-rm">201호 · 낙상위험</div>
+        </div>
+        <div class="pt-flag red"></div>
+      </div>
+      <div class="pt-item">
+        <div class="pt-av caution">박</div>
+        <div>
+          <div class="pt-nm">박철수</div>
+          <div class="pt-rm">205호 · 혈압주의</div>
+        </div>
+        <div class="pt-flag yellow"></div>
+      </div>
+      <div class="pt-item sel">
+        <div class="pt-av caution">최</div>
+        <div>
+          <div class="pt-nm">최대원</div>
+          <div class="pt-rm">212호 · 식사불량</div>
+        </div>
+        <div class="pt-flag yellow"></div>
+      </div>
+      <div class="pt-item">
+        <div class="pt-av stable">김</div>
+        <div>
+          <div class="pt-nm">김영희</div>
+          <div class="pt-rm">208호 · 안정</div>
+        </div>
+      </div>
+      <div class="pt-item">
+        <div class="pt-av stable">정</div>
+        <div>
+          <div class="pt-nm">정순애</div>
+          <div class="pt-rm">214호 · 안정</div>
+        </div>
+      </div>
+      <div class="pt-item">
+        <div class="pt-av stable">윤</div>
+        <div>
+          <div class="pt-nm">윤기철</div>
+          <div class="pt-rm">216호 · 안정</div>
+        </div>
+      </div>
+      <div style="padding:10px 14px;font-size:11px;color:var(--ink4);text-align:center;">
+        + 19명 더보기
+      </div>
+    </div>
+
+    <!-- 인계 폼 -->
+    <div>
+      <div class="form-body">
+
+        <!-- 섹션 A — 기본 상태 -->
+        <div class="form-section">
+          <div class="fs-header">
+            <div class="fs-label-box">A</div>
+            <div class="fs-title">환자 기본 상태</div>
+            <div class="fs-sub">최대원 · 212호 · 71세 · 남</div>
+          </div>
+
+          <div class="field-row three">
+            <div class="field">
+              <label class="field-label">현재 상태</label>
+              <div class="toggle-group">
+                <button class="tgl-btn active green">안정</button>
+                <button class="tgl-btn">주의</button>
+                <button class="tgl-btn">위험</button>
+              </div>
+            </div>
+            <div class="field">
+              <label class="field-label">의식 상태</label>
+              <select class="field-select">
+                <option>명료 (Alert)</option>
+                <option>기면 (Drowsy)</option>
+                <option>혼미 (Stupor)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="field-label">낙상 위험도</label>
+              <div class="toggle-group">
+                <button class="tgl-btn">낮음</button>
+                <button class="tgl-btn active yellow">중간</button>
+                <button class="tgl-btn">높음</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="field-row three">
+            <div class="field">
+              <label class="field-label">혈압 (수축/이완)</label>
+              <input class="field-input filled" type="text" value="132 / 82 mmHg">
+            </div>
+            <div class="field">
+              <label class="field-label">체온</label>
+              <input class="field-input filled" type="text" value="36.7 °C">
+            </div>
+            <div class="field">
+              <label class="field-label">맥박</label>
+              <input class="field-input filled" type="text" value="76 bpm">
+            </div>
+          </div>
+        </div>
+
+        <!-- 섹션 B — 특이사항 -->
+        <div class="form-section">
+          <div class="fs-header">
+            <div class="fs-label-box">B</div>
+            <div class="fs-title">특이사항 및 처치 내용</div>
+          </div>
+
+          <div class="field-row full" style="margin-bottom:10px;">
+            <div class="field">
+              <label class="field-label">주요 특이사항 태그</label>
+              <div class="tag-wrap">
+                <span class="tag yellow">식사 불량 <span class="tag-x">×</span></span>
+                <span class="tag blue">영양사 협진 <span class="tag-x">×</span></span>
+                <span style="font-size:12px;color:var(--ink4);cursor:pointer;">+ 추가</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="field-row full">
+            <div class="field">
+              <label class="field-label">오늘 처치 내용</label>
+              <textarea class="field-textarea" rows="3" placeholder="처치 내용을 입력하세요">점심 식사 섭취율 30% 미만. 영양사 협진 요청하여 고단백 보충식 처방 받음. 보호자에게 연락 완료.</textarea>
+            </div>
+          </div>
+
+          <!-- AI 제안 -->
+          <div class="ai-box">
+            <span class="ai-badge">AI 제안</span>
+            <div class="ai-text">
+              최대원 환자는 <strong>최근 3일 연속 식사 섭취율 50% 미만</strong>입니다. 오후 근무 시 수분 섭취량 추가 모니터링 및 저녁 식사 전 구강 상태 확인을 권장합니다.
+            </div>
+          </div>
+        </div>
+
+        <!-- 섹션 C — 다음 근무 인계 -->
+        <div class="form-section">
+          <div class="fs-header">
+            <div class="fs-label-box">C</div>
+            <div class="fs-title">다음 근무 인계 사항</div>
+          </div>
+
+          <div class="field-row full">
+            <div class="field">
+              <label class="field-label">인계 사항</label>
+              <textarea class="field-textarea" rows="3" placeholder="다음 근무 간호사에게 전달할 내용을 입력하세요">저녁 식사 섭취율 반드시 기록 요망. 보호자(딸, 010-XXXX-XXXX)가 18:00 방문 예정. 영양사 처방 보충식 저녁부터 시작.</textarea>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label class="field-label">우선 확인 시간</label>
+              <input class="field-input" type="text" placeholder="예: 18:00 저녁 식사 시">
+            </div>
+            <div class="field">
+              <label class="field-label">담당 인계자</label>
+              <select class="field-select">
+                <option>박간호 (오후 1교대)</option>
+                <option>이간호 (오후 2교대)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 하단 액션 -->
+      <div class="form-footer">
+        <div class="footer-left">
+          <button class="ai-gen-btn">
+            <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            AI 초안 생성
+          </button>
+          <button class="save-draft">임시 저장</button>
+        </div>
+        <div class="footer-right">
+          <button class="btn-secondary">이전 환자</button>
+          <button class="submit-btn">저장 후 다음 환자</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

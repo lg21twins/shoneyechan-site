@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="ko" data-role="medical" data-platform="mobile">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#A51B16">
+  <title>하루안부 · 의료진 · SOS</title>
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css">
+
+  <script src="../07_디자인/_app-theme.js"></script>
+  <link rel="stylesheet" href="./_shared.css?v=20260525p">
+  <!-- 의료진 모바일 ↔ 요양보호사 디자인 시스템 통합 (2026-05-21) -->
+  <link rel="stylesheet" href="../v11_요양보호사앱/caregiver.css">
+  <script src="../07_디자인/_iconify-icon.min.js"></script>
+  <style>
+    /* :root 별칭은 _shared.css 에서 정의 */
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+    html,body{height:100%;font-family:var(--font-family-base);overflow:hidden;letter-spacing:-.2px;}
+    body{
+      color:var(--palette-white);
+      background:var(--color-danger);
+    }
+
+    .app{
+      max-width:430px;margin:0 auto;min-height:100vh;
+      display:flex;flex-direction:column;
+      padding:calc(var(--safe-t) + 8px) 20px calc(var(--safe-b) + 16px);
+      position:relative;z-index:1;
+    }
+
+    /* ===== HEADER ===== */
+    .top{
+      display:flex;align-items:center;justify-content:space-between;
+      margin-bottom:18px;
+    }
+    .close-btn{
+      width:48px;height:48px;border-radius:50%;
+      background:rgba(255,255,255,.15);border:0;color:var(--palette-white);cursor:pointer;
+      display:inline-flex;align-items:center;justify-content:center;
+      backdrop-filter:blur(8px);
+    }
+    .close-btn iconify-icon{font-size:22px;}
+    .top-title{
+      font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;
+      background:rgba(255,255,255,.18);padding:6px 12px;border-radius:999px;
+      display:inline-flex;align-items:center;gap:6px;
+    }
+    .top-title iconify-icon{font-size:14px;}
+    .blink{animation:blink 1s infinite;}
+    @keyframes blink{50%{opacity:.4;}}
+
+    /* ===== ALERT BIG ===== */
+    .alert-big{
+      text-align:center;margin:8px 0 18px;
+    }
+    .alert-icon-wrap{
+      width:104px;height:104px;border-radius:50%;
+      background:rgba(255,255,255,.18);
+      display:inline-flex;align-items:center;justify-content:center;
+      position:relative;margin-bottom:14px;
+    }
+    .alert-icon-wrap::before, .alert-icon-wrap::after{
+      content:"";position:absolute;inset:0;border-radius:50%;
+      box-shadow:0 0 0 2px rgba(255,255,255,.55);
+      animation:ring 2.4s cubic-bezier(.2,.7,.3,1) infinite;
+    }
+    .alert-icon-wrap::after{animation-delay:1.2s;}
+    @keyframes ring{
+      0%{transform:scale(1);opacity:.9;}
+      100%{transform:scale(1.6);opacity:0;}
+    }
+    .alert-icon-wrap iconify-icon{font-size:56px;color:var(--palette-white);position:relative;z-index:1;}
+    .alert-title{
+      font-size:36px;font-weight:800;letter-spacing:-1.2px;line-height:1.1;
+      text-shadow:0 2px 12px rgba(0,0,0,.18);
+    }
+    .alert-sub{
+      font-size:15px;font-weight:600;color:rgba(255,255,255,.92);margin-top:8px;
+    }
+
+    /* ===== INFO CARD ===== */
+    .info{
+      background:rgba(255,255,255,.95);color:var(--color-text-primary);
+      border-radius:20px;padding:18px;margin-bottom:14px;
+      box-shadow:0 12px 40px rgba(0,0,0,.25);
+    }
+    .info-row{
+      display:flex;align-items:center;gap:12px;
+      padding:10px 0;border-bottom:1px solid rgba(0,0,0,.06);
+    }
+    .info-row:last-child{border-bottom:0;padding-bottom:0;}
+    .info-row:first-child{padding-top:0;}
+    .info-ico{
+      width:36px;height:36px;border-radius:10px;flex-shrink:0;
+      background:var(--danger-soft);color:var(--danger);
+      display:inline-flex;align-items:center;justify-content:center;
+    }
+    .info-ico iconify-icon{font-size:18px;}
+    .info-meta{flex:1;min-width:0;line-height:1.25;}
+    .info-label{font-size:10px;font-weight:800;color:var(--color-text-tertiary);letter-spacing:.4px;text-transform:uppercase;}
+    .info-val{font-size:15px;font-weight:800;color:var(--color-text-primary);margin-top:2px;}
+    .info-val small{font-size:12px;font-weight:600;color:var(--color-text-secondary);margin-left:4px;}
+    .info-val.danger{color:var(--danger);}
+
+    /* ===== COUNTDOWN ===== */
+    .countdown-bar{
+      background:rgba(0,0,0,.28);border-radius:16px;padding:14px 16px;
+      display:flex;align-items:center;gap:12px;margin-bottom:14px;
+      backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+    }
+    .countdown-bar > iconify-icon{font-size:22px;color:var(--palette-white);flex-shrink:0;opacity:.9;}
+    .countdown-text{flex:1;font-size:13px;font-weight:600;line-height:1.35;color:rgba(255,255,255,.92);}
+    .countdown-text b{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--palette-white);margin-right:2px;}
+
+    /* ===== BIG ACTIONS ===== */
+    .actions{
+      margin-top:auto;display:flex;flex-direction:column;gap:10px;
+    }
+    .action-primary{
+      background:var(--palette-white);color:var(--palette-red-700);
+      border:0;border-radius:18px;padding:20px;
+      font-size:18px;font-weight:800;letter-spacing:-.3px;
+      cursor:pointer;font-family:inherit;
+      display:flex;align-items:center;justify-content:center;gap:10px;
+      box-shadow:0 10px 32px rgba(0,0,0,.28);
+      transition:transform .1s;
+    }
+    .action-primary:active{transform:scale(.98);}
+    .action-primary iconify-icon{font-size:24px;}
+
+    .action-row{
+      display:grid;grid-template-columns:1fr 1fr;gap:8px;
+    }
+    .action-secondary{
+      background:rgba(255,255,255,.18);color:var(--palette-white);
+      border:0;border-radius:16px;padding:16px 12px;
+      font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      letter-spacing:-.2px;
+      backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+      text-decoration:none;
+      transition:transform .1s, background .15s;
+    }
+    .action-secondary:active{transform:scale(.97);background:rgba(255,255,255,.26);}
+    .action-secondary iconify-icon{font-size:20px;}
+
+    .toast{
+      position:fixed;left:50%;bottom:calc(var(--safe-b) + 110px);
+      transform:translateX(-50%) translateY(20px);
+      background:rgba(0,0,0,.85);color:var(--palette-white);font-size:13px;font-weight:600;
+      padding:10px 18px;border-radius:999px;
+      opacity:0;transition:.25s;pointer-events:none;z-index:300;white-space:nowrap;
+    }
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+    /* ===== COUNTDOWN PAUSE BUTTON ===== */
+    .cd-pause{
+      width:40px;height:40px;border-radius:50%;flex-shrink:0;
+      background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);
+      color:var(--palette-white);cursor:pointer;font-family:inherit;
+      display:inline-flex;align-items:center;justify-content:center;
+    }
+    .cd-pause iconify-icon{font-size:18px;}
+
+    /* ===== CONFIRMATION SHEET ===== */
+    .conf-overlay{
+      position:fixed;inset:0;background:rgba(0,0,0,.55);
+      backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+      display:none;align-items:flex-end;justify-content:center;z-index:400;
+    }
+    .conf-overlay.show{display:flex;}
+    .conf-sheet{
+      background:var(--palette-white);color:var(--color-text-primary);
+      width:100%;max-width:430px;
+      border-radius:24px 24px 0 0;
+      padding:14px 20px calc(24px + env(safe-area-inset-bottom,0px));
+      box-shadow:0 -8px 28px rgba(0,0,0,.25);
+      animation:sheetUp .25s ease-out;
+    }
+    @keyframes sheetUp{from{transform:translateY(20px);opacity:.6;}to{transform:translateY(0);opacity:1;}}
+    .conf-handle{width:40px;height:4px;background:rgba(0,0,0,.15);border-radius:2px;margin:0 auto 14px;}
+    .conf-head{display:flex;gap:14px;align-items:flex-start;margin-bottom:18px;}
+    .conf-icon-warn{
+      width:44px;height:44px;border-radius:12px;flex-shrink:0;
+      background:var(--color-danger-soft);color:var(--color-danger);
+      display:inline-flex;align-items:center;justify-content:center;font-size:24px;
+    }
+    .conf-eyebrow{font-size:11px;font-weight:700;letter-spacing:.4px;color:var(--color-danger);text-transform:uppercase;}
+    .conf-ttl{font-size:18px;font-weight:700;color:var(--color-text-primary);letter-spacing:-.4px;line-height:1.3;margin-top:4px;}
+    .conf-sub{font-size:13px;font-weight:500;color:var(--color-text-secondary);line-height:1.5;margin-top:6px;}
+    .conf-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px;}
+    .conf-opt{
+      display:flex;align-items:center;gap:14px;
+      padding:14px 16px;background:var(--palette-gray-50);
+      border:1px solid var(--palette-gray-200);
+      border-radius:14px;cursor:pointer;font-family:inherit;text-align:left;width:100%;
+      color:var(--color-text-primary);
+      transition:transform .12s, background .12s;
+    }
+    .conf-opt:active{transform:scale(.99);background:var(--palette-gray-100);}
+    .conf-opt iconify-icon{font-size:22px;color:var(--color-text-secondary);flex-shrink:0;}
+    .conf-opt-ttl{font-size:15px;font-weight:700;color:var(--color-text-primary);}
+    .conf-opt-sub{font-size:12px;font-weight:500;color:var(--color-text-secondary);margin-top:2px;}
+    .conf-opt-warn iconify-icon{color:var(--palette-amber-700);}
+    .conf-summary{
+      background:var(--palette-gray-50);border-radius:14px;padding:14px 16px;margin-bottom:14px;
+      display:flex;flex-direction:column;gap:8px;
+    }
+    .conf-summary>div{display:flex;justify-content:space-between;align-items:center;font-size:13px;gap:12px;}
+    .conf-summary span{color:var(--color-text-secondary);font-weight:500;flex-shrink:0;}
+    .conf-summary b{color:var(--color-text-primary);font-weight:700;text-align:right;}
+    .conf-summary b.conf-danger{color:var(--color-danger);}
+    .conf-action-danger{
+      width:100%;padding:18px;border:0;border-radius:16px;
+      background:var(--color-danger);color:var(--palette-white);
+      font-size:16px;font-weight:800;font-family:inherit;
+      display:inline-flex;align-items:center;justify-content:center;gap:10px;
+      cursor:pointer;
+      box-shadow:0 8px 24px rgba(var(--color-danger-rgb), .35);
+      transition:transform .1s;
+    }
+    .conf-action-danger:active{transform:scale(.98);}
+    .conf-action-danger iconify-icon{font-size:22px;}
+    .conf-cancel{
+      width:100%;margin-top:10px;padding:14px;
+      background:transparent;border:0;cursor:pointer;font-family:inherit;
+      font-size:14px;font-weight:700;color:var(--color-text-secondary);
+    }
+
+    /* Inline 대체 */
+    .w-48     { width: 48px; }
+    .no-deco  { text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <!-- ============ TOP ============ -->
+    <div class="top">
+      <button class="close-btn" id="closeBtn" aria-label="SOS 화면 닫기 — 사유 선택">
+        <iconify-icon icon="fluent:dismiss-24-filled"></iconify-icon>
+      </button>
+      <span class="top-title">
+        <iconify-icon icon="fluent:warning-24-filled" class="blink"></iconify-icon>SOS 수신 · LIVE
+      </span>
+      <div class="w-48"></div>
+    </div>
+
+    <!-- ============ ALERT BIG ============ -->
+    <div class="alert-big">
+      <div class="alert-icon-wrap">
+        <iconify-icon icon="fluent:warning-24-filled"></iconify-icon>
+      </div>
+      <div class="alert-title">긴급 호출</div>
+      <div class="alert-sub">박미선 요양보호사가 SOS를 발신했어요</div>
+    </div>
+
+    <!-- ============ INFO CARD ============ -->
+    <div class="info">
+      <div class="info-row">
+        <span class="info-ico"><iconify-icon icon="fluent:person-warning-24-filled"></iconify-icon></span>
+        <div class="info-meta">
+          <div class="info-label">환자</div>
+          <div class="info-val">최명자 어르신 <small>82F · 고혈압·당뇨</small></div>
+        </div>
+      </div>
+      <div class="info-row">
+        <span class="info-ico"><iconify-icon icon="fluent:location-24-filled"></iconify-icon></span>
+        <div class="info-meta">
+          <div class="info-label">위치</div>
+          <div class="info-val">2층 B-2호 <small>스테이션에서 도보 40초</small></div>
+        </div>
+      </div>
+      <div class="info-row">
+        <span class="info-ico"><iconify-icon icon="fluent:heart-pulse-warning-24-filled"></iconify-icon></span>
+        <div class="info-meta">
+          <div class="info-label">상황</div>
+          <div class="info-val danger">의식 저하 · 호흡 약함</div>
+        </div>
+      </div>
+      <div class="info-row">
+        <span class="info-ico"><iconify-icon icon="fluent:clock-24-filled"></iconify-icon></span>
+        <div class="info-meta">
+          <div class="info-label">발신 시각</div>
+          <div class="info-val">14:08:32 <small>12초 전</small></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ COUNTDOWN ============ -->
+    <div class="countdown-bar">
+      <iconify-icon icon="fluent:timer-24-filled"></iconify-icon>
+      <div class="countdown-text">
+        <span id="cdText"><b id="cd">15</b>초 후 자동 통화 · 보호자에게도 자동 알림</span>
+      </div>
+      <button class="cd-pause" id="cdPause" aria-label="자동 연결 일시정지">
+        <iconify-icon icon="fluent:pause-24-filled"></iconify-icon>
+      </button>
+    </div>
+
+    <!-- ============ ACTIONS ============ -->
+    <div class="actions">
+      <button class="action-primary" onclick="toast('박미선 요양보호사와 음성 통화 연결 중');">
+        <iconify-icon icon="fluent:call-24-filled"></iconify-icon>지금 응답 · 음성 통화
+      </button>
+      <div class="action-row">
+        <button class="action-secondary" onclick="toast('현장 이동 중 알림 전송');">
+          <iconify-icon icon="fluent:run-24-filled"></iconify-icon>이동 중
+        </button>
+        <button class="action-secondary" onclick="toast('이상훈 의사에게 동시 호출');">
+          <iconify-icon icon="fluent:doctor-24-filled"></iconify-icon>의사 호출
+        </button>
+      </div>
+      <div class="action-row">
+        <button class="action-secondary" id="callEmergencyBtn">
+          <iconify-icon icon="fluent:vehicle-truck-bag-24-filled"></iconify-icon>119 연결
+        </button>
+        <a href="d03-inbox.html?thread=c1" class="action-secondary no-deco">
+          <iconify-icon icon="fluent:chat-24-filled"></iconify-icon>채팅 열기
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============ CLOSE / DISMISS SHEET ============ -->
+  <div class="conf-overlay" id="closeOverlay" onclick="if(event.target===this)closeConfirm('close');">
+    <div class="conf-sheet" role="dialog" aria-labelledby="closeSheetTitle">
+      <div class="conf-handle"></div>
+      <div class="conf-head">
+        <span class="conf-icon-warn"><iconify-icon icon="fluent:warning-24-filled"></iconify-icon></span>
+        <div>
+          <div class="conf-eyebrow">SOS 화면 닫기</div>
+          <div class="conf-ttl" id="closeSheetTitle">상황 사유를 선택해 주세요</div>
+          <div class="conf-sub">선택한 사유와 시각이 SOS 로그에 남습니다. 응답 자체는 취소되지 않습니다.</div>
+        </div>
+      </div>
+      <div class="conf-options">
+        <button class="conf-opt" onclick="confirmClose('responding')">
+          <iconify-icon icon="fluent:run-24-filled"></iconify-icon>
+          <div><div class="conf-opt-ttl">현장으로 이동 중</div><div class="conf-opt-sub">알림 유지 · 화면만 닫음</div></div>
+        </button>
+        <button class="conf-opt" onclick="confirmClose('resolved')">
+          <iconify-icon icon="fluent:checkmark-circle-24-filled"></iconify-icon>
+          <div><div class="conf-opt-ttl">상황 종료</div><div class="conf-opt-sub">대응 완료 · SOS 종료</div></div>
+        </button>
+        <button class="conf-opt conf-opt-warn" onclick="confirmClose('miscall')">
+          <iconify-icon icon="fluent:slash-forward-24-filled"></iconify-icon>
+          <div><div class="conf-opt-ttl">오등록</div><div class="conf-opt-sub">잘못 발신된 SOS · 무효 처리</div></div>
+        </button>
+      </div>
+      <button class="conf-cancel" onclick="closeConfirm('close')">취소 · 화면 유지</button>
+    </div>
+  </div>
+
+  <!-- ============ 119 CALL SHEET ============ -->
+  <div class="conf-overlay" id="callOverlay" onclick="if(event.target===this)closeConfirm('call');">
+    <div class="conf-sheet" role="dialog" aria-labelledby="callSheetTitle">
+      <div class="conf-handle"></div>
+      <div class="conf-head">
+        <span class="conf-icon-warn"><iconify-icon icon="fluent:vehicle-truck-bag-24-filled"></iconify-icon></span>
+        <div>
+          <div class="conf-eyebrow">119 응급실 연결</div>
+          <div class="conf-ttl" id="callSheetTitle">즉시 119에 전화를 거시겠어요?</div>
+          <div class="conf-sub">통화 시작 후 환자 정보가 자동으로 함께 전달됩니다.</div>
+        </div>
+      </div>
+      <div class="conf-summary">
+        <div><span>환자</span><b>최명자 어르신 · 82F</b></div>
+        <div><span>위치</span><b>2층 B-2호</b></div>
+        <div><span>상황</span><b class="conf-danger">의식 저하 · 호흡 약함</b></div>
+      </div>
+      <button class="conf-action-danger" onclick="confirmCall()">
+        <iconify-icon icon="fluent:call-24-filled"></iconify-icon>119에 전화 걸기
+      </button>
+      <button class="conf-cancel" onclick="closeConfirm('call')">취소</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script>
+    function toast(msg){
+      const el=document.getElementById('toast');
+      el.textContent=msg;el.classList.add('show');
+      clearTimeout(window.__t);window.__t=setTimeout(()=>el.classList.remove('show'),1800);
+    }
+
+    /* === 카운트다운 + 일시정지 + 도달 시 119 confirm === */
+    let cd = 15;
+    let cdUserPaused = false;
+    let cdSheetOpen = false;
+    let cdFired = false;
+    setInterval(()=>{
+      if(cdUserPaused || cdSheetOpen || cdFired) return;
+      cd = Math.max(0, cd-1);
+      document.getElementById('cd').textContent = cd;
+      if(cd===0){
+        cdFired = true;
+        openSheet('call');
+      }
+    }, 1000);
+
+    document.getElementById('cdPause').addEventListener('click', ()=>{
+      if(cdFired) return;
+      cdUserPaused = !cdUserPaused;
+      const ico = document.querySelector('#cdPause iconify-icon');
+      ico.setAttribute('icon', cdUserPaused ? 'fluent:play-24-filled' : 'fluent:pause-24-filled');
+      document.getElementById('cdText').innerHTML = cdUserPaused
+        ? '<b id="cd">'+cd+'</b>초 · 자동 통화 일시정지'
+        : '<b id="cd">'+cd+'</b>초 후 자동 통화 · 보호자에게도 자동 알림';
+      toast(cdUserPaused ? '자동 연결 일시정지' : '자동 연결 재개');
+    });
+
+    /* === Confirm sheets === */
+    document.getElementById('closeBtn').addEventListener('click', ()=> openSheet('close'));
+    document.getElementById('callEmergencyBtn').addEventListener('click', ()=> openSheet('call'));
+
+    function openSheet(kind){
+      cdSheetOpen = true; // 시트 열려 있는 동안 카운트다운 정지
+      const id = kind==='close' ? 'closeOverlay' : 'callOverlay';
+      document.getElementById(id).classList.add('show');
+    }
+    function closeConfirm(kind){
+      const id = kind==='close' ? 'closeOverlay' : 'callOverlay';
+      document.getElementById(id).classList.remove('show');
+      cdSheetOpen = false;
+    }
+    function confirmClose(reason){
+      const labels = {
+        responding:'현장 이동 중으로 기록 · 알림 유지',
+        resolved:'상황 종료 처리 · SOS 로그 저장',
+        miscall:'오등록 처리 · SOS 무효'
+      };
+      toast(labels[reason]);
+      setTimeout(()=>{ window.location.href = 'd01-home.html'; }, 700);
+    }
+    function confirmCall(){
+      document.getElementById('callOverlay').classList.remove('show');
+      toast('119 연결 중 · 환자 정보 자동 전달');
+      // 실제 환경에서는 tel: 링크 또는 네이티브 응급 호출
+    }
+  </script>
+</body>
+</html>

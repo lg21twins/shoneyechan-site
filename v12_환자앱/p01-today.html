@@ -1,0 +1,831 @@
+<!doctype html>
+<html lang="ko" data-role="patient" data-platform="mobile">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="var(--patient-canvas-warm)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>하루안부 · 오늘</title>
+
+  <link rel="icon" type="image/svg+xml" href="../07_디자인/logo/brand-system/01_심볼단독.svg">
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css">
+
+  <script src="../07_디자인/_app-theme.js"></script>
+  <link rel="stylesheet" href="patient.css">
+  <script src="../07_디자인/_iconify-icon.min.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      font-family: var(--font-family-base);
+      -webkit-font-smoothing: antialiased;
+      color: var(--color-text-primary);
+      background: var(--patient-canvas-warm);
+    }
+
+    .app {
+      position: relative; z-index: 1;
+      height: 100dvh;
+      max-width: none; margin: 0;
+      display: flex; flex-direction: column;
+      padding: 24px 28px 20px; gap: 16px;
+    }
+
+    /* 환자앱 우상단 설정 진입 — 탭바 외부, 작은 아이콘 (가족이 도와줄 때 진입) */
+    .p-settings-quick {
+      width: 56px; height: 56px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 6px 20px rgba(194, 98, 28, 0.1);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--color-text-secondary);
+      flex-shrink: 0;
+      transition: transform .12s, background .15s, color .15s;
+    }
+    .p-settings-quick:hover { background: rgba(var(--color-accent-rgb), 0.1); color: var(--color-text-primary); }
+    .p-settings-quick:active { transform: scale(0.96); }
+    .p-settings-quick iconify-icon { font-size: 22px; }
+
+    /* 헤더는 patient.css의 .p-header--nav 공통 스타일 사용 */
+    /* 시계·설정 버튼을 카드 내부 콘텐츠(28px 패딩)와 맞춰 들여쓰기 */
+    .p-header--nav > .clock { padding-left: 28px; }
+    .p-header--nav .p-settings-quick { margin-right: 28px; }
+
+    /* ── 메인 2열 (왼쪽 70% AI 말벗 / 오른쪽 30% 기능) ── */
+    .main {
+      flex: 1;
+      display: grid; grid-template-columns: 7fr 3fr;
+      gap: 16px; min-height: 0;
+    }
+
+    .glass {
+      background: rgba(255,255,255,0.82);
+      border-radius: 28px;
+      box-shadow: 0 6px 28px rgba(0,0,0,0.07);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    /* ================================================================
+       왼쪽 패널 — AI 말벗 (상황에 맞는 카드 하나 + 답장 + 음성)
+    ================================================================ */
+    .left {
+      min-height: 0;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+
+    .ai-panel {
+      flex: 1; min-height: 0;
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* AI 미니 헤더 — AI가 지금 상황 내레이션 */
+    .ai-mini-header {
+      display: flex; align-items: center; gap: 14px;
+      padding: 20px 28px 16px;
+      flex-shrink: 0;
+    }
+    .ai-mini-av {
+      width: 56px; height: 56px; border-radius: 18px;
+      background: var(--brand-orange-500);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 14px rgba(var(--color-accent-rgb), .32);
+      flex-shrink: 0;
+      padding: 9px;
+    }
+    .ai-mini-av img {
+      width: 100%; height: 100%;
+      display: block;
+      filter: brightness(0) invert(1);              /* 로고 → 흰색 */
+    }
+    .ai-mini-greet {
+      font-size: 24px; font-weight: 700; letter-spacing: -0.3px; line-height: 1.2;
+    }
+    .ai-mini-detail {
+      font-size: 19px; font-weight: 600; color: var(--patient-text-warm);
+      margin-top: 4px; letter-spacing: -0.2px;
+    }
+
+    /* 카드 슬롯 — 상황별 카드 하나만 뜸 (지금은 가족 메시지) */
+    .card-slot {
+      flex: 1; min-height: 0;
+      padding: 18px 24px 0; display: flex;
+    }
+
+    /* ── 가족 메시지 카드 — fn-schedule(오른쪽)과 같은 glass 통일 ── */
+    .msg-card {
+      flex: 1; min-height: 0;
+      display: flex; flex-direction: column; gap: 14px;
+      background: rgba(255,255,255,.92);
+      border-radius: 24px;
+      padding: 22px 22px 20px;
+      box-shadow: 0 8px 28px rgba(0,0,0,.07);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      overflow: hidden;
+    }
+    .msg-card-head {
+      display: flex; align-items: center; gap: 14px; flex-shrink: 0;
+    }
+    .msg-av {
+      width: 58px; height: 58px; border-radius: 50%;
+      background: var(--brand-orange-600);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; font-weight: 700; color: white;
+      position: relative; flex-shrink: 0;
+      box-shadow: 0 4px 14px rgba(var(--color-accent-rgb), .3);
+      overflow: hidden;
+    }
+    .msg-av img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%; border-radius: 50%;
+      object-fit: cover; display: block;
+    }
+    .msg-av-dot {
+      position: absolute; right: 0; bottom: 0; z-index: 1;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: var(--brand-green-500); border: 3px solid white;
+    }
+    .msg-from { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+    .msg-time {
+      font-size: 18px; font-weight: 600; color: var(--patient-text-warm);
+      margin-top: 3px; letter-spacing: -0.2px;
+    }
+
+    .msg-photos {
+      flex: 1; min-height: 0;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    }
+    .msg-photos a {
+      display: block; width: 100%; height: 100%;
+      border-radius: 18px; overflow: hidden;
+      transition: transform .15s;
+      position: relative;
+    }
+    .msg-photos a:active { transform: scale(.98); }
+    .photo-thumb {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      border-radius: 18px;
+      display: block;
+      background: var(--patient-amber-soft);
+    }
+    /* 사진이 탭 가능함을 알리는 마이크로카피 — 노인은 인지가 안 되므로 명시 */
+    .photo-hint {
+      position: absolute; left: 10px; bottom: 10px; z-index: 1;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 12px; border-radius: 999px;
+      background: rgba(0, 0, 0, 0.55);
+      color: white;
+      font-size: 15px; font-weight: 700; letter-spacing: -0.2px;
+      backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+      pointer-events: none;
+    }
+    .photo-hint iconify-icon { font-size: 16px; }
+
+    .msg-text {
+      font-size: 26px; font-weight: 600; line-height: 1.45;
+      color: var(--color-text-primary);
+      flex-shrink: 0;
+      padding: 18px 22px; border-radius: 18px;
+      background: rgba(var(--color-accent-rgb), .10);
+      letter-spacing: -0.3px;
+    }
+
+    /* 빠른 답장 칩 — 카드 맥락에 맞게 (ai-panel 내부 하단) */
+    .quick-replies {
+      padding: 14px 24px 20px; display: flex; flex-wrap: wrap; gap: 10px; flex-shrink: 0;
+    }
+    .quick-chip {
+      padding: 16px 22px; border-radius: 999px;
+      background: rgba(255,255,255,.92);
+      font-size: 19px; font-weight: 700; cursor: pointer;
+      color: var(--color-text-primary);
+      transition: all .15s; letter-spacing: -0.2px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+    .quick-chip:hover { background: var(--brand-orange-100); color: var(--brand-orange-700); }
+    .quick-chip:active { transform: scale(.96); }
+
+    /* 음성 버튼 — help-btn과 자매, ai-panel 바깥 독립 버튼 */
+    .voice-btn {
+      flex-shrink: 0;
+      height: 88px; border-radius: 22px;
+      border: 0; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 14px;
+      font-size: 26px; font-weight: 700; letter-spacing: -0.3px;
+      background: var(--brand-orange-500);
+      color: white;
+      box-shadow: 0 10px 32px rgba(var(--color-accent-rgb), .38);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .voice-btn:active { transform: scale(.97); box-shadow: 0 5px 16px rgba(var(--color-accent-rgb), .3); }
+
+    /* ================================================================
+       오른쪽 패널 — 가족 전화 + 측정/약 + 일정 + 도움요청
+    ================================================================ */
+    .right { display: flex; flex-direction: column; gap: 16px; min-height: 0; }
+
+    /* ── A. 가족 3명 빠른 전화 ── */
+    .fam-quick {
+      padding: 12px 14px 14px;
+      flex-shrink: 0;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .fam-quick-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 2px 4px 0;
+    }
+    .fam-quick-title {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 20px; font-weight: 700; letter-spacing: -0.3px;
+      color: var(--color-text-primary);
+    }
+    .fam-quick-title iconify-icon { color: var(--brand-orange-500); }
+    .fam-quick-more {
+      display: inline-flex; align-items: center; gap: 2px;
+      font-size: 16px; font-weight: 700; letter-spacing: -0.2px;
+      color: var(--brand-orange-700);
+      text-decoration: none;
+      padding: 4px 6px; border-radius: 10px;
+      transition: background .15s;
+    }
+    .fam-quick-more:hover { background: rgba(var(--color-accent-rgb), .1); }
+    /* Variant C — 가로 행 + 우측 아이콘 액션 */
+    .fam-quick-list {
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .fam-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.7);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      text-decoration: none;
+      color: var(--color-text-primary);
+      transition: background .12s, border-color .15s, box-shadow .15s;
+    }
+    .fam-row:hover {
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 4px 14px rgba(var(--color-accent-rgb), 0.12);
+    }
+    .fam-row-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+    .fam-row-name-line {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 20px; font-weight: 700; letter-spacing: -0.3px;
+      line-height: 1.1;
+    }
+    .fam-row-relation {
+      font-size: 15px; font-weight: 600;
+      color: var(--patient-text-warm);
+      padding: 3px 10px; border-radius: 999px;
+      background: rgba(0, 0, 0, 0.05);
+    }
+    .fam-row-status {
+      font-size: 15px; font-weight: 600;
+      color: var(--brand-green-600);
+      line-height: 1.2;
+    }
+    .fam-row--offline .fam-row-status { color: var(--patient-text-warm); }
+    .fam-row-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .fam-icon-btn {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: var(--brand-orange-50);
+      color: var(--brand-orange-600);
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform .1s, background .12s;
+    }
+    .fam-icon-btn:hover { background: var(--brand-orange-100); }
+    .fam-icon-btn:active { transform: scale(.92); }
+    .fam-icon-btn iconify-icon { font-size: 20px; }
+    .fam-icon-btn--primary {
+      background: var(--brand-orange-500);
+      color: white;
+      box-shadow: 0 4px 12px rgba(var(--color-accent-rgb), 0.32);
+    }
+    .fam-row--offline .fam-icon-btn--primary {
+      background: var(--palette-gray-200);
+      color: var(--color-text-secondary);
+      box-shadow: none;
+    }
+
+    .fam-row .fam-av { width: 52px; height: 52px; }
+    .fam-row .fam-av-dot { width: 14px; height: 14px; border-width: 2.5px; right: 1px; bottom: 1px; }
+
+    .fam-av {
+      width: 64px; height: 64px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; font-weight: 700; color: white;
+      position: relative; flex-shrink: 0;
+      box-shadow: 0 4px 14px rgba(0,0,0,.12);
+      overflow: hidden;
+    }
+    .fam-av img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%; border-radius: 50%;
+      object-fit: cover; display: block;
+    }
+    /* 가족 아바타 — 이미지 로딩 전 fallback 배경 (브랜드 warm 톤) */
+    .fam-av--orange { background: var(--brand-orange-600); }
+    .fam-av--green  { background: var(--patient-avatar-sage-2); }
+    .fam-av--blue   { background: var(--patient-avatar-dusty-2); }
+    .fam-av-dot {
+      position: absolute; right: 2px; bottom: 2px; z-index: 1;
+      width: 16px; height: 16px; border-radius: 50%;
+      border: 3px solid white; background: var(--patient-avatar-offline);
+    }
+    .fam-av-dot--on { background: var(--brand-green-500); }
+    .fam-name { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+    .fam-relation { font-size: 14px; font-weight: 600; color: var(--color-text-secondary); margin-top: -4px; }
+
+    /* ── D. "지금 할 일" 카드 — 약 복용 hero (오른쪽 칼럼 내 최우선) ── */
+    .now-action {
+      flex-shrink: 0;
+      border-radius: 24px;
+      padding: 18px 22px 18px;
+      background: white;
+      box-shadow: 0 10px 28px rgba(234,88,12,.16), 0 0 0 2px rgba(var(--color-accent-rgb), .32);
+      display: flex; flex-direction: column;
+      position: relative;
+    }
+    /* 약 시간이 임박했다는 시각적 신호 — 미세한 펄스 */
+    .now-action::before {
+      content: ""; position: absolute; inset: -2px;
+      border-radius: 26px; pointer-events: none;
+      box-shadow: 0 0 0 0 rgba(var(--color-accent-rgb), .28);
+      animation: now-pulse 2.4s ease-out infinite;
+    }
+    @keyframes now-pulse {
+      0% { box-shadow: 0 0 0 0 rgba(var(--color-accent-rgb), .32); }
+      70% { box-shadow: 0 0 0 14px rgba(var(--color-accent-rgb), 0); }
+      100% { box-shadow: 0 0 0 0 rgba(var(--color-accent-rgb), 0); }
+    }
+    .now-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 18px; font-weight: 700; letter-spacing: -0.2px;
+      color: var(--brand-orange-700);
+    }
+    .now-tag iconify-icon { color: var(--brand-orange-500); font-size: 22px; }
+    .now-title {
+      font-size: 32px; font-weight: 800; letter-spacing: -0.6px;
+      color: var(--color-text-primary); line-height: 1.05; margin-top: 6px;
+    }
+    .now-sub {
+      font-size: 19px; font-weight: 600; color: var(--patient-text-warm);
+      margin-top: 6px; letter-spacing: -0.2px; line-height: 1.35;
+    }
+    .now-confirm {
+      margin-top: 14px;
+      border: 0; cursor: pointer;
+      width: 100%; padding: 18px 18px;
+      border-radius: 16px;
+      background: var(--brand-orange-500);
+      color: white;
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+      font-size: 24px; font-weight: 800; letter-spacing: -0.3px;
+      box-shadow: 0 6px 20px rgba(var(--color-accent-rgb), .38);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .now-confirm:active { transform: scale(.97); box-shadow: 0 3px 10px rgba(var(--color-accent-rgb), .25); }
+    .now-confirm iconify-icon { flex-shrink: 0; font-size: 30px; }
+
+    /* 오늘 일정 — 타임라인 카드 (지금 전후 4개만 보이는 컴팩트 버전) */
+    .fn-schedule {
+      flex: 1; min-height: 0;
+      background: rgba(255,255,255,.88);
+      border-radius: 24px;
+      box-shadow: 0 8px 28px rgba(0,0,0,.08);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      display: flex; flex-direction: column;
+      padding: 18px 22px 16px;
+      text-decoration: none; color: var(--color-text-primary);
+      transition: transform .15s, box-shadow .15s;
+      overflow: hidden;
+    }
+    .fn-schedule:hover { box-shadow: 0 12px 36px rgba(0,0,0,.10); }
+    .fn-schedule:active { transform: scale(.99); }
+    .sch-header {
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; margin-bottom: 12px; flex-shrink: 0;
+    }
+    .sch-title { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+    .sch-date {
+      font-size: 17px; font-weight: 700;
+      padding: 5px 12px; border-radius: 999px;
+      background: rgba(var(--color-accent-rgb), .18); color: var(--brand-orange-700);
+    }
+    .sch-list {
+      display: flex; flex-direction: column; width: 100%; flex: 1; gap: 4px; min-height: 0;
+      overflow: hidden;
+    }
+    .sch-item {
+      display: grid; grid-template-columns: 60px 22px 1fr;
+      gap: 0 12px; align-items: flex-start; padding-bottom: 8px;
+    }
+    .sch-item:last-child { padding-bottom: 0; }
+    .sch-time {
+      font-size: 18px; font-weight: 700;
+      color: var(--patient-text-warm-soft); padding-top: 2px; text-align: right;
+      white-space: nowrap;
+    }
+    .sch-line { display: flex; flex-direction: column; align-items: center; }
+    .sch-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 7px; }
+    .sch-connector {
+      width: 2px; flex: 1; min-height: 8px;
+      background: rgba(0,0,0,.10); margin-top: 4px;
+    }
+    .sch-item:last-child .sch-connector { display: none; }
+    .sch-label { font-size: 20px; font-weight: 700; line-height: 1.25; color: var(--color-text-primary); }
+    .sch-sub { font-size: 17px; font-weight: 600; color: var(--patient-text-warm); margin-top: 3px; }
+
+    /* "자세히 보기" 힌트 — 카드 하단 */
+    .sch-footer {
+      width: 100%; margin-top: 8px; padding-top: 12px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      font-size: 18px; font-weight: 700; color: var(--brand-orange-700);
+      letter-spacing: -0.2px; flex-shrink: 0;
+    }
+
+    .sch-item.done .sch-time,
+    .sch-item.done .sch-label { color: var(--palette-gray-300); }
+    .sch-item.done .sch-dot { background: var(--palette-gray-200); }
+
+    .sch-item.current .sch-time { color: var(--brand-orange-600); font-weight: 700; }
+    .sch-item.current .sch-dot {
+      background: var(--brand-orange-500);
+      box-shadow: 0 0 0 5px rgba(var(--color-accent-rgb), .22);
+      width: 14px; height: 14px; margin-top: 6px;
+    }
+    .sch-item.current .sch-label { color: var(--brand-orange-700); font-weight: 700; font-size: 21px; }
+    .sch-item.current .sch-sub { color: var(--brand-orange-600); font-weight: 600; }
+
+    .sch-item.upcoming .sch-dot {
+      background: var(--palette-gray-300);
+      opacity: 0.6;
+    }
+
+    /* 도움 요청 — 왼쪽 눌러서 말하기와 형태 맞춤 (한 줄, 동일 높이) */
+    .help-btn {
+      flex-shrink: 0; height: 88px; border-radius: 22px;
+      border: 0; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 14px;
+      font-size: 26px; font-weight: 700; letter-spacing: -0.3px;
+      background: var(--color-danger); color: white;
+      box-shadow: 0 10px 32px rgba(var(--color-danger-rgb), .38);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .help-btn:active { transform: scale(.97); box-shadow: 0 5px 16px rgba(var(--color-danger-rgb), .3); }
+    .help-btn iconify-icon { flex-shrink: 0; }
+
+    /* ================================================================
+       먹었어요 확인 모달 — 의료 안전: 한 번의 탭 실수 방지
+    ================================================================ */
+    .confirm-overlay {
+      position: fixed; inset: 0; z-index: 9000;
+      background: rgba(0,0,0,.42);
+      display: none; align-items: center; justify-content: center;
+      padding: 24px;
+      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    }
+    .confirm-overlay.is-open { display: flex; animation: cf-fade .18s ease-out; }
+    @keyframes cf-fade { from { opacity: 0; } to { opacity: 1; } }
+    .confirm-dialog {
+      background: white; border-radius: 28px;
+      padding: 36px 36px 28px;
+      max-width: 520px; width: 100%;
+      box-shadow: 0 32px 64px rgba(0,0,0,.28);
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      animation: cf-rise .22s cubic-bezier(.2,.8,.2,1);
+    }
+    @keyframes cf-rise { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .confirm-icon {
+      width: 84px; height: 84px; border-radius: 50%;
+      background: rgba(var(--color-accent-rgb), .14);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--brand-orange-600);
+      margin-bottom: 8px;
+    }
+    .confirm-icon iconify-icon { font-size: 44px; }
+    .confirm-title {
+      font-size: 30px; font-weight: 800; letter-spacing: -0.5px;
+      color: var(--color-text-primary); text-align: center;
+      line-height: 1.2;
+    }
+    .confirm-sub {
+      font-size: 20px; font-weight: 600; color: var(--patient-text-warm);
+      text-align: center; line-height: 1.45;
+      margin-top: 4px; letter-spacing: -0.2px;
+    }
+    .confirm-actions {
+      display: flex; gap: 14px; width: 100%; margin-top: 22px;
+    }
+    .cf-btn {
+      flex: 1; border: 0; cursor: pointer;
+      padding: 22px 18px; border-radius: 18px;
+      font-size: 24px; font-weight: 800; letter-spacing: -0.3px;
+      transition: transform .15s, box-shadow .15s, background .15s;
+    }
+    .cf-btn:active { transform: scale(.97); }
+    .cf-btn--primary {
+      background: var(--brand-orange-500); color: white;
+      box-shadow: 0 8px 24px rgba(var(--color-accent-rgb), .42);
+    }
+    .cf-btn--ghost {
+      background: var(--patient-ghost-bg); color: var(--patient-text-warm);
+    }
+    .cf-btn--ghost:hover { background: var(--patient-ghost-hover); }
+
+    /* Inline 대체 */
+    .msg-card--clickable { cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <h1 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">오늘</h1>
+  <div class="app">
+
+    <header class="p-header p-header--nav">
+      <div class="clock">
+        <span class="clock-time">오후 2:30</span>
+        <span class="clock-date">4월 18일 토요일</span>
+      </div>
+      <nav class="top-nav" aria-label="주요 메뉴">
+        <a class="nav-tab nav-tab--active" href="p01-today.html" aria-current="page">
+          <iconify-icon icon="fluent:home-24-filled" width="22" aria-hidden="true"></iconify-icon>
+          홈
+        </a>
+        <a class="nav-tab" href="p02-med-alert.html">
+          <iconify-icon icon="fluent:clipboard-bullet-list-ltr-24-filled" width="22" aria-hidden="true"></iconify-icon>
+          할일
+        </a>
+        <a class="nav-tab" href="p03-call.html">
+          <iconify-icon icon="fluent:people-24-filled" width="22" aria-hidden="true"></iconify-icon>
+          가족
+        </a>
+        <a class="nav-tab" href="p08-help.html">
+          <iconify-icon icon="fluent:hand-wave-24-filled" width="22" aria-hidden="true"></iconify-icon>
+          도움
+        </a>
+      </nav>
+      <a href="p11-settings.html" class="p-settings-quick" aria-label="내 화면 설정 (글자 크기·고대비)">
+        <iconify-icon icon="fluent:settings-24-filled" width="20" aria-hidden="true"></iconify-icon>
+      </a>
+    </header>
+
+    <div class="main">
+
+      <!-- ── 왼쪽: AI 말벗 (상황 카드 + 답장 + 음성) ── -->
+      <div class="left">
+        <div class="ai-panel glass">
+
+          <!-- AI 미니 헤더: 하루안부 심볼 + 한마디 -->
+          <div class="ai-mini-header">
+            <div class="ai-mini-av" aria-label="하루안부">
+              <img src="../07_디자인/logo/brand-system/01_심볼단독.svg" alt="하루안부 로고">
+            </div>
+            <div>
+              <div class="ai-mini-greet">민지가 사진 보냈어요</div>
+              <div class="ai-mini-detail">방금 · 사진 2장이랑 문자 한 통</div>
+            </div>
+          </div>
+
+          <!-- 카드 슬롯: 지금 상황에 맞는 카드 하나 -->
+          <div class="card-slot">
+            <article class="msg-card msg-card--clickable" aria-label="딸 민지의 메시지" onclick="location.href='p07-message.html'">
+              <header class="msg-card-head">
+                <div class="msg-av">
+                  <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="딸 민지">
+                  <span class="msg-av-dot" aria-hidden="true"></span>
+                </div>
+                <div>
+                  <div class="msg-from">딸 민지</div>
+                  <div class="msg-time">방금 · 사진 2장 · 문자 1통</div>
+                </div>
+              </header>
+
+              <div class="msg-photos">
+                <a href="p06-photo.html" onclick="event.stopPropagation();" aria-label="사진 크게 보기">
+                  <img class="photo-thumb" src="https://picsum.photos/seed/minji-park-spring/520/520" alt="민지가 보낸 공원 사진">
+                  <span class="photo-hint" aria-hidden="true">
+                    <iconify-icon icon="fluent:zoom-in-24-filled"></iconify-icon>
+                    눌러서 크게
+                  </span>
+                </a>
+                <a href="p06-photo.html" onclick="event.stopPropagation();" aria-label="사진 크게 보기">
+                  <img class="photo-thumb" src="https://picsum.photos/seed/minji-sooji-smile/520/520" alt="민지가 보낸 손녀 사진">
+                </a>
+              </div>
+
+              <div class="msg-text">"엄마, 오늘 수지랑 공원 다녀왔어요. 날씨가 너무 좋아요!"</div>
+            </article>
+          </div>
+
+          <!-- 빠른 답장 — 답장 톤만으로 통일 (전화 칩은 오른쪽 빠른전화와 중복이라 제거) -->
+          <div class="quick-replies">
+            <button class="quick-chip" type="button" onclick="location.href='p07-message.html'">예쁘구나, 잘 다녀왔네</button>
+            <button class="quick-chip" type="button" onclick="location.href='p07-message.html'">고맙다고 전해줘</button>
+            <button class="quick-chip" type="button" onclick="location.href='p06-photo.html'">사진 더 크게</button>
+          </div>
+
+        </div>
+
+        <!-- 음성 입력 버튼 — ai-panel 바깥, help-btn과 자매 -->
+        <button class="voice-btn" type="button" aria-label="음성으로 말하기" onclick="location.href='p05-voice.html'">
+          <iconify-icon icon="fluent:mic-24-filled" width="36" aria-hidden="true"></iconify-icon>
+          눌러서 말하기
+        </button>
+      </div>
+
+      <!-- ── 오른쪽: 지금 할 일 → 오늘 일정 → 가족 전화 → 도움요청 ── -->
+      <div class="right">
+
+        <!-- D. 지금 할 일 카드 — 약 복용 + 먹었어요 확인 버튼 -->
+        <section class="now-action" aria-label="지금 약 드실 시간">
+          <div class="now-tag">
+            <iconify-icon icon="fluent:clock-alarm-24-filled" width="18" aria-hidden="true"></iconify-icon>
+            지금 할 일
+          </div>
+          <div class="now-title">약 복용</div>
+          <div class="now-sub">오후 2:30 · 혈압약 · 당뇨약 · 비타민D</div>
+          <button class="now-confirm" type="button" aria-label="약 복용 완료" onclick="openMedConfirm()">
+            <iconify-icon icon="fluent:checkmark-circle-24-filled" width="30" aria-hidden="true"></iconify-icon>
+            먹었어요
+          </button>
+        </section>
+
+        <!-- 오늘 일정 (지금 전후 4개만 — 전체는 P-02) -->
+        <a href="p02-med-alert.html" class="fn-schedule" aria-label="오늘 할 일 전체 보기">
+          <div class="sch-header">
+            <div class="sch-title">오늘 일정</div>
+            <div class="sch-date">4월 18일 토</div>
+          </div>
+          <!-- 노인 인지부하 ↓ — 현재 + 다음 3건만 (전체는 p02) -->
+          <div class="sch-list">
+
+            <div class="sch-item current">
+              <div class="sch-time">오후 2:30</div>
+              <div class="sch-line"><div class="sch-dot"></div><div class="sch-connector"></div></div>
+              <div>
+                <div class="sch-label">약 복용</div>
+                <div class="sch-sub">혈압약 · 당뇨약 · 비타민D</div>
+              </div>
+            </div>
+
+            <div class="sch-item upcoming">
+              <div class="sch-time">오후 4:00</div>
+              <div class="sch-line"><div class="sch-dot"></div><div class="sch-connector"></div></div>
+              <div>
+                <div class="sch-label">산책</div>
+                <div class="sch-sub">공원 30분</div>
+              </div>
+            </div>
+
+            <div class="sch-item upcoming">
+              <div class="sch-time">오후 5:30</div>
+              <div class="sch-line"><div class="sch-dot"></div><div class="sch-connector"></div></div>
+              <div>
+                <div class="sch-label">민지와 영상통화</div>
+                <div class="sch-sub">매주 토요일</div>
+              </div>
+            </div>
+
+            <div class="sch-item upcoming">
+              <div class="sch-time">오후 6:00</div>
+              <div class="sch-line"><div class="sch-dot"></div><div class="sch-connector"></div></div>
+              <div><div class="sch-label">저녁 식사</div></div>
+            </div>
+
+          </div>
+
+          <div class="sch-footer">
+            전체 일정 보기
+            <iconify-icon icon="fluent:chevron-right-24-filled" width="18" aria-hidden="true"></iconify-icon>
+          </div>
+        </a>
+
+        <!-- 가족 3명 빠른 전화 — 일정 다음, 도움 요청 위 -->
+        <section class="fam-quick glass" aria-label="가족에게 바로 전화">
+          <header class="fam-quick-head">
+            <div class="fam-quick-title">
+              <iconify-icon icon="fluent:people-24-filled" width="20" aria-hidden="true"></iconify-icon>
+              가족에게 전화
+            </div>
+            <a href="p03-call.html" class="fam-quick-more" aria-label="연결하기 화면 열기">
+              모두 보기
+              <iconify-icon icon="fluent:chevron-right-24-filled" width="16" aria-hidden="true"></iconify-icon>
+            </a>
+          </header>
+          <div class="fam-quick-list">
+            <a href="p03-call.html" class="fam-row" aria-label="딸 민지에게 바로 영상통화 — 지금 접속 중">
+              <div class="fam-av fam-av--orange">
+                <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="딸 민지">
+                <span class="fam-av-dot fam-av-dot--on" aria-hidden="true"></span>
+              </div>
+              <div class="fam-row-meta">
+                <div class="fam-row-name-line">민지 <span class="fam-row-relation">딸</span></div>
+                <div class="fam-row-status">지금 접속 중</div>
+              </div>
+              <div class="fam-row-actions">
+                <span class="fam-icon-btn fam-icon-btn--primary" aria-label="민지 영상통화">
+                  <iconify-icon icon="fluent:video-24-filled" aria-hidden="true"></iconify-icon>
+                </span>
+                <span class="fam-icon-btn" aria-label="민지 음성통화">
+                  <iconify-icon icon="fluent:call-24-filled" aria-hidden="true"></iconify-icon>
+                </span>
+              </div>
+            </a>
+
+            <a href="p03-call.html" class="fam-row" aria-label="손녀 서연에게 바로 영상통화 — 지금 접속 중">
+              <div class="fam-av fam-av--green">
+                <img src="https://randomuser.me/api/portraits/women/9.jpg" alt="손녀 서연">
+                <span class="fam-av-dot fam-av-dot--on" aria-hidden="true"></span>
+              </div>
+              <div class="fam-row-meta">
+                <div class="fam-row-name-line">서연 <span class="fam-row-relation">손녀</span></div>
+                <div class="fam-row-status">지금 접속 중</div>
+              </div>
+              <div class="fam-row-actions">
+                <span class="fam-icon-btn fam-icon-btn--primary" aria-label="서연 영상통화">
+                  <iconify-icon icon="fluent:video-24-filled" aria-hidden="true"></iconify-icon>
+                </span>
+                <span class="fam-icon-btn" aria-label="서연 메시지">
+                  <iconify-icon icon="fluent:chat-24-filled" aria-hidden="true"></iconify-icon>
+                </span>
+              </div>
+            </a>
+
+            <a href="p05-voice.html" class="fam-row fam-row--offline" aria-label="아들 태우에게 음성 메시지 남기기 — 자리 비움">
+              <div class="fam-av fam-av--blue">
+                <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="아들 태우">
+                <span class="fam-av-dot" aria-hidden="true"></span>
+              </div>
+              <div class="fam-row-meta">
+                <div class="fam-row-name-line">태우 <span class="fam-row-relation">아들</span></div>
+                <div class="fam-row-status">자리 비움</div>
+              </div>
+              <div class="fam-row-actions">
+                <span class="fam-icon-btn fam-icon-btn--primary" aria-label="태우 음성 메시지">
+                  <iconify-icon icon="fluent:mic-24-filled" aria-hidden="true"></iconify-icon>
+                </span>
+                <span class="fam-icon-btn" aria-label="태우 문자">
+                  <iconify-icon icon="fluent:chat-24-filled" aria-hidden="true"></iconify-icon>
+                </span>
+              </div>
+            </a>
+          </div>
+        </section>
+
+        <!-- 도움 요청 -->
+        <button class="help-btn" type="button" aria-label="도움이 필요해요, 누르면 가족에게 알림이 갑니다" onclick="location.href='p08-help.html'">
+          <iconify-icon icon="fluent:hand-wave-24-filled" width="36" aria-hidden="true"></iconify-icon>
+          도움이 필요해요
+        </button>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 약 복용 확인 모달 (의료 안전: 실수 탭 방지 2단계 확인) -->
+  <div class="confirm-overlay" id="medConfirm" role="dialog" aria-modal="true" aria-labelledby="medConfirmTitle">
+    <div class="confirm-dialog">
+      <div class="confirm-icon" aria-hidden="true">
+        <iconify-icon icon="fluent:pill-24-filled"></iconify-icon>
+      </div>
+      <div class="confirm-title" id="medConfirmTitle">약 드셨어요?</div>
+      <div class="confirm-sub">혈압약 · 당뇨약 · 비타민D<br>방금 모두 드신 게 맞으시면 "네" 눌러주세요.</div>
+      <div class="confirm-actions">
+        <button class="cf-btn cf-btn--ghost" type="button" onclick="closeMedConfirm()">아니요</button>
+        <button class="cf-btn cf-btn--primary" type="button" onclick="confirmMedTaken()">네, 먹었어요</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openMedConfirm() {
+      document.getElementById('medConfirm').classList.add('is-open');
+    }
+    function closeMedConfirm() {
+      document.getElementById('medConfirm').classList.remove('is-open');
+    }
+    function confirmMedTaken() {
+      location.href = 'p10-med-done.html';
+    }
+    // ESC로 닫기
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeMedConfirm();
+    });
+    // 배경 클릭으로 닫기
+    document.getElementById('medConfirm').addEventListener('click', (e) => {
+      if (e.target.id === 'medConfirm') closeMedConfirm();
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="ko" data-role="medical" data-platform="web">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>하루안부 · 의료진 대시보드</title>
+
+  <link rel="icon" type="image/svg+xml" href="../07_디자인/logo/brand-system/01_심볼단독.svg">
+  <link rel="apple-touch-icon" href="../07_디자인/logo/brand-system/01_심볼단독.svg">
+
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css">
+  <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.3.0/dist/iconify-icon.min.js"></script>
+
+  <style>
+    /* ============================================================
+       POC: 의료진 웹 대시보드
+       Source of Truth: ../07_디자인/tokens/tokens.css
+       화면 전용 스타일만 여기. 공용화되면 tokens.css Layer 3으로 올릴 것.
+       ============================================================ */
+
+    body {
+      background: var(--color-bg-canvas);
+      color: var(--color-text-primary);
+      min-height: 100dvh;
+      display: grid;
+      grid-template-columns: var(--size-sidebar-width) 1fr;
+      grid-template-rows: var(--size-topbar-height) 1fr;
+      grid-template-areas:
+        "sidebar topbar"
+        "sidebar main";
+    }
+
+    /* ------- 사이드바 --------------------------------------------- */
+    .sidebar {
+      grid-area: sidebar;
+      background: var(--color-bg-surface);
+      border-right: 1px solid var(--color-border-subtle);
+      padding: var(--space-inset-loose) var(--space-5);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-stack-loose);
+      position: sticky;
+      top: 0;
+      height: 100dvh;
+    }
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      font: var(--weight-bold) var(--text-headline) / 1 var(--font-family-base);
+      color: var(--color-text-primary);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .sidebar-brand-mark {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    .sidebar-brand-mark img { width: 100%; height: 100%; display: block; }
+    .sidebar-section-label {
+      font: var(--weight-semibold) var(--text-mini) / 1 var(--font-family-base);
+      color: var(--color-text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 0 var(--space-4);
+    }
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      height: var(--size-row-compact);
+      padding: 0 var(--space-4);
+      border-radius: var(--radius-button);
+      color: var(--color-text-secondary);
+      font: var(--weight-medium) var(--text-callout) / 1 var(--font-family-base);
+      text-decoration: none;
+    }
+    .sidebar-item:hover {
+      background: var(--color-bg-surface-muted);
+      color: var(--color-text-primary);
+    }
+    .sidebar-item.is-active {
+      background: var(--color-accent-soft);
+      color: var(--color-accent-strong);
+    }
+    .sidebar-item iconify-icon { font-size: var(--size-icon-md); }
+    .sidebar-footer {
+      margin-top: auto;
+      padding: var(--space-inset-default);
+      border-radius: var(--radius-card);
+      background: var(--color-bg-surface-muted);
+      font: var(--weight-regular) var(--text-caption) / 1.4 var(--font-family-base);
+      color: var(--color-text-secondary);
+    }
+    .sidebar-footer strong {
+      color: var(--color-text-primary);
+      font-weight: var(--weight-semibold);
+    }
+
+    /* ------- 상단바 ----------------------------------------------- */
+    .topbar {
+      grid-area: topbar;
+      background: var(--color-bg-surface);
+      border-bottom: 1px solid var(--color-border-subtle);
+      padding: 0 var(--space-page-margin);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: var(--z-sticky);
+    }
+    .topbar-title {
+      font: var(--weight-semibold) var(--text-headline) / 1 var(--font-family-base);
+      margin: 0;
+    }
+    .topbar-title small {
+      display: block;
+      font: var(--weight-regular) var(--text-caption) / 1 var(--font-family-base);
+      color: var(--color-text-secondary);
+      margin-top: 4px;
+    }
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    .topbar-icon-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-button);
+      display: grid;
+      place-items: center;
+      color: var(--color-text-secondary);
+      background: none;
+      border: 0;
+      cursor: pointer;
+      position: relative;
+    }
+    .topbar-icon-btn:hover {
+      background: var(--color-bg-surface-muted);
+      color: var(--color-text-primary);
+    }
+    .topbar-icon-btn .badge-dot {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 8px;
+      height: 8px;
+      background: var(--color-danger);
+      border-radius: var(--radius-full);
+    }
+    .topbar-avatar {
+      width: var(--size-avatar-md);
+      height: var(--size-avatar-md);
+      border-radius: var(--radius-full);
+      background: var(--color-accent-soft);
+      color: var(--color-accent-strong);
+      display: grid;
+      place-items: center;
+      font: var(--weight-semibold) var(--text-callout) / 1 var(--font-family-base);
+    }
+
+    /* ------- 메인 콘텐츠 ------------------------------------------ */
+    .main {
+      grid-area: main;
+      padding: var(--space-inset-loose) var(--space-page-margin);
+      overflow-y: auto;
+    }
+    .main-inner {
+      max-width: var(--size-content-max);
+      margin: 0 auto;
+      display: grid;
+      gap: var(--space-stack-loose);
+    }
+
+    /* ------- SOS 배너 --------------------------------------------- */
+    .sos-banner {
+      background: var(--sos-bg);
+      color: var(--sos-text);
+      padding: var(--space-inset-default) var(--space-inset-loose);
+      border-radius: var(--sos-radius);
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      box-shadow: var(--shadow-2);
+    }
+    .sos-banner iconify-icon { font-size: 28px; }
+    .sos-banner-content { flex: 1; }
+    .sos-banner-title {
+      font: var(--weight-bold) var(--text-body) / 1 var(--font-family-base);
+    }
+    .sos-banner-meta {
+      font: var(--weight-regular) var(--text-caption) / 1.4 var(--font-family-base);
+      opacity: 0.9;
+      margin-top: 4px;
+    }
+    .sos-banner .btn-on-critical {
+      background: rgba(255,255,255,0.18);
+      color: var(--color-text-on-dark);
+      border: 1px solid rgba(255,255,255,0.3);
+      height: 36px;
+      padding: 0 var(--space-5);
+      border-radius: var(--radius-button);
+      font: var(--weight-semibold) var(--text-callout) / 1 var(--font-family-base);
+      cursor: pointer;
+    }
+
+    /* ------- KPI 카드 그리드 --------------------------------------- */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-stack-default);
+    }
+    .kpi-card {
+      background: var(--card-bg);
+      border: var(--card-border);
+      border-radius: var(--card-radius);
+      padding: var(--card-padding);
+    }
+    .kpi-label {
+      font: var(--weight-medium) var(--text-caption) / 1 var(--font-family-base);
+      color: var(--color-text-secondary);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .kpi-label iconify-icon { font-size: 18px; color: var(--color-accent); }
+    .kpi-value {
+      font: var(--weight-bold) var(--text-display) / 1.1 var(--font-family-base);
+      color: var(--color-text-primary);
+      margin: var(--space-3) 0 0;
+    }
+    .kpi-value small {
+      font: var(--weight-medium) var(--text-caption) / 1 var(--font-family-base);
+      color: var(--color-text-secondary);
+      margin-left: 4px;
+    }
+    .kpi-trend {
+      margin-top: var(--space-3);
+      font: var(--weight-semibold) var(--text-caption) / 1 var(--font-family-base);
+      color: var(--color-success);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .kpi-trend.is-warning { color: var(--color-warning); }
+
+    /* ------- 2열 섹션 --------------------------------------------- */
+    .two-col {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: var(--space-stack-default);
+    }
+
+    /* ------- 카드 공통 --------------------------------------------- */
+    .card {
+      background: var(--card-bg);
+      border: var(--card-border);
+      border-radius: var(--card-radius);
+      padding: var(--card-padding);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-stack-default);
+    }
+    .card-title {
+      font: var(--weight-semibold) var(--text-headline) / 1 var(--font-family-base);
+      margin: 0;
+    }
+    .card-link {
+      font: var(--weight-medium) var(--text-callout) / 1 var(--font-family-base);
+      color: var(--color-accent);
+      text-decoration: none;
+    }
+
+    /* ------- 환자 리스트 (테이블 느낌) ----------------------------- */
+    .patient-list {
+      display: flex;
+      flex-direction: column;
+    }
+    .patient-row {
+      display: grid;
+      grid-template-columns: auto 1fr auto auto auto;
+      align-items: center;
+      gap: var(--space-4);
+      padding: var(--space-4) 0;
+      border-bottom: 1px solid var(--color-border-subtle);
+    }
+    .patient-row:last-child { border-bottom: 0; }
+    .patient-avatar {
+      width: var(--size-avatar-md);
+      height: var(--size-avatar-md);
+      border-radius: var(--radius-full);
+      background: var(--color-bg-surface-muted);
+      color: var(--color-text-secondary);
+      display: grid;
+      place-items: center;
+      font: var(--weight-semibold) var(--text-callout) / 1 var(--font-family-base);
+    }
+    .patient-main {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .patient-name {
+      font: var(--weight-semibold) var(--text-body) / 1 var(--font-family-base);
+    }
+    .patient-meta {
+      font: var(--weight-regular) var(--text-caption) / 1 var(--font-family-base);
+      color: var(--color-text-secondary);
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px var(--space-3);
+      border-radius: var(--radius-pill);
+      font: var(--weight-semibold) var(--text-caption) / 1 var(--font-family-base);
+    }
+    .chip-success { background: var(--color-success-soft); color: var(--color-success); }
+    .chip-warning { background: var(--color-warning-soft); color: var(--color-warning); }
+    .chip-danger  { background: var(--color-danger-soft);  color: var(--color-danger); }
+    .chip-info    { background: var(--color-accent-soft);  color: var(--color-accent-strong); }
+    .patient-time {
+      font: var(--weight-medium) var(--text-caption) / 1 var(--font-family-base);
+      color: var(--color-text-tertiary);
+    }
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-button);
+      display: grid;
+      place-items: center;
+      color: var(--color-text-secondary);
+      background: none;
+      border: 0;
+      cursor: pointer;
+    }
+    .icon-btn:hover {
+      background: var(--color-bg-surface-muted);
+      color: var(--color-text-primary);
+    }
+
+    /* ------- 오늘의 케어 진행 ------------------------------------- */
+    .care-progress {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-stack-default);
+    }
+    .progress-item {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font: var(--weight-medium) var(--text-callout) / 1 var(--font-family-base);
+    }
+    .progress-label span:last-child {
+      color: var(--color-text-secondary);
+      font-variant-numeric: tabular-nums;
+    }
+    .progress-bar {
+      height: 8px;
+      background: var(--color-bg-surface-muted);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--color-accent);
+      border-radius: var(--radius-pill);
+    }
+    .progress-bar-fill.is-success { background: var(--color-success); }
+    .progress-bar-fill.is-warning { background: var(--color-warning); }
+
+    /* ------- 반응형: 좁은 화면 ------------------------------------- */
+    @media (max-width: 1080px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .two-col { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 960px) {
+      body { grid-template-columns: 72px 1fr; }
+      .sidebar { padding: var(--space-inset-loose) var(--space-3); align-items: center; }
+      .sidebar-item span:not(.chip) { display: none; }
+      .sidebar-brand span:not(.sidebar-brand-mark) { display: none; }
+      .sidebar-section-label { display: none; }
+      .sidebar-footer { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 사이드바 -->
+  <aside class="sidebar">
+    <a href="#" class="sidebar-brand" aria-label="하루안부 홈">
+      <span class="sidebar-brand-mark">
+        <img src="../07_디자인/logo/brand-system/01_심볼단독.svg" alt="">
+      </span>
+      <span>하루안부</span>
+    </a>
+
+    <div class="sidebar-nav">
+      <div class="sidebar-section-label">워크스페이스</div>
+      <a class="sidebar-item is-active" href="#">
+        <iconify-icon icon="fluent:home-24-filled"></iconify-icon>
+        <span>대시보드</span>
+      </a>
+      <a class="sidebar-item" href="#">
+        <iconify-icon icon="fluent:people-24-filled"></iconify-icon>
+        <span>환자 목록</span>
+      </a>
+      <a class="sidebar-item" href="#">
+        <iconify-icon icon="fluent:clipboard-pulse-24-filled"></iconify-icon>
+        <span>케어 기록</span>
+      </a>
+      <a class="sidebar-item" href="#">
+        <iconify-icon icon="fluent:chat-24-filled"></iconify-icon>
+        <span>소통</span>
+      </a>
+      <a class="sidebar-item" href="#">
+        <iconify-icon icon="fluent:calendar-24-filled"></iconify-icon>
+        <span>일정</span>
+      </a>
+    </div>
+
+    <div class="sidebar-nav">
+      <div class="sidebar-section-label">관리</div>
+      <a class="sidebar-item" href="#">
+        <iconify-icon icon="fluent:book-24-filled"></iconify-icon>
+        <span>의료 백과</span>
+      </a>
+      <a class="sidebar-item" href="#">
+        <iconify-icon icon="fluent:settings-24-filled"></iconify-icon>
+        <span>설정</span>
+      </a>
+    </div>
+
+    <div class="sidebar-footer">
+      <strong>이은미 간호사</strong><br>
+      해든요양원 · 2층 A병동
+    </div>
+  </aside>
+
+  <!-- 상단바 -->
+  <header class="topbar">
+    <h1 class="topbar-title">
+      대시보드
+      <small>2026년 4월 18일 토요일 · 안녕하세요 이은미님</small>
+    </h1>
+    <div class="topbar-actions">
+      <button class="topbar-icon-btn" aria-label="알림">
+        <iconify-icon icon="fluent:alert-24-filled"></iconify-icon>
+        <span class="badge-dot"></span>
+      </button>
+      <button class="topbar-icon-btn" aria-label="검색">
+        <iconify-icon icon="fluent:search-24-filled"></iconify-icon>
+      </button>
+      <div class="topbar-avatar">이</div>
+    </div>
+  </header>
+
+  <!-- 메인 -->
+  <main class="main">
+    <div class="main-inner">
+
+      <!-- SOS 배너 -->
+      <div class="sos-banner">
+        <iconify-icon icon="fluent:warning-24-filled"></iconify-icon>
+        <div class="sos-banner-content">
+          <div class="sos-banner-title">박영자 어르신 · 긴급 호출</div>
+          <div class="sos-banner-meta">2층 A-3호실 · 2분 전 호출 · 보호자에게 자동 알림 완료</div>
+        </div>
+        <button class="btn-on-critical">지금 가기</button>
+      </div>
+
+      <!-- KPI -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label"><iconify-icon icon="fluent:people-24-filled"></iconify-icon> 배정 환자</div>
+          <div class="kpi-value">12 <small>명</small></div>
+          <div class="kpi-trend">오늘 +1명</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label"><iconify-icon icon="fluent:checkmark-circle-24-filled"></iconify-icon> 완료한 케어</div>
+          <div class="kpi-value">34 <small>/ 52</small></div>
+          <div class="kpi-trend">65% 진행</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label"><iconify-icon icon="fluent:pill-24-filled"></iconify-icon> 투약 미완료</div>
+          <div class="kpi-value">3 <small>건</small></div>
+          <div class="kpi-trend is-warning">점검 필요</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label"><iconify-icon icon="fluent:chat-24-filled"></iconify-icon> 보호자 메시지</div>
+          <div class="kpi-value">7 <small>건</small></div>
+          <div class="kpi-trend">응답 대기 2건</div>
+        </div>
+      </div>
+
+      <!-- 2열 레이아웃 -->
+      <div class="two-col">
+
+        <!-- 좌: 주의가 필요한 환자 -->
+        <section class="card">
+          <div class="card-header">
+            <h2 class="card-title">주의가 필요한 환자</h2>
+            <a class="card-link" href="#">전체 환자 →</a>
+          </div>
+          <div class="patient-list">
+            <div class="patient-row">
+              <div class="patient-avatar">박</div>
+              <div class="patient-main">
+                <div class="patient-name">박영자 · 82세</div>
+                <div class="patient-meta">2층 A-3호실 · 고혈압, 당뇨</div>
+              </div>
+              <span class="chip chip-danger">
+                <iconify-icon icon="fluent:warning-16-filled"></iconify-icon>
+                SOS
+              </span>
+              <span class="patient-time">2분 전</span>
+              <button class="icon-btn" aria-label="상세"><iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></button>
+            </div>
+
+            <div class="patient-row">
+              <div class="patient-avatar">김</div>
+              <div class="patient-main">
+                <div class="patient-name">김순희 · 78세</div>
+                <div class="patient-meta">2층 A-5호실 · 오전 투약 미완료</div>
+              </div>
+              <span class="chip chip-warning">
+                <iconify-icon icon="fluent:pill-16-filled"></iconify-icon>
+                투약 지연
+              </span>
+              <span class="patient-time">14분 지연</span>
+              <button class="icon-btn" aria-label="상세"><iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></button>
+            </div>
+
+            <div class="patient-row">
+              <div class="patient-avatar">이</div>
+              <div class="patient-main">
+                <div class="patient-name">이정숙 · 85세</div>
+                <div class="patient-meta">2층 A-7호실 · 식사량 40%</div>
+              </div>
+              <span class="chip chip-warning">
+                <iconify-icon icon="fluent:food-24-filled"></iconify-icon>
+                식사 저조
+              </span>
+              <span class="patient-time">12:30 점심</span>
+              <button class="icon-btn" aria-label="상세"><iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></button>
+            </div>
+
+            <div class="patient-row">
+              <div class="patient-avatar">최</div>
+              <div class="patient-main">
+                <div class="patient-name">최말순 · 80세</div>
+                <div class="patient-meta">2층 A-2호실 · 보호자 메시지 2건</div>
+              </div>
+              <span class="chip chip-info">
+                <iconify-icon icon="fluent:chat-16-filled"></iconify-icon>
+                응답 대기
+              </span>
+              <span class="patient-time">30분 전</span>
+              <button class="icon-btn" aria-label="상세"><iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></button>
+            </div>
+
+            <div class="patient-row">
+              <div class="patient-avatar">정</div>
+              <div class="patient-main">
+                <div class="patient-name">정금례 · 76세</div>
+                <div class="patient-meta">2층 A-4호실 · 낮잠 2시간 (평소 1시간)</div>
+              </div>
+              <span class="chip chip-success">
+                <iconify-icon icon="fluent:checkmark-16-filled"></iconify-icon>
+                정상
+              </span>
+              <span class="patient-time">관찰 중</span>
+              <button class="icon-btn" aria-label="상세"><iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 우: 오늘의 케어 진행도 -->
+        <section class="card">
+          <div class="card-header">
+            <h2 class="card-title">오늘의 케어</h2>
+          </div>
+          <div class="care-progress">
+            <div class="progress-item">
+              <div class="progress-label"><span>투약</span><span>10 / 12</span></div>
+              <div class="progress-bar"><div class="progress-bar-fill" style="width: 83%"></div></div>
+            </div>
+            <div class="progress-item">
+              <div class="progress-label"><span>식사</span><span>12 / 12</span></div>
+              <div class="progress-bar"><div class="progress-bar-fill is-success" style="width: 100%"></div></div>
+            </div>
+            <div class="progress-item">
+              <div class="progress-label"><span>위생</span><span>7 / 12</span></div>
+              <div class="progress-bar"><div class="progress-bar-fill is-warning" style="width: 58%"></div></div>
+            </div>
+            <div class="progress-item">
+              <div class="progress-label"><span>활동</span><span>5 / 12</span></div>
+              <div class="progress-bar"><div class="progress-bar-fill" style="width: 42%"></div></div>
+            </div>
+            <div class="progress-item">
+              <div class="progress-label"><span>바이탈</span><span>12 / 12</span></div>
+              <div class="progress-bar"><div class="progress-bar-fill is-success" style="width: 100%"></div></div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+    </div>
+  </main>
+
+</body>
+</html>

@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>의료진 · SOS 개선안 비교 (현행 + 5안)</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+  <style>
+    :root{
+      --red:#FF3B30; --red-deep:#A51B16; --red-soft:#FFE4E1;
+      --bg:#F4F6F9; --ink:#1C1C1E; --t2:#3A3A3C; --t3:#8E8E93;
+      --ok:#22C55E; --line:rgba(0,0,0,.08);
+    }
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    html,body{font-family:'Pretendard',-apple-system,sans-serif;letter-spacing:-.2px;color:var(--ink);background:var(--bg)}
+    body{padding:40px 24px 80px}
+
+    /* ===== Page header ===== */
+    .page-head{max-width:1320px;margin:0 auto 32px;padding:0 8px}
+    .page-head h1{font-size:28px;font-weight:800;letter-spacing:-.6px;margin-bottom:6px}
+    .page-head .sub{color:var(--t3);font-size:14px;line-height:1.5}
+    .page-head .legend{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px}
+    .legend-chip{font-size:12px;font-weight:600;padding:6px 12px;border-radius:999px;background:#fff;border:1px solid var(--line);color:var(--t2)}
+
+    /* ===== Grid ===== */
+    .grid{max-width:1320px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:32px 28px}
+    @media(max-width:980px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:640px){.grid{grid-template-columns:1fr}}
+
+    .cell{display:flex;flex-direction:column;align-items:center}
+    .cell-tag{font-size:11px;font-weight:800;letter-spacing:.8px;color:var(--t3);text-transform:uppercase;margin-bottom:8px}
+    .cell-tag.current{color:var(--t3)}
+    .cell-tag.A{color:#0A84FF}
+    .cell-tag.B{color:#34C759}
+    .cell-tag.C{color:#AF52DE}
+    .cell-tag.D{color:#FF3B30}
+    .cell-tag.E{color:#FF9500}
+    .cell-title{font-size:18px;font-weight:800;letter-spacing:-.4px;margin-bottom:4px;text-align:center}
+    .cell-desc{font-size:13px;color:var(--t2);line-height:1.55;text-align:center;margin-bottom:16px;max-width:300px}
+
+    /* ===== Phone frame ===== */
+    .phone{
+      width:300px;height:620px;border-radius:46px;
+      background:#0a0a0a;padding:10px;box-shadow:0 24px 60px rgba(15,27,45,.18),0 4px 12px rgba(15,27,45,.08);
+      position:relative;flex-shrink:0;
+    }
+    .screen{
+      width:100%;height:100%;border-radius:36px;overflow:hidden;position:relative;background:#fff;
+    }
+    .sb{
+      position:absolute;top:0;left:0;right:0;height:36px;z-index:50;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 22px 0;font-size:12px;font-weight:700;color:#fff;pointer-events:none;
+    }
+    .sb.dark-text{color:#1C1C1E}
+    .sb-r{display:flex;gap:5px;align-items:center;font-size:11px}
+    .notch{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:88px;height:24px;border-radius:14px;background:#0a0a0a;z-index:51}
+
+    /* ===== Cell footer (pros/cons) ===== */
+    .meta{margin-top:14px;display:flex;flex-direction:column;gap:6px;width:300px;font-size:12px;color:var(--t2);line-height:1.5}
+    .meta .pro::before{content:"+ ";color:var(--ok);font-weight:800}
+    .meta .con::before{content:"− ";color:var(--red);font-weight:800}
+
+    /* =============================================================
+       SHARED CONTENT TOKENS (inside phone)
+       ============================================================= */
+    .pad{padding:48px 18px 22px}
+    .row{display:flex;align-items:center;gap:10px}
+
+    /* =============================================================
+       0) CURRENT (current 현행)
+       ============================================================= */
+    .cur{background:var(--red);color:#fff;height:100%;display:flex;flex-direction:column;padding:48px 16px 20px}
+    .cur-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .cur-close{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center}
+    .cur-pill{font-size:9px;font-weight:800;letter-spacing:.6px;background:rgba(255,255,255,.18);padding:5px 10px;border-radius:999px;display:inline-flex;align-items:center;gap:5px}
+    .cur-alert{text-align:center;margin:6px 0 12px}
+    .cur-ico{width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.18);display:inline-flex;align-items:center;justify-content:center;position:relative;margin-bottom:8px}
+    .cur-ico::before{content:"";position:absolute;inset:0;border-radius:50%;box-shadow:0 0 0 2px rgba(255,255,255,.5)}
+    .cur-ico iconify-icon{font-size:36px;color:#fff}
+    .cur-title{font-size:24px;font-weight:800;letter-spacing:-.6px}
+    .cur-sub{font-size:11px;font-weight:600;opacity:.92;margin-top:4px}
+    .cur-info{background:rgba(255,255,255,.96);color:#1C1C1E;border-radius:14px;padding:10px 12px;margin-bottom:10px}
+    .cur-info-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.05)}
+    .cur-info-row:last-child{border:0}
+    .cur-info-ico{width:24px;height:24px;border-radius:7px;background:var(--red-soft);color:var(--red);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .cur-info-ico iconify-icon{font-size:13px}
+    .cur-info-meta{flex:1;line-height:1.2}
+    .cur-info-label{font-size:8px;font-weight:800;color:var(--t3);letter-spacing:.3px;text-transform:uppercase}
+    .cur-info-val{font-size:11px;font-weight:800;margin-top:1px}
+    .cur-info-val small{font-size:9px;font-weight:500;color:var(--t2);margin-left:3px}
+    .cur-info-val.danger{color:var(--red)}
+    .cur-count{background:rgba(0,0,0,.28);border-radius:12px;padding:9px 12px;display:flex;align-items:center;gap:8px;margin-bottom:auto}
+    .cur-count iconify-icon{font-size:14px;opacity:.9}
+    .cur-count-t{flex:1;font-size:10px;font-weight:600;opacity:.92}
+    .cur-count-t b{font-size:14px;font-weight:800;margin-right:2px}
+    .cur-cta{background:#fff;color:#1C1C1E;border-radius:14px;padding:13px;text-align:center;font-weight:800;font-size:13px;margin-top:14px;display:flex;align-items:center;justify-content:center;gap:6px}
+    .cur-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+    .cur-btn-s{background:rgba(255,255,255,.18);border-radius:12px;padding:10px;text-align:center;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:5px}
+    .cur-btn-s iconify-icon{font-size:13px}
+
+    /* =============================================================
+       A) iOS Phone 풀스크린 콜
+       ============================================================= */
+    .a-screen{background:radial-gradient(circle at 50% 30%, #5a5a5e 0%, #1c1c1e 80%);color:#fff;height:100%;display:flex;flex-direction:column;padding:46px 24px 28px}
+    .a-top{font-size:11px;color:rgba(255,255,255,.7);text-align:center}
+    .a-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:rgba(255,59,48,.25);border-radius:999px;color:#FF6B61;font-weight:700;font-size:10px;margin-bottom:6px}
+    .a-name-wrap{text-align:center;margin-top:24px}
+    .a-avatar{width:96px;height:96px;border-radius:50%;background:rgba(255,255,255,.12);margin:0 auto 14px;display:flex;align-items:center;justify-content:center;position:relative}
+    .a-avatar::after{content:"";position:absolute;inset:-10px;border-radius:50%;border:2px solid rgba(255,255,255,.18);animation:pulseA 2s infinite}
+    @keyframes pulseA{to{transform:scale(1.25);opacity:0}}
+    .a-avatar iconify-icon{font-size:48px;color:rgba(255,255,255,.85)}
+    .a-name{font-size:28px;font-weight:700;letter-spacing:-.5px}
+    .a-sub{font-size:13px;color:rgba(255,255,255,.7);margin-top:4px;font-weight:500}
+    .a-status{display:inline-flex;align-items:center;gap:5px;margin-top:10px;font-size:11px;color:#FF6B61;font-weight:700}
+    .a-status::before{content:"";width:6px;height:6px;border-radius:50%;background:#FF6B61;animation:blinkA 1s infinite}
+    @keyframes blinkA{50%{opacity:.3}}
+    .a-spacer{flex:1}
+    .a-bottom-grid{display:flex;justify-content:space-around;align-items:flex-end;margin-bottom:8px}
+    .a-btn{display:flex;flex-direction:column;align-items:center;gap:8px}
+    .a-circle{width:68px;height:68px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+    .a-circle.decline{background:var(--red);transform:rotate(135deg)}
+    .a-circle.decline iconify-icon{font-size:30px;color:#fff;transform:rotate(-135deg)}
+    .a-circle.accept{background:var(--ok)}
+    .a-circle.accept iconify-icon{font-size:30px;color:#fff}
+    .a-btn-l{font-size:11px;color:rgba(255,255,255,.85);font-weight:600}
+    .a-quick{display:flex;justify-content:space-around;margin-top:14px;border-top:1px solid rgba(255,255,255,.08);padding-top:14px}
+    .a-quick-i{font-size:10px;color:rgba(255,255,255,.6);display:flex;flex-direction:column;align-items:center;gap:3px}
+    .a-quick-i iconify-icon{font-size:14px}
+
+    /* =============================================================
+       B) Map/Floor plan first
+       ============================================================= */
+    .b-screen{height:100%;display:flex;flex-direction:column;background:#E8EEF3;position:relative}
+    .b-map{flex:1;position:relative;background:linear-gradient(135deg,#E8EEF3 0%,#D4DEE8 100%);overflow:hidden}
+    .b-map-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(0,0,0,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,.04) 1px,transparent 1px);background-size:24px 24px}
+    .b-corridor{position:absolute;left:14%;right:14%;top:40%;height:42%;background:#fff;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
+    .b-room{position:absolute;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:4px;font-size:9px;font-weight:600;color:var(--t3);display:flex;align-items:center;justify-content:center}
+    .b-r1{left:16%;top:22%;width:22%;height:18%}
+    .b-r2{left:40%;top:22%;width:22%;height:18%;background:var(--red);color:#fff;border-color:var(--red);box-shadow:0 4px 16px rgba(255,59,48,.4);font-size:10px;font-weight:800}
+    .b-r3{left:64%;top:22%;width:22%;height:18%}
+    .b-r4{left:16%;top:82%;width:22%;height:14%}
+    .b-r5{left:64%;top:82%;width:22%;height:14%;background:#1C1C1E;color:#fff;font-size:9px}
+    .b-route{position:absolute;left:50%;top:62%;width:2px;height:24%;background:linear-gradient(180deg,transparent,var(--red) 30%,var(--red) 70%,transparent);transform:translateX(-50%);animation:routeFlow 1.5s linear infinite}
+    @keyframes routeFlow{from{background-position:0 0}to{background-position:0 20px}}
+    .b-pin{position:absolute;left:50%;top:31%;width:28px;height:28px;border-radius:50%;background:var(--red);transform:translateX(-50%);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(255,59,48,.5);animation:pinBounce 1.2s ease infinite}
+    @keyframes pinBounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-4px)}}
+    .b-pin iconify-icon{font-size:14px;color:#fff}
+    .b-pin::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid rgba(255,59,48,.4);animation:pinRing 1.6s ease-out infinite}
+    @keyframes pinRing{from{transform:scale(.8);opacity:1}to{transform:scale(2);opacity:0}}
+    .b-eta{position:absolute;top:50px;left:50%;transform:translateX(-50%);background:rgba(28,28,30,.92);color:#fff;padding:7px 14px;border-radius:999px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:6px;backdrop-filter:blur(8px)}
+    .b-eta iconify-icon{font-size:12px;color:#FF6B61}
+    .b-sheet{background:#fff;border-radius:24px 24px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 24px rgba(0,0,0,.08)}
+    .b-sheet-drag{width:36px;height:4px;background:#D1D5DB;border-radius:2px;margin:0 auto 10px}
+    .b-sheet-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+    .b-sheet-name{font-size:15px;font-weight:800}
+    .b-sheet-time{font-size:10px;color:var(--t3);font-weight:600}
+    .b-status{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:var(--red-soft);color:var(--red);border-radius:999px;font-size:10px;font-weight:800;margin-bottom:12px}
+    .b-swipe{background:linear-gradient(90deg,var(--red) 0%,var(--red) 70%,#FF6B61 100%);color:#fff;border-radius:999px;padding:14px;display:flex;align-items:center;justify-content:space-between;font-weight:800;font-size:13px;box-shadow:0 6px 20px rgba(255,59,48,.3)}
+    .b-swipe-l{display:flex;align-items:center;gap:8px}
+    .b-swipe-l iconify-icon{font-size:18px}
+    .b-swipe-arrow{display:flex;gap:2px;opacity:.7}
+    .b-swipe-arrow iconify-icon{font-size:16px;animation:slideR 1.4s ease infinite}
+    .b-swipe-arrow iconify-icon:nth-child(2){animation-delay:.15s}
+    .b-swipe-arrow iconify-icon:nth-child(3){animation-delay:.3s}
+    @keyframes slideR{0%,100%{opacity:.4;transform:translateX(0)}50%{opacity:1;transform:translateX(4px)}}
+
+    /* =============================================================
+       C) Live agent (vitals + PIP + chat)
+       ============================================================= */
+    .c-screen{background:#0F1419;color:#fff;height:100%;display:flex;flex-direction:column;padding:40px 0 18px}
+    .c-header{padding:0 18px 12px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.06)}
+    .c-avatar{width:32px;height:32px;border-radius:50%;background:#3A3A3C;display:flex;align-items:center;justify-content:center}
+    .c-avatar iconify-icon{font-size:18px;color:#A1A1AA}
+    .c-h-meta{flex:1;line-height:1.2}
+    .c-h-name{font-size:13px;font-weight:700}
+    .c-h-status{font-size:10px;color:#22C55E;font-weight:700;display:flex;align-items:center;gap:4px;margin-top:1px}
+    .c-h-status::before{content:"";width:5px;height:5px;border-radius:50%;background:#22C55E;animation:blinkA 1s infinite}
+    .c-h-time{font-size:11px;color:rgba(255,255,255,.6);font-weight:600;font-variant-numeric:tabular-nums}
+    .c-body{flex:1;padding:14px 18px;display:flex;flex-direction:column;gap:10px;overflow:hidden;position:relative}
+    .c-pip{position:absolute;top:14px;right:18px;width:80px;height:108px;border-radius:12px;background:#1c1c1e;border:1px solid rgba(255,255,255,.1);overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,.5);font-weight:600;z-index:5}
+    .c-pip-cam{font-size:22px;opacity:.5}
+    .c-pip-label{margin-top:4px;font-weight:700}
+    .c-vital-row{display:flex;gap:8px;margin-right:90px}
+    .c-vital{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:9px 10px}
+    .c-vital.warn{background:rgba(255,59,48,.15);border-color:rgba(255,59,48,.35)}
+    .c-vital-l{font-size:9px;color:rgba(255,255,255,.55);font-weight:700;letter-spacing:.3px;text-transform:uppercase}
+    .c-vital-v{font-size:18px;font-weight:800;margin-top:1px;font-variant-numeric:tabular-nums;display:flex;align-items:baseline;gap:3px}
+    .c-vital-v small{font-size:9px;font-weight:600;opacity:.6}
+    .c-vital-v iconify-icon{font-size:12px;color:#FF6B61}
+    .c-msg{background:rgba(255,255,255,.06);border-radius:14px;padding:10px 12px;font-size:11px;line-height:1.45;max-width:75%}
+    .c-msg.me{background:#0A84FF;align-self:flex-end}
+    .c-msg-meta{font-size:9px;color:rgba(255,255,255,.4);margin-top:3px}
+    .c-chips{display:flex;gap:6px;overflow-x:auto;padding:8px 18px 4px;flex-shrink:0}
+    .c-chip{flex-shrink:0;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:6px 12px;font-size:10px;font-weight:600;color:#fff;white-space:nowrap}
+    .c-input{margin:0 18px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:10px 14px;display:flex;align-items:center;gap:8px;font-size:11px;color:rgba(255,255,255,.45)}
+    .c-input iconify-icon{font-size:16px;color:#FF6B61}
+    .c-input .grow{flex:1}
+    .c-input .mic{color:rgba(255,255,255,.5);font-size:14px}
+
+    /* =============================================================
+       D) Minimal full-bleed
+       ============================================================= */
+    .d-screen{background:var(--red);color:#fff;height:100%;display:flex;flex-direction:column;padding:40px 24px 28px}
+    .d-top{display:flex;align-items:center;justify-content:space-between;font-size:10px;font-weight:700;opacity:.85;letter-spacing:.4px}
+    .d-tag{display:inline-flex;align-items:center;gap:5px}
+    .d-tag::before{content:"";width:6px;height:6px;border-radius:50%;background:#fff;animation:blinkA 1s infinite}
+    .d-body{flex:1;display:flex;flex-direction:column;justify-content:center;text-align:center}
+    .d-from{font-size:13px;font-weight:600;opacity:.85;margin-bottom:18px}
+    .d-name{font-size:56px;font-weight:800;letter-spacing:-2px;line-height:.95}
+    .d-loc{font-size:16px;font-weight:600;margin-top:14px;opacity:.95}
+    .d-status{font-size:13px;font-weight:600;margin-top:22px;padding:8px 14px;background:rgba(0,0,0,.18);border-radius:999px;display:inline-block;align-self:center}
+    .d-cta{background:#fff;color:var(--red);border-radius:18px;padding:18px;text-align:center;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+    .d-cta iconify-icon{font-size:20px}
+    .d-more{text-align:center;margin-top:14px;font-size:12px;font-weight:600;opacity:.85;display:flex;align-items:center;justify-content:center;gap:4px}
+    .d-more iconify-icon{font-size:13px}
+
+    /* =============================================================
+       E) Countdown-as-CTA
+       ============================================================= */
+    .e-screen{background:linear-gradient(180deg,#FFF1F0 0%,#FFE4E1 50%,#FFF1F0 100%);color:var(--ink);height:100%;display:flex;flex-direction:column;padding:44px 18px 22px}
+    .e-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .e-tag{display:inline-flex;align-items:center;gap:5px;background:var(--red);color:#fff;padding:5px 12px;border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.4px}
+    .e-tag::before{content:"";width:5px;height:5px;border-radius:50%;background:#fff;animation:blinkA 1s infinite}
+    .e-time{font-size:11px;color:var(--t3);font-weight:700;font-variant-numeric:tabular-nums}
+    .e-hero{text-align:center;margin:18px 0 14px}
+    .e-from{font-size:11px;color:var(--t3);font-weight:600}
+    .e-name{font-size:34px;font-weight:800;letter-spacing:-1px;margin-top:4px}
+    .e-name small{color:var(--t3);font-size:14px;font-weight:600;margin-left:6px}
+    .e-card{background:#fff;border-radius:18px;padding:14px;box-shadow:0 4px 16px rgba(255,59,48,.08);border:1px solid rgba(255,59,48,.12)}
+    .e-card-row{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.05)}
+    .e-card-row:last-child{border:0}
+    .e-card-ico{width:28px;height:28px;border-radius:9px;background:var(--red-soft);color:var(--red);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .e-card-ico iconify-icon{font-size:15px}
+    .e-card-l{font-size:9px;color:var(--t3);font-weight:700;letter-spacing:.3px;text-transform:uppercase}
+    .e-card-v{font-size:13px;font-weight:700;margin-top:1px;line-height:1.3}
+    .e-card-v.danger{color:var(--red)}
+    .e-spacer{flex:1}
+    .e-auto{text-align:center;font-size:11px;color:var(--t2);margin-bottom:8px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px}
+    .e-auto iconify-icon{font-size:13px;color:var(--red)}
+    .e-auto b{color:var(--red);font-weight:800;font-variant-numeric:tabular-nums}
+    .e-cta-wrap{position:relative;border-radius:18px;overflow:hidden;box-shadow:0 8px 24px rgba(255,59,48,.32)}
+    .e-cta-fill{position:absolute;inset:0;background:#fff;width:60%;animation:fill 3s linear forwards}
+    @keyframes fill{from{width:0}to{width:100%}}
+    .e-cta{position:relative;background:var(--red);color:#fff;padding:18px;text-align:center;font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;gap:8px;mix-blend-mode:difference;z-index:2}
+    .e-cta iconify-icon{font-size:18px}
+    .e-hint{text-align:center;font-size:11px;color:var(--t3);margin-top:10px;font-weight:600}
+  </style>
+</head>
+<body>
+
+  <div class="page-head">
+    <h1>의료진 SOS · 개선안 비교</h1>
+    <p class="sub">현재 <code>d-sos.html</code> 와 Mobbin 패턴 기반 5가지 방향 (A~E). 모바일 폰 프레임으로 1:1 시각화.</p>
+    <div class="legend">
+      <span class="legend-chip">현행</span>
+      <span class="legend-chip">A — iOS 풀스크린 콜</span>
+      <span class="legend-chip">B — 평면도 우선</span>
+      <span class="legend-chip">C — 라이브 에이전트</span>
+      <span class="legend-chip">D — 미니멀 풀블리드</span>
+      <span class="legend-chip">E — 카운트다운 = CTA</span>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <!-- ============================ CURRENT ============================ -->
+    <div class="cell">
+      <div class="cell-tag current">현재 · d-sos.html</div>
+      <div class="cell-title">현행 시안</div>
+      <div class="cell-desc">정보 카드 4행 + 카운트다운 바 + CTA 1개 + 보조 2×2 그리드. 시각 영역 ≥6개.</div>
+      <div class="phone"><div class="screen">
+        <div class="notch"></div>
+        <div class="sb"><span>9:41</span><span class="sb-r"><iconify-icon icon="solar:wi-fi-router-minimalistic-bold"></iconify-icon><iconify-icon icon="solar:battery-full-bold"></iconify-icon></span></div>
+        <div class="cur">
+          <div class="cur-top">
+            <div class="cur-close"><iconify-icon icon="fluent:dismiss-24-filled" style="font-size:16px"></iconify-icon></div>
+            <div class="cur-pill"><iconify-icon icon="fluent:warning-24-filled"></iconify-icon> SOS 수신 · LIVE</div>
+            <div style="width:32px"></div>
+          </div>
+          <div class="cur-alert">
+            <div class="cur-ico"><iconify-icon icon="fluent:warning-24-filled"></iconify-icon></div>
+            <div class="cur-title">긴급 호출</div>
+            <div class="cur-sub">박미선 요양보호사가 SOS를 발신했어요</div>
+          </div>
+          <div class="cur-info">
+            <div class="cur-info-row"><div class="cur-info-ico"><iconify-icon icon="fluent:person-24-filled"></iconify-icon></div><div class="cur-info-meta"><div class="cur-info-label">환자</div><div class="cur-info-val">최명자 어르신<small>82F · 고혈압·당뇨</small></div></div></div>
+            <div class="cur-info-row"><div class="cur-info-ico"><iconify-icon icon="fluent:location-24-filled"></iconify-icon></div><div class="cur-info-meta"><div class="cur-info-label">위치</div><div class="cur-info-val">2층 B-2호<small>도보 40초</small></div></div></div>
+            <div class="cur-info-row"><div class="cur-info-ico" style="background:#fff"></div><div class="cur-info-meta"><div class="cur-info-label">상황</div><div class="cur-info-val danger">의식 저하 · 호흡 약함</div></div></div>
+            <div class="cur-info-row"><div class="cur-info-ico"><iconify-icon icon="fluent:clock-24-filled"></iconify-icon></div><div class="cur-info-meta"><div class="cur-info-label">발신 시각</div><div class="cur-info-val">14:08:32<small>12초 전</small></div></div></div>
+          </div>
+          <div class="cur-count"><iconify-icon icon="fluent:timer-24-filled"></iconify-icon><div class="cur-count-t"><b>0</b>초 후 자동 통화 · 보호자 자동 알림</div><iconify-icon icon="fluent:pause-24-filled"></iconify-icon></div>
+          <div class="cur-cta"><iconify-icon icon="fluent:call-24-filled"></iconify-icon>지금 응답 · 음성 통화</div>
+          <div class="cur-grid">
+            <div class="cur-btn-s"><iconify-icon icon="fluent:run-24-filled"></iconify-icon>이동 중</div>
+            <div class="cur-btn-s"><iconify-icon icon="fluent:doctor-24-filled"></iconify-icon>의사 호출</div>
+            <div class="cur-btn-s"><iconify-icon icon="fluent:vehicle-truck-24-filled"></iconify-icon>119 연결</div>
+            <div class="cur-btn-s"><iconify-icon icon="fluent:chat-24-filled"></iconify-icon>채팅 열기</div>
+          </div>
+        </div>
+      </div></div>
+      <div class="meta">
+        <span class="con">시각 요소 ≥6개 — 어디 누를지 결정 비용 ↑</span>
+        <span class="con">카운트다운이 별도 영역 (CTA와 분리)</span>
+        <span class="pro">모든 정보가 한 화면</span>
+      </div>
+    </div>
+
+    <!-- ============================ A ============================ -->
+    <div class="cell">
+      <div class="cell-tag A">A — Mobbin: Messages / FaceTime</div>
+      <div class="cell-title">iOS Phone 풀스크린 콜</div>
+      <div class="cell-desc">"전화 온 것처럼" — 이름·역할·상태만, 큰 원형 두 개로 응답/거절. 결정 비용 최소.</div>
+      <div class="phone"><div class="screen">
+        <div class="notch"></div>
+        <div class="sb"><span>9:41</span><span class="sb-r"><iconify-icon icon="solar:wi-fi-router-minimalistic-bold"></iconify-icon><iconify-icon icon="solar:battery-full-bold"></iconify-icon></span></div>
+        <div class="a-screen">
+          <div class="a-top">
+            <div class="a-pill"><iconify-icon icon="fluent:warning-24-filled"></iconify-icon>SOS 수신</div>
+            <div>박미선 요양보호사 → 의료진</div>
+          </div>
+          <div class="a-name-wrap">
+            <div class="a-avatar"><iconify-icon icon="fluent:person-24-filled"></iconify-icon></div>
+            <div class="a-name">최명자 어르신</div>
+            <div class="a-sub">82F · 2층 B-2호</div>
+            <div class="a-status">의식 저하 · 호흡 약함</div>
+          </div>
+          <div class="a-spacer"></div>
+          <div class="a-bottom-grid">
+            <div class="a-btn">
+              <div class="a-circle decline"><iconify-icon icon="fluent:call-24-filled"></iconify-icon></div>
+              <div class="a-btn-l">거절 · 119</div>
+            </div>
+            <div class="a-btn">
+              <div class="a-circle accept"><iconify-icon icon="fluent:call-24-filled"></iconify-icon></div>
+              <div class="a-btn-l">응답</div>
+            </div>
+          </div>
+          <div class="a-quick">
+            <div class="a-quick-i"><iconify-icon icon="fluent:chat-24-filled"></iconify-icon>채팅</div>
+            <div class="a-quick-i"><iconify-icon icon="fluent:doctor-24-filled"></iconify-icon>의사 호출</div>
+            <div class="a-quick-i"><iconify-icon icon="fluent:people-24-filled"></iconify-icon>보호자</div>
+          </div>
+        </div>
+      </div></div>
+      <div class="meta">
+        <span class="pro">결정 1개 (응답/거절) — 인지부하 최소</span>
+        <span class="pro">iOS 사용자에게 익숙한 멘탈모델</span>
+        <span class="con">바이탈·상황 디테일은 응답 후로 미뤄짐</span>
+      </div>
+    </div>
+
+    <!-- ============================ B ============================ -->
+    <div class="cell">
+      <div class="cell-tag B">B — Mobbin: Uber / Lyft / Bolt Emergency</div>
+      <div class="cell-title">평면도/지도 우선</div>
+      <div class="cell-desc">"내가 어디로 가야 하는가"가 먼저. 시설 평면도 60% + 정보 시트 40% + 스와이프 응답.</div>
+      <div class="phone"><div class="screen">
+        <div class="notch"></div>
+        <div class="sb dark-text"><span>9:41</span><span class="sb-r"><iconify-icon icon="solar:wi-fi-router-minimalistic-bold"></iconify-icon><iconify-icon icon="solar:battery-full-bold"></iconify-icon></span></div>
+        <div class="b-screen">
+          <div class="b-map">
+            <div class="b-map-grid"></div>
+            <div class="b-corridor"></div>
+            <div class="b-room b-r1">B-1</div>
+            <div class="b-room b-r2">B-2 · SOS</div>
+            <div class="b-room b-r3">B-3</div>
+            <div class="b-room b-r4">B-4</div>
+            <div class="b-room b-r5">스테이션</div>
+            <div class="b-route"></div>
+            <div class="b-pin"><iconify-icon icon="fluent:warning-24-filled"></iconify-icon></div>
+            <div class="b-eta"><iconify-icon icon="fluent:run-24-filled"></iconify-icon>도보 40초 · 25m</div>
+          </div>
+          <div class="b-sheet">
+            <div class="b-sheet-drag"></div>
+            <div class="b-sheet-top">
+              <div>
+                <div class="b-sheet-name">최명자 어르신 <span style="color:var(--t3);font-weight:600;font-size:12px">82F</span></div>
+                <div class="b-sheet-time">박미선 요양보호사 · 12초 전</div>
+              </div>
+            </div>
+            <div class="b-status"><iconify-icon icon="fluent:pulse-24-filled"></iconify-icon>의식 저하 · 호흡 약함</div>
+            <div class="b-swipe">
+              <span class="b-swipe-l"><iconify-icon icon="fluent:call-24-filled"></iconify-icon>스와이프하여 응답</span>
+              <span class="b-swipe-arrow"><iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon><iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon><iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></span>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <div class="meta">
+        <span class="pro">동선·거리 즉시 파악 — 의료진의 첫 질문 해결</span>
+        <span class="pro">스와이프로 오발신 방지</span>
+        <span class="con">시설 평면도 데이터 필요 (도면 SVG)</span>
+      </div>
+    </div>
+
+    <!-- ============================ C ============================ -->
+    <div class="cell">
+      <div class="cell-tag C">C — Mobbin: Citizen Protect Agent</div>
+      <div class="cell-title">라이브 에이전트</div>
+      <div class="cell-desc">현장과 "지금 연결되어 있다" — 실시간 바이탈 + 영상 PIP + 빠른답변 채팅.</div>
+      <div class="phone"><div class="screen">
+        <div class="notch"></div>
+        <div class="sb"><span>9:41</span><span class="sb-r"><iconify-icon icon="solar:wi-fi-router-minimalistic-bold"></iconify-icon><iconify-icon icon="solar:battery-full-bold"></iconify-icon></span></div>
+        <div class="c-screen">
+          <div class="c-header">
+            <div class="c-avatar"><iconify-icon icon="fluent:person-24-filled"></iconify-icon></div>
+            <div class="c-h-meta">
+              <div class="c-h-name">박미선 요양보호사</div>
+              <div class="c-h-status">LIVE · 현장 연결됨</div>
+            </div>
+            <div class="c-h-time">00:09</div>
+          </div>
+          <div class="c-body">
+            <div class="c-pip">
+              <iconify-icon icon="fluent:video-24-filled" class="c-pip-cam"></iconify-icon>
+              <div class="c-pip-label">현장 영상</div>
+            </div>
+            <div class="c-vital-row">
+              <div class="c-vital warn"><div class="c-vital-l">HR</div><div class="c-vital-v">132<small>bpm</small><iconify-icon icon="fluent:arrow-up-24-filled"></iconify-icon></div></div>
+              <div class="c-vital warn"><div class="c-vital-l">SpO₂</div><div class="c-vital-v">89<small>%</small></div></div>
+            </div>
+            <div class="c-vital-row">
+              <div class="c-vital"><div class="c-vital-l">BP</div><div class="c-vital-v">80<small>/50</small></div></div>
+              <div class="c-vital"><div class="c-vital-l">의식</div><div class="c-vital-v" style="color:#FF6B61;font-size:13px">저하</div></div>
+            </div>
+            <div class="c-msg">최명자 어르신 의식 저하·호흡 약함. 산소 준비 부탁드립니다.</div>
+            <div class="c-msg me">5분 내 도착. 산소 4L 준비 중.<div class="c-msg-meta" style="color:rgba(255,255,255,.7)">읽음 · 방금</div></div>
+          </div>
+          <div class="c-chips">
+            <div class="c-chip">지금 가는 중</div>
+            <div class="c-chip">119 연결</div>
+            <div class="c-chip">의사 호출</div>
+            <div class="c-chip">보호자 알림</div>
+          </div>
+          <div class="c-input">
+            <iconify-icon icon="fluent:call-24-filled"></iconify-icon>
+            <span class="grow">메시지 입력 · 길게 눌러 통화</span>
+            <iconify-icon icon="fluent:mic-24-filled" class="mic"></iconify-icon>
+          </div>
+        </div>
+      </div></div>
+      <div class="meta">
+        <span class="pro">바이탈·영상·채팅 한 화면 — 응답 후 흐름까지 통합</span>
+        <span class="pro">"수신했다" → "함께 있다"로 톤 전환</span>
+        <span class="con">디바이스 연동·영상 인프라 필요 (구현 비용 ↑)</span>
+      </div>
+    </div>
+
+    <!-- ============================ D ============================ -->
+    <div class="cell">
+      <div class="cell-tag D">D — Mobbin: Apple COVID / Withings fullbleed</div>
+      <div class="cell-title">미니멀 풀블리드</div>
+      <div class="cell-desc">풀블리드 한 색 + 거대 이름 1개 + 단일 CTA. 90% 케이스 = 단 한 번의 탭.</div>
+      <div class="phone"><div class="screen">
+        <div class="notch"></div>
+        <div class="sb"><span>9:41</span><span class="sb-r"><iconify-icon icon="solar:wi-fi-router-minimalistic-bold"></iconify-icon><iconify-icon icon="solar:battery-full-bold"></iconify-icon></span></div>
+        <div class="d-screen">
+          <div class="d-top">
+            <span class="d-tag">SOS · 12초 전</span>
+            <span>14:08</span>
+          </div>
+          <div class="d-body">
+            <div class="d-from">박미선 요양보호사 → 의료진</div>
+            <div class="d-name">최명자</div>
+            <div class="d-loc">2층 B-2호 · 82F</div>
+            <div class="d-status">의식 저하 · 호흡 약함</div>
+          </div>
+          <div class="d-cta"><iconify-icon icon="fluent:call-24-filled"></iconify-icon>지금 응답</div>
+          <div class="d-more"><iconify-icon icon="fluent:more-horizontal-24-filled"></iconify-icon>119 · 의사호출 · 채팅</div>
+        </div>
+      </div></div>
+      <div class="meta">
+        <span class="pro">시각 노이즈 −60% — 정보 한 줄, 액션 한 개</span>
+        <span class="pro">한 손으로 즉시 응답</span>
+        <span class="con">보조 액션은 한 단계 깊이로 (시트)</span>
+      </div>
+    </div>
+
+    <!-- ============================ E ============================ -->
+    <div class="cell">
+      <div class="cell-tag E">E — Mobbin: Uber Eats "Looks good (0:02)" + Me+ Hold</div>
+      <div class="cell-title">카운트다운 = CTA</div>
+      <div class="phone-cell-desc cell-desc">카운트다운 바를 없애고 응답 버튼 자체가 진행률로 채워짐. 두면 자동 응답, 누르면 즉시.</div>
+      <div class="phone"><div class="screen">
+        <div class="notch"></div>
+        <div class="sb dark-text"><span>9:41</span><span class="sb-r"><iconify-icon icon="solar:wi-fi-router-minimalistic-bold"></iconify-icon><iconify-icon icon="solar:battery-full-bold"></iconify-icon></span></div>
+        <div class="e-screen">
+          <div class="e-top">
+            <span class="e-tag">SOS 수신</span>
+            <span class="e-time">14:08 · 12초 전</span>
+          </div>
+          <div class="e-hero">
+            <div class="e-from">박미선 요양보호사 →</div>
+            <div class="e-name">최명자<small>82F</small></div>
+          </div>
+          <div class="e-card">
+            <div class="e-card-row">
+              <div class="e-card-ico"><iconify-icon icon="fluent:location-24-filled"></iconify-icon></div>
+              <div><div class="e-card-l">위치</div><div class="e-card-v">2층 B-2호 · 도보 40초</div></div>
+            </div>
+            <div class="e-card-row">
+              <div class="e-card-ico"><iconify-icon icon="fluent:pulse-24-filled"></iconify-icon></div>
+              <div><div class="e-card-l">상황</div><div class="e-card-v danger">의식 저하 · 호흡 약함</div></div>
+            </div>
+            <div class="e-card-row">
+              <div class="e-card-ico"><iconify-icon icon="fluent:heart-pulse-24-filled"></iconify-icon></div>
+              <div><div class="e-card-l">바이탈 (실시간)</div><div class="e-card-v">HR 132 · SpO₂ 89%</div></div>
+            </div>
+          </div>
+          <div class="e-spacer"></div>
+          <div class="e-auto"><iconify-icon icon="fluent:timer-24-filled"></iconify-icon><b>3</b>초 뒤 자동 응답</div>
+          <div class="e-cta-wrap">
+            <div class="e-cta-fill"></div>
+            <div class="e-cta"><iconify-icon icon="fluent:call-24-filled"></iconify-icon>지금 응답</div>
+          </div>
+          <div class="e-hint">꾹 눌러 거절 · 보호자 자동 알림</div>
+        </div>
+      </div></div>
+      <div class="meta">
+        <span class="pro">카운트다운 + CTA 통합 → 영역 −1, 인지부하 −40%</span>
+        <span class="pro">자동 응답으로 무응답 케이스 안전</span>
+        <span class="con">"꾹 눌러 거절" 사용자 학습 필요</span>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="ko" data-role="patient" data-platform="mobile">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#FFF5E8">
+  <title>하루안부 · 도움 페이지 베리어블 3종</title>
+
+  <link rel="icon" type="image/svg+xml" href="../07_디자인/logo/brand-system/01_심볼단독.svg">
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css">
+
+  <script src="../07_디자인/_app-theme.js"></script>
+  <link rel="stylesheet" href="patient.css">
+  <script src="../07_디자인/_iconify-icon.min.js"></script>
+
+  <style>
+    body { overflow-y: auto; }
+    .compare-wrap {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 32px 28px 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 56px;
+    }
+    .compare-head h1 {
+      font: 700 32px / 1.2 var(--font-family-base);
+      letter-spacing: -0.5px;
+    }
+    .compare-head p {
+      font: 500 17px / 1.5 var(--font-family-base);
+      color: var(--color-text-secondary);
+      margin-top: 6px;
+    }
+    .variant-block { display: flex; flex-direction: column; gap: 18px; }
+    .variant-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: var(--brand-orange-100);
+      color: var(--brand-orange-700);
+      font: 700 13px / 1 var(--font-family-base);
+      width: fit-content;
+      letter-spacing: 0.3px;
+    }
+    .variant-block h2 {
+      font: 700 24px / 1.2 var(--font-family-base);
+      letter-spacing: -0.3px;
+    }
+    .variant-desc {
+      font: 500 15px / 1.55 var(--font-family-base);
+      color: var(--color-text-secondary);
+      max-width: 880px;
+    }
+    .mockup {
+      width: 100%;
+      aspect-ratio: 16 / 11;
+      max-height: 800px;
+      background: #FFF5E8;
+      border-radius: 24px;
+      overflow: hidden;
+      padding: 22px 26px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .notes {
+      padding: 14px 18px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.55);
+      font: 500 14px / 1.6 var(--font-family-base);
+      color: var(--color-text-secondary);
+      max-width: 880px;
+    }
+    .notes b { color: var(--color-text-primary); font-weight: 700; }
+
+    .pseudo-nav {
+      display: flex; justify-content: center; align-items: center;
+      flex-shrink: 0;
+    }
+    .pseudo-nav .top-nav {
+      background: rgba(255,255,255,0.95);
+      box-shadow: 0 6px 20px rgba(194,98,28,.1);
+      padding: 5px; border-radius: 999px;
+      display: inline-flex; gap: 4px;
+    }
+    .pseudo-nav .nav-tab {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 16px; border-radius: 999px;
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      font-size: 16px; font-weight: 700;
+    }
+    .pseudo-nav .nav-tab--active {
+      background: var(--brand-orange-500);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(251,146,60,.35);
+    }
+
+    .heading h1 {
+      font: 700 28px / 1.15 var(--font-family-base);
+      letter-spacing: -0.4px;
+      text-align: center;
+    }
+    .heading p {
+      font: 500 16px / 1.4 var(--font-family-base);
+      color: var(--color-text-secondary);
+      text-align: center;
+      margin-top: 4px;
+    }
+
+    .grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: 12px;
+      min-height: 0;
+    }
+    .btn {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 12px;
+      padding: 14px 10px;
+      border-radius: 22px;
+      cursor: pointer;
+      transition: transform .12s, box-shadow .15s;
+      text-align: center;
+      min-height: 0;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn .icon { display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .btn .icon iconify-icon { font-size: 64px; }
+    .btn .label { font: 700 21px / 1.15 var(--font-family-base); letter-spacing: -0.3px; }
+    .btn .sub { font: 500 13px / 1.2 var(--font-family-base); opacity: 0.7; }
+
+    /* ════════════════════════════════════════════════════
+       VARIANT A — 카테고리별 파스텔 컬러 (Gojek/Revolut 영감)
+       각 카드 다른 부드러운 톤, 다크 아이콘
+       ════════════════════════════════════════════════════ */
+    .va-btn-water    { background: #DBEAFE; color: #1E40AF; }
+    .va-btn-toilet   { background: #CFFAFE; color: #155E75; }
+    .va-btn-meal     { background: #FED7AA; color: #9A3412; }
+    .va-btn-med      { background: #D1FAE5; color: #065F46; }
+    .va-btn-posture  { background: #E9D5FF; color: #6B21A8; }
+    .va-btn-temp     { background: #FEF3C7; color: #92400E; }
+    .va-btn-talk     { background: #FCE7F3; color: #9D174D; }
+    .va-btn-urgent   { background: #FEE2E2; color: #991B1B; }
+    .va-btn--brand-img img {
+      width: 64px; height: 64px;
+      filter: invert(13%) sepia(58%) saturate(7488%) hue-rotate(323deg) brightness(80%) contrast(96%);
+    }
+    .va .sub { color: inherit; opacity: 0.65; }
+
+
+    /* ════════════════════════════════════════════════════
+       VARIANT B — 톤 in 톤: 일상(연한 오렌지) / 특별(말벗 솔리드) / 긴급(빨강)
+       단일 브랜드 컬러 시스템 내에서 위계
+       ════════════════════════════════════════════════════ */
+    .vb .btn { color: var(--brand-orange-700); }
+    .vb-btn-soft {
+      background: #FFEDD5;                              /* orange-100 */
+      color: #C2410C;                                   /* orange-700 */
+    }
+    .vb-btn-soft iconify-icon { color: var(--brand-orange-500); }
+    .vb-btn-brand {
+      background: var(--brand-orange-500);
+      color: #fff;
+      box-shadow: 0 8px 22px rgba(251, 146, 60, 0.32);
+    }
+    .vb-btn-brand img {
+      width: 64px; height: 64px;
+      filter: brightness(0) invert(1);
+    }
+    .vb-btn-urgent {
+      background: var(--color-danger, #E32B25);
+      color: #fff;
+      box-shadow: 0 8px 22px rgba(227, 43, 37, 0.32);
+    }
+    .vb-btn-urgent iconify-icon { color: #fff; }
+    .vb .sub { color: inherit; opacity: 0.75; }
+
+
+    /* ════════════════════════════════════════════════════
+       VARIANT C — 섹션 분리: "일상 도움" + "긴급/특별"
+       위계 + 의미적 그룹
+       ════════════════════════════════════════════════════ */
+    .vc-main { flex: 1; display: grid; grid-template-rows: auto 1fr auto auto; gap: 14px; min-height: 0; }
+    .vc-section-title {
+      font: 700 13px / 1 var(--font-family-base);
+      color: var(--color-text-secondary);
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      padding: 0 4px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .vc-section-title iconify-icon { color: var(--brand-orange-500); font-size: 14px; }
+    .vc-grid-routine {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      flex: 1;
+      min-height: 0;
+    }
+    .vc-grid-special {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .vc-btn-routine {
+      background: #fff;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+      color: var(--color-text-primary);
+    }
+    .vc-btn-routine iconify-icon { color: var(--brand-orange-500); }
+    .vc-btn-special {
+      background: var(--brand-orange-500);
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(251, 146, 60, 0.3);
+    }
+    .vc-btn-special img {
+      width: 56px; height: 56px;
+      filter: brightness(0) invert(1);
+    }
+    .vc-btn-urgent {
+      background: var(--color-danger, #E32B25);
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(227, 43, 37, 0.3);
+    }
+    .vc-btn-special .label, .vc-btn-urgent .label { font-size: 19px; }
+    .vc-btn-routine .label { font-size: 19px; }
+    .vc .sub { opacity: 0.75; color: inherit; }
+
+    @media (max-width: 1100px) {
+      .mockup { aspect-ratio: auto; max-height: none; padding: 18px; }
+      .grid { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(4, 1fr); }
+      .vc-grid-routine { grid-template-columns: repeat(2, 1fr); }
+      .vc-grid-special { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="compare-wrap">
+
+    <header class="compare-head">
+      <h1>도움 페이지 — 카드 후보 3종</h1>
+      <p>현재(단일 오렌지) 위계 부재 문제 해결 · Mobbin 레퍼런스(Gojek · Revolut · Vibes · Riveo) 응용</p>
+    </header>
+
+    <!-- ═══════════════ VARIANT A ═══════════════ -->
+    <section class="variant-block">
+      <span class="variant-tag">VARIANT A</span>
+      <h2>카테고리별 부드러운 파스텔 컬러</h2>
+      <p class="variant-desc">Gojek / Revolut Hub 영감. 각 도움 유형마다 의미 있는 컬러(물=파랑, 화장실=청록, 식사=따뜻한 오렌지, 약=초록, 자세=보라, 온도=노랑, 말벗=핑크, 긴급=빨강). 각 카드가 한눈에 구별. 다크한 아이콘 + 부드러운 배경.</p>
+
+      <div class="mockup va">
+        <nav class="pseudo-nav">
+          <div class="top-nav">
+            <a class="nav-tab" href="#"><iconify-icon icon="fluent:home-24-filled" width="20"></iconify-icon>홈</a>
+            <a class="nav-tab" href="#"><iconify-icon icon="fluent:clipboard-bullet-list-ltr-24-filled" width="20"></iconify-icon>할일</a>
+            <a class="nav-tab" href="#"><iconify-icon icon="fluent:people-24-filled" width="20"></iconify-icon>가족</a>
+            <a class="nav-tab nav-tab--active" href="#"><iconify-icon icon="fluent:hand-wave-24-filled" width="20"></iconify-icon>도움</a>
+          </div>
+        </nav>
+        <div class="heading">
+          <h1>무엇이 필요하세요?</h1>
+          <p>버튼을 누르시면 보호자에게 바로 알립니다.</p>
+        </div>
+        <div class="grid">
+          <button class="btn va-btn-water">
+            <span class="icon"><iconify-icon icon="fluent:drink-to-go-24-filled"></iconify-icon></span>
+            <span class="label">물 한 잔</span>
+            <span class="sub">목 마를 때</span>
+          </button>
+          <button class="btn va-btn-toilet">
+            <span class="icon"><iconify-icon icon="material-symbols:wc-rounded"></iconify-icon></span>
+            <span class="label">화장실</span>
+            <span class="sub">도와주세요</span>
+          </button>
+          <button class="btn va-btn-meal">
+            <span class="icon"><iconify-icon icon="fluent:food-24-filled"></iconify-icon></span>
+            <span class="label">식사</span>
+            <span class="sub">배고파요</span>
+          </button>
+          <button class="btn va-btn-med">
+            <span class="icon"><iconify-icon icon="fluent:pill-24-filled"></iconify-icon></span>
+            <span class="label">약 주세요</span>
+            <span class="sub">복약 시간</span>
+          </button>
+          <button class="btn va-btn-posture">
+            <span class="icon"><iconify-icon icon="fluent:bed-24-filled"></iconify-icon></span>
+            <span class="label">자세 바꾸기</span>
+            <span class="sub">몸이 불편해요</span>
+          </button>
+          <button class="btn va-btn-temp">
+            <span class="icon"><iconify-icon icon="fluent:temperature-24-filled"></iconify-icon></span>
+            <span class="label">더워요 · 추워요</span>
+            <span class="sub">온도 조절</span>
+          </button>
+          <button class="btn va-btn-talk va-btn--brand-img">
+            <span class="icon"><img src="../07_디자인/logo/brand-system/01_심볼단독.svg" alt=""></span>
+            <span class="label">말벗</span>
+            <span class="sub">심심해요</span>
+          </button>
+          <button class="btn va-btn-urgent">
+            <span class="icon"><iconify-icon icon="fluent:heart-pulse-24-filled"></iconify-icon></span>
+            <span class="label">아파요</span>
+            <span class="sub">바로 도움 요청</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="notes">
+        <b>장점</b> 카드별 명확한 시각적 구분 — 한눈에 스캔 빠름. 의미적 컬러(물=시원한 파랑, 약=건강 초록)로 직관적.<br>
+        <b>단점</b> 컬러 8개 = 시각 자극 많음. 어르신엔 약간 산만할 수 있음. 브랜드 톤(오렌지) 약해짐.<br>
+        <b>가장 적합</b> 패턴 학습이 빠른 사용자, 스캔 속도 우선.
+      </div>
+    </section>
+
+    <!-- ═══════════════ VARIANT B ═══════════════ -->
+    <section class="variant-block">
+      <span class="variant-tag">VARIANT B</span>
+      <h2>톤 in 톤 — 브랜드 오렌지 강도로 위계</h2>
+      <p class="variant-desc">단일 브랜드 컬러 시스템 유지하면서 강도(intensity)로 위계. 일상 6개는 연한 오렌지(orange-100) + 다크 아이콘 → 차분, 말벗은 솔리드 오렌지 → 브랜드 강조, 아파요는 솔리드 빨강 → 긴급. 컬러 노이즈 ↓ 브랜드 ↑.</p>
+
+      <div class="mockup vb">
+        <nav class="pseudo-nav">
+          <div class="top-nav">
+            <a class="nav-tab" href="#"><iconify-icon icon="fluent:home-24-filled" width="20"></iconify-icon>홈</a>
+            <a class="nav-tab" href="#"><iconify-icon icon="fluent:clipboard-bullet-list-ltr-24-filled" width="20"></iconify-icon>할일</a>
+            <a class="nav-tab" href="#"><iconify-icon icon="fluent:people-24-filled" width="20"></iconify-icon>가족</a>
+            <a class="nav-tab nav-tab--active" href="#"><iconify-icon icon="fluent:hand-wave-24-filled" width="20"></iconify-icon>도움</a>
+          </div>
+        </nav>
+        <div class="heading">
+          <h1>무엇이 필요하세요?</h1>
+          <p>버튼을 누르시면 보호자에게 바로 알립니다.</p>
+        </div>
+        <div class="grid">
+          <button class="btn vb-btn-soft">
+            <span class="icon"><iconify-icon icon="fluent:drink-to-go-24-filled"></iconify-icon></span>
+            <span class="label">물 한 잔</span>
+            <span class="sub">목 마를 때</span>
+          </button>
+          <button class="btn vb-btn-soft">
+            <span class="icon"><iconify-icon icon="material-symbols:wc-rounded"></iconify-icon></span>
+            <span class="label">화장실</span>
+            <span class="sub">도와주세요</span>
+          </button>
+          <button class="btn vb-btn-soft">
+            <span class="icon"><iconify-icon icon="fluent:food-24-filled"></iconify-icon></span>
+            <span class="label">식사</span>
+            <span class="sub">배고파요</span>
+          </button>
+          <button class="btn vb-btn-soft">
+            <span class="icon"><iconify-icon icon="fluent:pill-24-filled"></iconify-icon></span>
+            <span class="label">약 주세요</span>
+            <span class="sub">복약 시간</span>
+          </button>
+          <button class="btn vb-btn-soft">
+            <span class="icon"><iconify-icon icon="fluent:bed-24-filled"></iconify-icon></span>
+            <span class="label">자세 바꾸기</span>
+            <span class="sub">몸이 불편해요</span>
+          </button>
+          <button class="btn vb-btn-soft">
+            <span class="icon"><iconify-icon icon="fluent:temperature-24-filled"></iconify-icon></span>
+            <span class="label">더워요 · 추워요</span>
+            <span class="sub">온도 조절</span>
+          </button>
+          <button class="btn vb-btn-brand">
+            <span class="icon"><img src="../07_디자인/logo/brand-system/01_심볼단독.svg" alt=""></span>
+            <span class="label">말벗</span>
+            <span class="sub">심심해요</span>
+          </button>
+          <button class="btn vb-btn-urgent">
+            <span class="icon"><iconify-icon icon="fluent:heart-pulse-24-filled"></iconify-icon></span>
+            <span class="label">아파요</span>
+            <span class="sub">바로 도움 요청</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="notes">
+        <b>장점</b> 브랜드 일관성 ↑ · 인지부담 ↓ · 위계 명확(연 < 강 < 긴급). 어르신에 친화적. <b>(추천)</b><br>
+        <b>단점</b> 일상 6개 카드는 서로 거의 동일 — 위치로 구분해야 함 (다행히 그리드 정렬됨).<br>
+        <b>가장 적합</b> 환자앱 메인 톤 유지하면서 위계 도입.
+      </div>
+    </section>
+
+    <!-- ═══════════════ VARIANT C ═══════════════ -->
+    <section class="variant-block">
+      <span class="variant-tag">VARIANT C</span>
+      <h2>섹션 분리 — "일상 도움" + "특별 · 긴급"</h2>
+      <p class="variant-desc">의미적으로 그룹 분리. 위쪽 4개는 일상 요청(흰 카드 + 오렌지 아이콘), 아래는 말벗(브랜드 오렌지) + 자세 + 아파요(빨강). 시선이 자연스럽게 위→아래로 흘러서 일상 → 긴급 우선순위가 명확.</p>
+
+      <div class="mockup vc">
+        <nav class="pseudo-nav">
+          <div class="top-nav">
+            <a class="nav-tab" href="#"><iconify-icon icon="fluent:home-24-filled" width="20"></iconify-icon>홈</a>
+            <a class="nav-tab" href="#"><iconify-icon icon="fluent:clipboard-bullet-list-ltr-24-filled" width="20"></iconify-icon>할일</a>
+            <a class="nav-tab" href="#"><iconify-icon icon="fluent:people-24-filled" width="20"></iconify-icon>가족</a>
+            <a class="nav-tab nav-tab--active" href="#"><iconify-icon icon="fluent:hand-wave-24-filled" width="20"></iconify-icon>도움</a>
+          </div>
+        </nav>
+        <div class="heading">
+          <h1>무엇이 필요하세요?</h1>
+          <p>버튼을 누르시면 보호자에게 바로 알립니다.</p>
+        </div>
+
+        <div class="vc-main">
+          <div class="vc-section-title"><iconify-icon icon="fluent:checkmark-circle-24-filled"></iconify-icon>일상 도움</div>
+
+          <div class="vc-grid-routine">
+            <button class="btn vc-btn-routine">
+              <span class="icon"><iconify-icon icon="fluent:drink-to-go-24-filled"></iconify-icon></span>
+              <span class="label">물 한 잔</span>
+              <span class="sub">목 마를 때</span>
+            </button>
+            <button class="btn vc-btn-routine">
+              <span class="icon"><iconify-icon icon="material-symbols:wc-rounded"></iconify-icon></span>
+              <span class="label">화장실</span>
+              <span class="sub">도와주세요</span>
+            </button>
+            <button class="btn vc-btn-routine">
+              <span class="icon"><iconify-icon icon="fluent:food-24-filled"></iconify-icon></span>
+              <span class="label">식사</span>
+              <span class="sub">배고파요</span>
+            </button>
+            <button class="btn vc-btn-routine">
+              <span class="icon"><iconify-icon icon="fluent:pill-24-filled"></iconify-icon></span>
+              <span class="label">약 주세요</span>
+              <span class="sub">복약 시간</span>
+            </button>
+            <button class="btn vc-btn-routine">
+              <span class="icon"><iconify-icon icon="fluent:bed-24-filled"></iconify-icon></span>
+              <span class="label">자세 바꾸기</span>
+              <span class="sub">몸이 불편해요</span>
+            </button>
+            <button class="btn vc-btn-routine">
+              <span class="icon"><iconify-icon icon="fluent:temperature-24-filled"></iconify-icon></span>
+              <span class="label">더워요</span>
+              <span class="sub">온도 조절</span>
+            </button>
+          </div>
+
+          <div class="vc-section-title"><iconify-icon icon="fluent:sparkle-24-filled"></iconify-icon>특별 · 긴급</div>
+
+          <div class="vc-grid-special">
+            <button class="btn vc-btn-special">
+              <span class="icon"><img src="../07_디자인/logo/brand-system/01_심볼단독.svg" alt=""></span>
+              <span class="label">말벗</span>
+              <span class="sub">심심해요</span>
+            </button>
+            <button class="btn vc-btn-special">
+              <span class="icon"><iconify-icon icon="fluent:chat-24-filled"></iconify-icon></span>
+              <span class="label">대화하기</span>
+              <span class="sub">누구와든</span>
+            </button>
+            <button class="btn vc-btn-urgent">
+              <span class="icon"><iconify-icon icon="fluent:heart-pulse-24-filled"></iconify-icon></span>
+              <span class="label">아파요</span>
+              <span class="sub">바로 도움</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="notes">
+        <b>장점</b> 의미적 그룹핑 — 어떤 게 일상이고 어떤 게 긴급인지 명확. 시선 흐름 자연스러움(위→아래로 강도 ↑).<br>
+        <b>단점</b> 섹션 헤더 추가 → 정보 더 있음 (인지 부담 살짝 ↑). 카드 7개로 줄여야 함(현재 8개에서 1개 통합).<br>
+        <b>가장 적합</b> 도움 종류가 더 많아질 때 확장 가능한 구조.
+      </div>
+    </section>
+
+  </div>
+
+</body>
+</html>

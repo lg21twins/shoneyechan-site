@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="ko" data-role="patient" data-platform="mobile">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="var(--patient-canvas-warm)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>하루안부 · 내 화면 설정</title>
+
+  <link rel="icon" type="image/svg+xml" href="../07_디자인/logo/brand-system/01_심볼단독.svg">
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css">
+  <script src="../07_디자인/_app-theme.js"></script>
+  <link rel="stylesheet" href="patient.css">
+  <script src="../07_디자인/_iconify-icon.min.js"></script>
+
+  <style>
+    /* 환자앱은 본문 18px+, 터치 56px+, 카드 padding 24px 자동 — tokens.css에서 이미 처리 */
+    body {
+      background: var(--patient-canvas-warm);
+    }
+    .settings-main {
+      flex: 1;
+      padding: var(--space-7);
+      max-width: 720px;
+      margin: 0 auto;
+      width: 100%;
+      overflow-y: auto;
+    }
+    .settings-title {
+      font: var(--weight-bold) 28px/1.2 var(--font-family-base);
+      color: var(--color-text-primary);
+      margin: 0 0 var(--space-3);
+    }
+    .settings-hint {
+      font: 18px/1.5 var(--font-family-base);
+      color: var(--color-text-secondary);
+      margin: 0 0 var(--space-8);
+    }
+
+    /* 큰 토글 카드 — 환자용 56px 터치 보장 */
+    .opt {
+      display: flex;
+      align-items: center;
+      gap: var(--space-5);
+      min-height: 88px;
+      padding: var(--space-6);
+      background: var(--color-bg-surface);
+      border-radius: var(--radius-card-lg);
+      box-shadow: var(--shadow-1);
+      cursor: pointer;
+      transition: transform .12s, box-shadow .15s;
+    }
+    .opt + .opt { margin-top: var(--space-4); }
+    .opt:active { transform: scale(0.99); }
+    .opt__icon {
+      width: 56px; height: 56px;
+      border-radius: var(--radius-card);
+      background: var(--color-accent-soft);
+      color: var(--color-accent);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .opt__icon iconify-icon { font-size: 28px; }
+    .opt__body { flex: 1; min-width: 0; }
+    .opt__label {
+      font: var(--weight-bold) 20px/1.2 var(--font-family-base);
+      color: var(--color-text-primary);
+    }
+    .opt__desc {
+      font: 16px/1.4 var(--font-family-base);
+      color: var(--color-text-secondary);
+      margin-top: 4px;
+    }
+
+    /* 큰 토글 — 환자용 사이즈 */
+    .opt__toggle {
+      width: 64px; height: 36px;
+      background: var(--color-border-strong);
+      border-radius: var(--radius-pill);
+      position: relative;
+      transition: background 200ms var(--easing-standard);
+      flex-shrink: 0;
+      border: 0;
+      padding: 0;
+    }
+    .opt__toggle::after {
+      content: "";
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 30px; height: 30px;
+      background: white;
+      border-radius: 50%;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      transition: transform 200ms var(--easing-standard);
+    }
+    .opt__toggle[aria-checked="true"] {
+      background: var(--color-accent);
+    }
+    .opt__toggle[aria-checked="true"]::after {
+      transform: translateX(28px);
+    }
+
+    .settings-back {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-3);
+      height: 56px;
+      padding: 0 var(--space-6);
+      background: var(--color-bg-surface);
+      border-radius: var(--radius-pill);
+      color: var(--color-text-primary);
+      font: var(--weight-semibold) 18px/1 var(--font-family-base);
+      text-decoration: none;
+      margin: var(--space-7) auto 0;
+    }
+    .settings-back iconify-icon { font-size: 24px; }
+
+    .settings-foot {
+      text-align: center;
+      margin-top: var(--space-8);
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <main class="settings-main">
+    <h1 class="settings-title">내 화면 설정</h1>
+    <p class="settings-hint">눈에 더 잘 보이게, 손에 더 편하게 — 원하는 옵션을 켜 보세요.</p>
+
+    <button type="button" class="opt" id="opt-text">
+      <div class="opt__icon"><iconify-icon icon="fluent:text-font-size-24-filled"></iconify-icon></div>
+      <div class="opt__body">
+        <div class="opt__label">글자 크게</div>
+        <div class="opt__desc">본문이 한 단계 더 커져요</div>
+      </div>
+      <span class="opt__toggle" role="switch" aria-checked="false"></span>
+    </button>
+
+    <button type="button" class="opt" id="opt-contrast">
+      <div class="opt__icon"><iconify-icon icon="fluent:contrast-24-filled"></iconify-icon></div>
+      <div class="opt__body">
+        <div class="opt__label">진하게 보기</div>
+        <div class="opt__desc">글자와 배경 차이를 더 강하게 해요</div>
+      </div>
+      <span class="opt__toggle" role="switch" aria-checked="false"></span>
+    </button>
+
+    <div class="settings-foot">
+      <a href="p01-today.html" class="settings-back">
+        <iconify-icon icon="fluent:chevron-left-24-filled"></iconify-icon>
+        오늘 화면으로
+      </a>
+    </div>
+  </main>
+</div>
+
+<script>
+(function () {
+  const T = window.HaruTheme;
+  if (!T) return;
+
+  const map = [
+    { id: 'opt-text', get: () => T.getTextSize() === 'large', set: (on) => T.setTextSize(on ? 'large' : 'normal') },
+    { id: 'opt-contrast', get: () => T.getContrast() === 'high', set: (on) => T.setContrast(on ? 'high' : 'normal') },
+  ];
+
+  map.forEach(({ id, get, set }) => {
+    const card = document.getElementById(id);
+    if (!card) return;
+    const toggle = card.querySelector('.opt__toggle');
+    toggle.setAttribute('aria-checked', get() ? 'true' : 'false');
+    card.addEventListener('click', () => {
+      const next = !(get());
+      set(next);
+      toggle.setAttribute('aria-checked', next ? 'true' : 'false');
+      // 다크 토글과 시스템 토글은 서로 영향을 주므로 둘 다 다시 동기화
+      map.forEach(m => {
+        const el = document.querySelector('#' + m.id + ' .opt__toggle');
+        if (el) el.setAttribute('aria-checked', m.get() ? 'true' : 'false');
+      });
+    });
+  });
+})();
+</script>
+</body>
+</html>

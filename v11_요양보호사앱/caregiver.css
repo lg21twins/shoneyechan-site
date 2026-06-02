@@ -1,0 +1,774 @@
+/* ============================================================================
+   하루안부 · 요양보호사 앱 v11 · 공통 CSS
+   ============================================================================
+   import 순서:
+     1) 07_디자인/tokens/tokens.css
+     2) 07_디자인/system/app.css   (선택)
+     3) 07_디자인/system/components.css (선택)
+     4) v11_요양보호사앱/caregiver.css  ← 이 파일
+
+   원칙:
+     - 색·간격·라운드·그림자·폰트는 모두 시멘틱 토큰 참조. hex/rgba 직접 사용 금지.
+     - 모든 인터랙티브 컨트롤 hit area 48px 이상.
+     - 화면별 HTML 내부 style은 layout과 화면 고유 컴포넌트만 남기고
+       header/tabbar/SOS/sheet/toast/icon-button은 이 파일을 사용한다.
+     - iconify-icon은 fluent:* 계열만.
+
+   섹션:
+     1. App shell · 배경
+     2. Header (모바일)
+     3. Status badge / Pill
+     4. Bottom Bar (탭바 + SOS) — 라벨 포함
+     5. SOS confirmation / countdown
+     6. Sheet · Overlay
+     7. Detail row (alert / handoff / mypage)
+     8. Toast
+     9. 입력 keypad (vital input)
+    10. Switch (row a11y)
+   ============================================================================ */
+
+
+/* ============================================================
+   1. APP SHELL · 배경
+   ============================================================ */
+
+html, body { height: 100%; }
+body {
+  font-size: var(--text-body, 16px);
+  color: var(--color-text-primary);
+  overflow-x: hidden;
+}
+
+/* 요양보호사 앱 본문은 시멘틱 토큰 위에 살짝 더 큰 18px 표준 — 고령 보호사 배려.
+   tokens.css 의 caregiver 룰이 이미 본문 16px 기본을 유지하므로 화면별 오버라이드. */
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) body {
+  font-size: 18px;
+}
+
+/* 역할 그라디언트는 system/app.css의 .app-shell이 이미 처리하지만,
+   기존 화면이 .bg + .app 패턴을 쓰는 경우 호환을 유지한다. */
+.cg-bg {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: var(--color-bg-role-gradient, var(--color-bg-canvas));
+}
+
+.cg-app {
+  max-width: 430px; margin: 0 auto; min-height: 100dvh;
+  position: relative;
+  padding-bottom: calc(var(--size-tab-bar, 56px) + 28px + env(safe-area-inset-bottom, 0px) + 32px);
+}
+
+
+/* ============================================================
+   2. HEADER (모바일 · sticky)
+   ============================================================ */
+
+.cg-header {
+  position: sticky; top: 0; z-index: var(--z-sticky, 10);
+  padding: calc(env(safe-area-inset-top, 0px) + 8px) var(--space-page-margin, 16px) 10px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+}
+.cg-header__row {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  min-height: 48px;
+}
+.cg-header__title {
+  font: var(--w-title, 700) var(--text-headline, 17px) var(--font-family-base);
+  letter-spacing: -.4px; color: var(--color-text-primary);
+}
+.cg-header__logo {
+  display: inline-flex; align-items: center; gap: 8px;
+  text-decoration: none; color: inherit;
+  height: 48px; padding: 0 4px;
+}
+.cg-header__logo svg { width: 24px; height: 24px; color: var(--color-accent-strong); }
+.cg-header__logo-name {
+  font: var(--w-title) var(--text-headline) var(--font-family-base);
+  letter-spacing: -.4px;
+}
+.cg-header__actions { display: flex; align-items: center; gap: 4px; }
+
+/* icon button — 48px hit area, 24px visual */
+.cg-iconbtn {
+  width: 48px; height: 48px; border-radius: 50%;
+  border: 0; background: transparent;
+  display: inline-flex; align-items: center; justify-content: center;
+  position: relative;
+  color: var(--color-accent-strong);
+  cursor: pointer;
+  transition: transform var(--motion-micro) var(--easing-standard),
+              background var(--motion-micro) var(--easing-standard);
+  text-decoration: none;
+}
+.cg-iconbtn:active { transform: scale(.93); }
+.cg-iconbtn:hover { background: rgba(0, 0, 0, 0.04); }
+.cg-iconbtn iconify-icon { font-size: var(--size-icon-md, 24px); }
+.cg-iconbtn--surface {
+  background: var(--color-bg-surface);
+  box-shadow: var(--shadow-1);
+  width: 44px; height: 44px;
+}
+.cg-iconbtn__dot {
+  position: absolute; top: 10px; right: 10px;
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--color-danger);
+  border: 1.5px solid var(--palette-white);
+}
+
+/* ============================================================
+   2-b. header-mobile 글라스 버튼 통일 (c01 홈 스펙)
+   요양보호사앱 전 페이지 상단 좌/우 버튼을 홈과 동일한 글라스 원형으로.
+   ============================================================ */
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) .header-mobile {
+  grid-template-columns: 40px 1fr 40px;
+}
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) .header-mobile__left,
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) .header-mobile__right {
+  width: 40px !important; height: 40px !important; border-radius: 50% !important;
+  background: rgba(255,255,255,.55) !important;
+  border: .5px solid rgba(255,255,255,.55) !important;
+  backdrop-filter: blur(12px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(140%) !important;
+  box-shadow: 0 1px 1px rgba(255,255,255,.6) inset, 0 4px 16px rgba(0,0,0,.06) !important;
+  transition: transform .1s;
+  position: relative;
+}
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) .header-mobile__left:active,
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) .header-mobile__right:active { transform: scale(.93); }
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) .header-mobile__left iconify-icon,
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) .header-mobile__right iconify-icon {
+  font-size: 19px !important; color: var(--color-accent-strong) !important;
+}
+/* v3.2.5: 세 앱 헤더 통일 — .icon-btn iconify-icon 22px (medical 기준) */
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) .icon-btn iconify-icon { font-size: 22px; color: var(--color-accent-strong); }
+
+/* v3.2.13: .icon-btn 전역 글라스 표준 (d01 홈 스펙) — 두 앱 모두 동일 렌더 */
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) .icon-btn {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: rgba(255,255,255,.55);
+  border: .5px solid rgba(255,255,255,.55);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  cursor: pointer; text-decoration: none;
+  display: inline-flex; align-items: center; justify-content: center;
+  box-shadow: 0 1px 1px rgba(255,255,255,.6) inset, 0 4px 16px rgba(0,0,0,.06);
+  position: relative; transition: transform .1s;
+}
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) .icon-btn:active { transform: scale(.93); }
+
+/* v3.2.13: .header > .top-nav 표준 (의료진앱 ↔ 요양보호사앱 헤더 동일 렌더).
+   페이지별 인라인 정의 없이 마크업만 동일하면 같은 헤더가 그려진다. */
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) .header {
+  padding: calc(var(--safe-t, env(safe-area-inset-top, 0px)) + 6px) var(--page-pad, 20px) 0;
+  background: transparent;
+  position: static;
+}
+/* .top-nav 기본 = flex (홈 페이지: logo + top-actions 그룹 패턴) */
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) .top-nav {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  margin-bottom: 24px;
+}
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) .top-actions {
+  display: flex; align-items: center; gap: 8px;
+}
+/* .top-nav.has-title = grid 3-col (서브 페이지: 좌버튼 + 중앙 타이틀 + 우버튼)
+   서브 페이지는 .top-nav 안에 .title-block을 가지므로 :has로 자동 매칭. */
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) .top-nav:has(> .title-block) {
+  display: grid; grid-template-columns: 44px 1fr 44px;
+  margin-bottom: 8px;
+}
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) .top-nav:has(> .title-block) .h-left {
+  width: 44px; height: 44px;
+}
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) .top-nav:has(> .title-block) .title-block {
+  grid-column: 2; text-align: center; line-height: 1.2; min-width: 0;
+}
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) .top-nav:has(> .title-block) .h-name {
+  font: var(--weight-semibold, 600) var(--text-headline, 17px) var(--font-family-base);
+  color: var(--color-text-primary); letter-spacing: -.3px; text-align: center;
+}
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) .top-nav:has(> .title-block) > :first-child {
+  grid-column: 1; justify-self: start;
+}
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) .top-nav:has(> .title-block) > :last-child {
+  grid-column: 3; justify-self: end;
+}
+/* 빈 placeholder span은 시각적으로 안 보이게 */
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) span.header-mobile__left:empty,
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) span.header-mobile__right:empty {
+  background: transparent !important; border: 0 !important; box-shadow: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+}
+/* 알림 dot — c01의 .notif-dot 패턴 재사용 */
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) .header-mobile__right .notif-dot,
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) .header-mobile__left .notif-dot {
+  position: absolute; top: 8px; right: 8px;
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--color-danger); border: 1.5px solid white;
+}
+
+
+/* ============================================================
+   2-c. 카드 베이스라인 (v3.2.8 통일)
+   원칙:
+     - 정보 카드는 솔리드(흰색) 베이스. glass는 탭바·모달·강조 한정.
+     - border 없이 hairline shadow로 분리. 모든 카드가 동일한 elevation.
+     - 페이지별로 카드 클래스명이 달라도(.shift, .hero, .obs-card, .pt-row-c,
+       .profile, .card 등) 다음 3개 토큰을 참조하면 동일한 톤이 나온다.
+   ============================================================ */
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) {
+  --cg-card-bg:     var(--color-bg-surface);
+  --cg-card-shadow: var(--shadow-card-borderless, 0 1px 2px rgba(0,0,0,.04), 0 0 0 1px rgba(0,0,0,.03));
+  --cg-card-radius: var(--radius-card, 18px);
+
+  /* clinical 캔버스/그라디언트는 tokens.css의 SoT를 사용한다. */
+}
+
+.cg-card {
+  background: var(--cg-card-bg);
+  border-radius: var(--cg-card-radius);
+  box-shadow: var(--cg-card-shadow);
+  border: 0;
+}
+
+/* 강조용 글래스 (영역 모달·hero·시트 head) — 일반 카드엔 쓰지 말 것 */
+.cg-card-glass {
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(var(--blur-card, 20px)) saturate(140%);
+  -webkit-backdrop-filter: blur(var(--blur-card, 20px)) saturate(140%);
+  border: 0.5px solid rgba(255, 255, 255, 0.6);
+  border-radius: var(--cg-card-radius);
+  box-shadow: var(--card-shadow-glass, 0 4px 20px rgba(0, 0, 0, 0.08));
+}
+
+
+/* ============================================================
+   3. STATUS BADGE / PILL
+   관찰·주의·응급의 단계 시각화. 색상 + 텍스트 + 아이콘 동반.
+   ============================================================ */
+
+.cg-status {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 26px; padding: 0 10px;
+  border-radius: var(--radius-pill);
+  font: var(--w-strong, 600) var(--font-11, 11px) var(--font-family-base);
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+.cg-status iconify-icon { font-size: 14px; }
+.cg-status--observe {
+  background: var(--color-info-soft);
+  color: var(--brand-blue-700);
+}
+.cg-status--watch {
+  background: var(--color-warning-soft);
+  color: var(--palette-amber-700);
+}
+.cg-status--urgent {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+.cg-status--ready {
+  background: var(--color-success-soft);
+  color: var(--brand-green-700);
+}
+.cg-status--pending {
+  background: var(--palette-gray-100);
+  color: var(--color-text-secondary);
+}
+
+
+/* ============================================================
+   4. BOTTOM BAR (탭바 + SOS) — 라벨 포함
+   4-b. 페이지 .bottom-bar .tabbar (보호자앱 base 마크업) 표준화
+        — c01/c02/c03/c04 모두 동일 인라인 블록을 중복 정의했으므로 SoT 이동
+   ============================================================ */
+
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) :is(.bottom-bar, .tab-wrap) {
+  position: fixed;
+  /* v3.2.15: 탭바 위치 — home indicator 위 20px (이전 40px → 절반으로 내림) */
+  bottom: calc(max(env(safe-area-inset-bottom, 0px), 20px) + 12px);
+  left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 10px;
+  width: calc(100% - 32px); max-width: 398px; z-index: 100;
+}
+/* v3.2.14: 보호자 홈 스펙으로 통일 — 알파 .85 흰 글라스 (다른 페이지가 푸르스름하게 보이던 이슈 해결) */
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) :is(.bottom-bar, .tab-wrap) .tabbar {
+  flex: 1; min-width: 0;
+  height: var(--tab-h, 64px);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 999px;
+  box-shadow:
+    0 6px 22px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  display: flex; align-items: stretch; justify-content: space-around;
+  padding: 0 10px;
+}
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) :is(.bottom-bar, .tab-wrap) .tab {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px;
+  color: rgba(28, 28, 30, 0.45);
+  text-decoration: none;
+  border-radius: 999px;
+  transition: color .18s var(--easing-standard);
+  min-height: 48px; padding: 8px 4px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) :is(.bottom-bar, .tab-wrap) .tab iconify-icon { font-size: 26px; }
+/* v3.2.9: active 탭 = 각 앱 메인 accent (was accent-strong). drop-shadow 글로우 제거. */
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) :is(.bottom-bar, .tab-wrap) .tab.active { color: var(--color-accent); }
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) :is(.bottom-bar, .tab-wrap) .tab.active iconify-icon,
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) :is(.bottom-bar, .tab-wrap) .tab.active .tab-icon svg {
+  filter: none;
+}
+:is([data-role="caregiver"], [data-role="medical"][data-platform="mobile"], [data-role="nurse"][data-platform="mobile"], [data-role="doctor"][data-platform="mobile"], [data-role="guardian"][data-platform="mobile"]) :is(.bottom-bar, .tab-wrap) .tab-label { display: none; }
+
+
+
+.cg-bottombar {
+  position: fixed;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+  left: 50%; transform: translateX(-50%);
+  display: flex; align-items: stretch; gap: 10px;
+  width: calc(100% - 32px); max-width: 398px;
+  z-index: 40;
+}
+.cg-tabbar {
+  flex: 1; min-width: 0;
+  height: 64px;
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(22px) saturate(140%);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 999px;
+  box-shadow:
+    0 6px 22px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  display: flex; align-items: stretch; justify-content: space-around;
+  padding: 0 6px;
+}
+.cg-tab {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px;
+  text-decoration: none;
+  color: rgba(28, 28, 30, 0.5);
+  border-radius: 999px;
+  padding: 6px 4px;
+  transition: color var(--motion-micro) var(--easing-standard);
+  min-height: 48px;
+}
+.cg-tab iconify-icon { font-size: 24px; }
+.cg-tab__label {
+  font: var(--w-strong, 600) 11px/1 var(--font-family-base);
+  letter-spacing: -.1px;
+}
+.cg-tab.is-active,
+.cg-tab[aria-current="page"] {
+  color: var(--color-accent-strong);
+}
+.cg-tab.is-active iconify-icon {
+  filter: drop-shadow(0 2px 6px rgba(var(--color-accent-rgb, 34, 197, 94), 0.28));
+}
+
+/* SOS button — 64px circle, 3-second long-press */
+.cg-sos {
+  position: relative;
+  width: 64px; height: 64px; flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--color-danger); /* v3.2.8: 디자인 시스템 Danger */
+  border: 0;
+  box-shadow:
+    0 6px 22px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: transform var(--motion-micro) var(--easing-standard);
+}
+.cg-sos:active { transform: scale(.92); }
+.cg-sos iconify-icon { font-size: 26px; color: var(--palette-white); }
+.cg-sos__ring { position: absolute; inset: 2px; pointer-events: none; }
+.cg-sos__ring svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+.cg-sos__ring circle {
+  fill: none; stroke: var(--palette-white);
+  stroke-width: 3; stroke-linecap: round;
+  stroke-dasharray: 172; stroke-dashoffset: 172;
+  transition: stroke-dashoffset .1s linear;
+}
+.cg-sos.is-holding .cg-sos__ring circle { transition: stroke-dashoffset 0s linear; }
+
+
+/* ============================================================
+   5. SOS confirmation / countdown
+   ============================================================ */
+
+.cg-sos-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  margin-top: 8px;
+}
+.cg-sos-card {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px;
+  min-height: 112px;
+  padding: 20px 12px;
+  background: rgba(227, 43, 37, 0.08);
+  border: 0;
+  border-radius: var(--radius-card-lg, 20px);
+  cursor: pointer;
+  transition: transform var(--motion-micro) var(--easing-standard), background var(--motion-micro) var(--easing-standard);
+  font-family: inherit;
+  word-break: keep-all;
+}
+.cg-sos-card:active { transform: scale(.96); background: rgba(227, 43, 37, 0.14); }
+.cg-sos-card iconify-icon { font-size: 32px; color: var(--palette-red-700); }
+.cg-sos-card__t {
+  font: var(--w-title, 700) 16px var(--font-family-base);
+  color: var(--palette-red-700); letter-spacing: -.3px; line-height: 1.2;
+}
+.cg-sos-hint {
+  font: var(--w-strong, 600) var(--text-caption, 13px)/1.5 var(--font-family-base);
+  color: var(--palette-red-700);
+  background: rgba(227, 43, 37, 0.08);
+  padding: 14px 16px; border-radius: var(--radius-card, 18px);
+  text-align: center; margin-top: 14px;
+  word-break: keep-all;
+}
+
+/* countdown — 1-second confirmation before send */
+.cg-sos-countdown {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  padding: 24px;
+  background: var(--color-danger-soft);
+  border-radius: var(--radius-card-lg, 20px);
+  margin-top: 12px;
+}
+.cg-sos-countdown__num {
+  font: 700 56px/1 var(--font-family-base);
+  color: var(--palette-red-700);
+  font-variant-numeric: tabular-nums;
+}
+.cg-sos-countdown__t {
+  font: var(--w-strong, 600) var(--text-headline, 17px) var(--font-family-base);
+  color: var(--palette-red-700);
+}
+.cg-sos-countdown__cancel {
+  width: 100%;
+  height: 48px;
+  margin-top: 4px;
+  background: var(--color-bg-surface);
+  color: var(--palette-red-700);
+  border: 1px solid var(--palette-red-300);
+  border-radius: var(--radius-button, 18px);
+  font: var(--w-title, 700) var(--text-callout) var(--font-family-base);
+  cursor: pointer;
+}
+.cg-sos-countdown__cancel:active { transform: scale(.97); }
+
+
+/* ============================================================
+   6. SHEET · OVERLAY
+   ============================================================ */
+
+.cg-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.36);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  display: none;
+  align-items: flex-end; justify-content: center;
+  z-index: var(--z-overlay, 100);
+}
+.cg-overlay.is-open { display: flex; }
+
+.cg-sheet {
+  background: rgba(250, 253, 251, 0.96);
+  backdrop-filter: blur(60px) saturate(140%);
+  -webkit-backdrop-filter: blur(60px) saturate(140%);
+  border-top: 0.5px solid rgba(255, 255, 255, 0.8);
+  border-radius: 26px 26px 0 0;
+  padding: 18px 22px calc(28px + env(safe-area-inset-bottom, 0px));
+  width: 100%; max-width: 430px; max-height: 90vh;
+  overflow-y: auto;
+}
+.cg-sheet__handle {
+  width: 36px; height: 4px;
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 2px; margin: 0 auto 16px;
+}
+.cg-sheet__head {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 16px;
+}
+.cg-sheet__ico {
+  width: 44px; height: 44px;
+  border-radius: var(--radius-card, 18px);
+  flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--color-accent-strong);
+  background: var(--color-accent-soft);
+}
+.cg-sheet__ico--danger { background: var(--color-danger-soft); color: var(--color-danger); }
+.cg-sheet__ico--warn { background: var(--color-warning-soft); color: var(--palette-amber-700); }
+.cg-sheet__ico--info { background: var(--color-info-soft); color: var(--brand-blue-700); }
+.cg-sheet__ico iconify-icon { font-size: 22px; }
+
+.cg-sheet__ttl {
+  font: var(--w-title, 700) var(--text-title, 22px) var(--font-family-base);
+  letter-spacing: -.4px;
+  color: var(--color-text-primary);
+}
+.cg-sheet__ttl--danger { color: var(--palette-red-700); }
+.cg-sheet__sub {
+  margin-top: 2px;
+  font: var(--w-meta, 500) var(--text-caption, 13px)/1.45 var(--font-family-base);
+  color: var(--color-text-secondary);
+}
+
+.cg-sheet__body { display: flex; flex-direction: column; gap: 8px; }
+
+.cg-sheet__cta {
+  display: flex; gap: 8px; margin-top: 16px;
+}
+.cg-sheet__cta .cg-btn { flex: 1; }
+
+
+/* ============================================================
+   7. DETAIL ROW (alert / handoff / mypage)
+   리스트 안 항목을 sheet 또는 detail로 push하는 button row.
+   ============================================================ */
+
+.cg-row {
+  display: flex; align-items: center; gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 12px 14px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-card, 18px);
+  text-align: left;
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform var(--motion-micro) var(--easing-standard);
+}
+.cg-row:active { transform: scale(.99); }
+.cg-row + .cg-row { margin-top: 8px; }
+.cg-row__ico {
+  flex-shrink: 0;
+  width: 36px; height: 36px;
+  border-radius: var(--radius-card, 18px);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-strong);
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.cg-row__ico iconify-icon { font-size: 18px; }
+.cg-row__ico--warn { background: var(--color-warning-soft); color: var(--palette-amber-700); }
+.cg-row__ico--danger { background: var(--color-danger-soft); color: var(--color-danger); }
+.cg-row__body { flex: 1; min-width: 0; line-height: 1.35; }
+.cg-row__t {
+  font: var(--w-strong, 600) var(--text-callout, 14px) var(--font-family-base);
+  color: var(--color-text-primary);
+}
+.cg-row__d {
+  margin-top: 2px;
+  font: var(--w-meta, 500) var(--text-caption, 13px) var(--font-family-base);
+  color: var(--color-text-secondary);
+}
+.cg-row__chev {
+  flex-shrink: 0;
+  font-size: 18px; color: var(--color-text-tertiary);
+}
+.cg-row[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.cg-row[aria-disabled="true"]:active { transform: none; }
+
+
+/* ============================================================
+   8. TOAST
+   ============================================================ */
+
+.cg-toast {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 64px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+  background: rgba(28, 28, 30, 0.92);
+  color: var(--palette-white);
+  padding: 12px 20px; border-radius: 999px;
+  font: var(--w-strong, 600) var(--text-callout, 14px) var(--font-family-base);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+  z-index: var(--z-toast, 300);
+  opacity: 0; pointer-events: none;
+  transition: opacity .22s, transform .22s;
+}
+.cg-toast.is-shown {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
+
+/* ============================================================
+   9. KEYPAD (numeric input sheet for vitals)
+   ============================================================ */
+
+.cg-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 16px;
+}
+.cg-keypad__btn {
+  height: 56px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-card, 18px);
+  font: var(--w-title, 700) 22px/1 var(--font-family-base);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+  transition: transform var(--motion-micro) var(--easing-standard);
+}
+.cg-keypad__btn:active { transform: scale(.96); background: var(--color-accent-soft); }
+.cg-keypad__btn--util {
+  background: var(--palette-gray-100);
+  color: var(--color-text-secondary);
+}
+
+.cg-vital-display {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-card, 18px);
+  padding: 18px;
+  text-align: center;
+}
+.cg-vital-display__label {
+  font: var(--w-strong) var(--text-caption) var(--font-family-base);
+  color: var(--color-text-secondary);
+  letter-spacing: .3px;
+}
+.cg-vital-display__val {
+  margin-top: 4px;
+  font: 700 38px/1 var(--font-family-base);
+  color: var(--color-accent-strong);
+  font-variant-numeric: tabular-nums;
+}
+.cg-vital-display__unit {
+  font-size: 16px; color: var(--color-text-secondary); margin-left: 4px;
+}
+
+
+/* ============================================================
+   10. SWITCH ROW (full-row clickable, a11y)
+   ============================================================ */
+
+.cg-switchrow {
+  display: flex; align-items: center; gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 12px 14px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  color: inherit;
+}
+.cg-switchrow__body { flex: 1; min-width: 0; line-height: 1.35; }
+.cg-switchrow__t {
+  font: var(--w-strong, 600) var(--text-callout, 14px) var(--font-family-base);
+  color: var(--color-text-primary);
+}
+.cg-switchrow__d {
+  margin-top: 2px;
+  font: var(--w-meta) var(--text-caption) var(--font-family-base);
+  color: var(--color-text-secondary);
+}
+.cg-switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 52px; height: 32px;
+  background: var(--color-border-strong);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background var(--motion-transition) var(--easing-standard);
+  border: 0; padding: 0;
+}
+.cg-switch::after {
+  content: "";
+  position: absolute; top: 2px; left: 2px;
+  width: 28px; height: 28px;
+  background: var(--color-bg-surface);
+  border-radius: 999px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  transition: transform var(--motion-transition) var(--easing-standard);
+}
+.cg-switch[aria-checked="true"] {
+  background: var(--color-accent);
+}
+.cg-switch[aria-checked="true"]::after {
+  transform: translateX(20px);
+}
+
+
+/* ============================================================
+   11. MOTION — 3개 앱 공통 표준 애니메이션 (보호자/요양보호사/의료진)
+   ============================================================ */
+
+/* 페이지·카드 등장 — 모든 앱 공통 (fade + slide up 8px) */
+@keyframes haru-fade-in-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+/* 알림 dot · 라이브 indicator — 모든 앱 공통 */
+@keyframes haru-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(var(--color-accent-rgb, 34, 197, 94), .5); }
+  70%  { box-shadow: 0 0 0 10px rgba(var(--color-accent-rgb, 34, 197, 94), 0); }
+  100% { box-shadow: 0 0 0 0 rgba(var(--color-accent-rgb, 34, 197, 94), 0); }
+}
+/* GPS · 위치 ring — 모든 앱 공통 */
+@keyframes haru-ring {
+  0%   { transform: scale(.9);  opacity: .5; }
+  100% { transform: scale(1.5); opacity: 0;  }
+}
+
+/* 기존 cg-fade-* 별칭 유지 (호환성) */
+@keyframes cg-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.cg-fade-in { animation: haru-fade-in-up var(--duration-slow, 350ms) var(--easing-standard) both; }
+.cg-fade-in--d1 { animation-delay: 50ms; }
+.cg-fade-in--d2 { animation-delay: 100ms; }
+.cg-fade-in--d3 { animation-delay: 160ms; }
+.cg-fade-in--d4 { animation-delay: 220ms; }
+
+
+/* ============================================================
+   끝.
+   ============================================================ */
+
+/* ============================================================
+   Bottom Scrim — 탭바 뒤 페이드 마스크 (배경/탭바 분리감)
+   ============================================================ */
+.bottom-scrim{
+  position:fixed;left:0;right:0;bottom:0;height:108px;z-index:39;pointer-events:none;
+  background:rgba(240,244,248,1);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  -webkit-mask-image:linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 55%);
+          mask-image:linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 55%);
+  transition:opacity .4s cubic-bezier(.32,.72,0,1);
+}
+.bottom-scrim.hide{opacity:0}
+@media (prefers-reduced-transparency: reduce){
+  .bottom-scrim{backdrop-filter:none;-webkit-backdrop-filter:none}
+}

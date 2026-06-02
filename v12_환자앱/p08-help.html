@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="ko" data-role="patient" data-platform="mobile">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="var(--patient-canvas-warm)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>하루안부 · 도움이 필요해요</title>
+
+  <link rel="icon" type="image/svg+xml" href="../07_디자인/logo/brand-system/01_심볼단독.svg">
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css">
+
+  <script src="../07_디자인/_app-theme.js"></script>
+  <link rel="stylesheet" href="patient.css">
+  <script src="../07_디자인/_iconify-icon.min.js"></script>
+
+  <style>
+    .main {
+      flex: 1;
+      display: flex; flex-direction: column;
+      gap: var(--space-4);
+      min-height: 0;
+    }
+
+    /* ── 제목 ───────────────────────────────── */
+    .help-heading {
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .help-heading h1 {
+      font: var(--weight-bold) 28px / 1.15 var(--font-family-base);
+      letter-spacing: -0.03em;
+    }
+    .help-heading p {
+      font: var(--weight-medium) 17px / 1.4 var(--font-family-base);
+      color: var(--patient-text-warm);
+      margin-top: 2px;
+    }
+
+    /* Variant C — 섹션 분리: "일상 도움" + "특별 · 긴급"
+       routine 2행 + special 1행 → 2:1 비율로 routine을 더 크게 */
+    .help-sections {
+      flex: 1;
+      display: grid;
+      grid-template-rows: auto 2fr auto 1fr;
+      gap: var(--space-3);
+      min-height: 0;
+    }
+    .section-title {
+      font: var(--weight-bold) 15px / 1 var(--font-family-base);
+      color: var(--color-text-secondary);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      padding: 4px 4px 0;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-title iconify-icon { color: var(--brand-orange-500); font-size: 16px; }
+
+    .help-grid-routine {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: var(--space-4);
+      min-height: 0;
+    }
+    .help-grid-special {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-4);
+      min-height: 0;
+    }
+
+    /* 기본 버튼 — 일상 (흰 카드 + 오렌지 아이콘) */
+    .help-btn {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 10px;
+      padding: var(--space-4) var(--space-3);
+      border-radius: 22px;
+      background: white;
+      box-shadow: 0 3px 14px rgba(194, 98, 28, 0.08);
+      cursor: pointer;
+      transition: transform .12s, box-shadow .15s;
+      min-height: 0;
+      color: var(--color-text-primary);
+      text-align: center;
+    }
+    .help-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 28px rgba(194, 98, 28, 0.15);
+    }
+    .help-btn:active { transform: scale(.97); }
+
+    .help-btn .hb-icon {
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      color: var(--brand-orange-500);
+    }
+    .help-btn .hb-icon iconify-icon { font-size: 60px; }
+
+    .help-btn .hb-label {
+      font: var(--weight-bold) 26px / 1.1 var(--font-family-base);
+      letter-spacing: -0.4px;
+      color: inherit;
+    }
+    .help-btn .hb-sub {
+      font: var(--weight-medium) 16px / 1.25 var(--font-family-base);
+      color: var(--patient-text-warm);
+      letter-spacing: -0.1px;
+    }
+
+    /* 특별: 말벗 — 솔리드 오렌지 + 흰 로고 */
+    .help-btn--brand {
+      background: var(--brand-orange-500);
+      color: white;
+      box-shadow: 0 8px 26px rgba(var(--color-accent-rgb), 0.32);
+    }
+    .help-btn--brand:hover {
+      background: var(--brand-orange-600);
+      box-shadow: 0 14px 36px rgba(var(--color-accent-rgb), 0.42);
+    }
+    .help-btn--brand .hb-icon { color: white; }
+    .help-btn--brand .hb-icon img {
+      width: 60px; height: 60px;
+      display: block;
+      filter: brightness(0) invert(1);
+    }
+    .help-btn--brand .hb-sub { color: white; opacity: 0.85; }
+
+    /* 긴급: 아파요 — 솔리드 빨강 */
+    .help-btn--urgent {
+      background: var(--color-danger);
+      color: white;
+      box-shadow: 0 8px 26px rgba(var(--color-danger-rgb), 0.36);
+    }
+    .help-btn--urgent:hover {
+      background: var(--palette-red-600);
+      box-shadow: 0 14px 36px rgba(var(--color-danger-rgb), 0.48);
+    }
+    .help-btn--urgent .hb-icon { color: white; }
+    .help-btn--urgent .hb-sub { color: white; opacity: 0.85; }
+
+    /* ── 하단 가족 알림 스트립 ─────────────── */
+    .help-family {
+      flex-shrink: 0;
+      display: flex; align-items: center; gap: var(--space-4);
+      padding: 12px var(--space-5);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.85);
+      width: 100%;
+    }
+    .help-family .hf-label {
+      display: flex; align-items: center; gap: 10px;
+      font: var(--weight-bold) 18px / 1 var(--font-family-base);
+      color: var(--color-text-primary);
+      letter-spacing: -0.2px;
+      flex-shrink: 0;
+    }
+    .help-family .hf-label iconify-icon { color: var(--brand-orange-600); }
+    .help-family .hf-avatars {
+      display: flex; align-items: center;
+      flex: 1;
+    }
+    .help-family .av {
+      width: 42px; height: 42px; border-radius: 50%;
+      overflow: hidden; position: relative;
+      border: 3px solid white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+    .help-family .av + .av { margin-left: -10px; }
+    .help-family .av img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .help-family .hf-cta {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 20px;
+      border-radius: 14px;
+      border: 0; cursor: pointer;
+      background: var(--brand-orange-500);
+      color: white;
+      font: var(--weight-bold) 17px / 1 var(--font-family-base);
+      letter-spacing: -0.2px;
+      text-decoration: none;
+      box-shadow: 0 6px 18px rgba(var(--color-accent-rgb), 0.35);
+      transition: transform .15s;
+      flex-shrink: 0;
+    }
+    .help-family .hf-cta:active { transform: scale(.97); }
+
+    /* ── 요청 토스트 ───────────────────────── */
+    .help-toast {
+      position: fixed; left: 50%; top: 50%;
+      transform: translate(-50%, -45%) scale(.9);
+      padding: var(--space-6) var(--space-7);
+      border-radius: 28px;
+      background: rgba(255, 255, 255, 0.98);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      z-index: 1000;
+      min-width: 380px;
+      text-align: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity .22s, transform .3s cubic-bezier(.2,.9,.3,1.3);
+    }
+    .help-toast.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+      pointer-events: auto;
+    }
+    .help-toast .ht-mark {
+      width: 76px; height: 76px; border-radius: 50%;
+      background: var(--brand-green-600);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 14px;
+      color: white;
+      box-shadow: 0 10px 24px rgba(22, 163, 74, 0.32);
+    }
+    .help-toast .ht-mark iconify-icon { font-size: 44px; }
+    .help-toast .ht-title {
+      font: var(--weight-bold) 26px / 1.15 var(--font-family-base);
+      letter-spacing: -0.3px;
+    }
+    .help-toast .ht-sub {
+      font: var(--weight-medium) 17px / 1.4 var(--font-family-base);
+      color: var(--color-text-secondary);
+      margin-top: 8px;
+    }
+
+    /* 반응형 */
+    @media (max-width: 980px) {
+      .help-grid-routine { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(3, 1fr); }
+      .help-grid-special { grid-template-columns: 1fr 1fr; }
+      .help-btn .hb-icon iconify-icon { font-size: 72px; }
+      .help-btn--brand .hb-icon img { width: 72px; height: 72px; }
+      .help-btn .hb-label { font-size: 24px; }
+      .help-btn .hb-sub { font-size: 15px; }
+    }
+    @media (max-width: 700px) {
+      .help-grid-routine { grid-template-columns: repeat(2, 1fr); }
+      .help-btn { padding: var(--space-4); gap: 12px; }
+      .help-btn .hb-icon iconify-icon { font-size: 58px; }
+      .help-btn--brand .hb-icon img { width: 58px; height: 58px; }
+      .help-btn .hb-label { font-size: 20px; }
+      .help-btn .hb-sub { font-size: 14px; }
+      .help-family { flex-direction: column; gap: 10px; }
+      .help-family .hf-cta { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app">
+
+    <header class="p-header p-header--nav">
+      <a href="p01-today.html" class="p-back" aria-label="뒤로">
+        <iconify-icon icon="fluent:chevron-left-24-filled" width="28" aria-hidden="true"></iconify-icon>
+        뒤로
+      </a>
+      <nav class="top-nav" aria-label="주요 메뉴">
+        <a class="nav-tab" href="p01-today.html">
+          <iconify-icon icon="fluent:home-24-filled" width="22" aria-hidden="true"></iconify-icon>
+          홈
+        </a>
+        <a class="nav-tab" href="p02-med-alert.html">
+          <iconify-icon icon="fluent:clipboard-bullet-list-ltr-24-filled" width="22" aria-hidden="true"></iconify-icon>
+          할일
+        </a>
+        <a class="nav-tab" href="p03-call.html">
+          <iconify-icon icon="fluent:people-24-filled" width="22" aria-hidden="true"></iconify-icon>
+          가족
+        </a>
+        <a class="nav-tab nav-tab--active" href="p08-help.html" aria-current="page">
+          <iconify-icon icon="fluent:hand-wave-24-filled" width="22" aria-hidden="true"></iconify-icon>
+          도움
+        </a>
+      </nav>
+      <div aria-hidden="true"></div>
+    </header>
+
+    <div class="main">
+
+      <div class="help-heading">
+        <h1>무엇이 필요하세요?</h1>
+        <p>버튼을 누르시면 보호자에게 바로 알립니다.</p>
+      </div>
+
+      <!-- 병상 호출기: 섹션 분리 (일상 / 특별 · 긴급) -->
+      <div class="help-sections">
+
+        <h2 class="section-title">
+          <iconify-icon icon="fluent:checkmark-circle-24-filled" aria-hidden="true"></iconify-icon>
+          일상 도움
+        </h2>
+        <div class="help-grid-routine" role="list" aria-label="일상 도움 요청">
+          <button class="help-btn" type="button" data-req="물 한 잔" role="listitem">
+            <span class="hb-icon"><iconify-icon icon="fluent:drink-to-go-24-filled"></iconify-icon></span>
+            <span class="hb-label">물 한 잔</span>
+            <span class="hb-sub">목 마를 때</span>
+          </button>
+
+          <button class="help-btn" type="button" data-req="화장실" role="listitem">
+            <span class="hb-icon"><iconify-icon icon="material-symbols:wc-rounded"></iconify-icon></span>
+            <span class="hb-label">화장실</span>
+            <span class="hb-sub">도와주세요</span>
+          </button>
+
+          <button class="help-btn" type="button" data-req="식사" role="listitem">
+            <span class="hb-icon"><iconify-icon icon="fluent:food-24-filled"></iconify-icon></span>
+            <span class="hb-label">식사</span>
+            <span class="hb-sub">배고파요</span>
+          </button>
+
+          <button class="help-btn" type="button" data-req="약 챙겨주세요" role="listitem">
+            <span class="hb-icon"><iconify-icon icon="fluent:pill-24-filled"></iconify-icon></span>
+            <span class="hb-label">약 주세요</span>
+            <span class="hb-sub">복약 시간 같아요</span>
+          </button>
+
+          <button class="help-btn" type="button" data-req="자세 바꾸기" role="listitem">
+            <span class="hb-icon"><iconify-icon icon="fluent:bed-24-filled"></iconify-icon></span>
+            <span class="hb-label">자세 바꾸기</span>
+            <span class="hb-sub">몸이 불편해요</span>
+          </button>
+
+          <button class="help-btn" type="button" data-req="더워요 / 추워요" role="listitem">
+            <span class="hb-icon"><iconify-icon icon="fluent:temperature-24-filled"></iconify-icon></span>
+            <span class="hb-label">더워요 · 추워요</span>
+            <span class="hb-sub">온도 조절</span>
+          </button>
+        </div>
+
+        <h2 class="section-title">
+          <iconify-icon icon="fluent:sparkle-24-filled" aria-hidden="true"></iconify-icon>
+          특별 · 긴급
+        </h2>
+        <div class="help-grid-special" role="list" aria-label="특별 도움 요청">
+          <button class="help-btn help-btn--brand" type="button" data-req="말벗" role="listitem">
+            <span class="hb-icon"><img src="../07_디자인/logo/brand-system/01_심볼단독.svg" alt="하루안부 로고"></span>
+            <span class="hb-label">말벗</span>
+            <span class="hb-sub">심심해요</span>
+          </button>
+
+          <button class="help-btn help-btn--urgent" type="button" data-req="아파요" data-urgent="1" role="listitem">
+            <span class="hb-icon"><iconify-icon icon="fluent:heart-pulse-24-filled"></iconify-icon></span>
+            <span class="hb-label">아파요</span>
+            <span class="hb-sub">지금 바로 도움 요청</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- 가족에게 "도움 필요" 알림 스트립 -->
+      <div class="help-family" aria-label="가족에게 도움 알림">
+        <div class="hf-label">
+          <iconify-icon icon="fluent:people-24-filled" width="22" aria-hidden="true"></iconify-icon>
+          가족에게도 알림
+        </div>
+        <div class="hf-avatars" aria-hidden="true">
+          <div class="av"><img src="https://randomuser.me/api/portraits/women/44.jpg" alt=""></div>
+          <div class="av"><img src="https://randomuser.me/api/portraits/women/9.jpg" alt=""></div>
+          <div class="av"><img src="https://randomuser.me/api/portraits/men/32.jpg" alt=""></div>
+        </div>
+        <button class="hf-cta" type="button" id="familyNotify">
+          <iconify-icon icon="fluent:send-24-filled" width="22" aria-hidden="true"></iconify-icon>
+          민지 · 서연 · 태우에게
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 요청 확인 토스트 (중앙 모달) -->
+  <div class="help-toast" id="toast" role="status" aria-live="polite">
+    <div class="ht-mark" aria-hidden="true">
+      <iconify-icon icon="fluent:checkmark-24-filled"></iconify-icon>
+    </div>
+    <div class="ht-title" id="toastTitle">요청 전달됐어요</div>
+    <div class="ht-sub" id="toastSub">보호자에게 알림을 보냈습니다. 곧 와요.</div>
+  </div>
+
+  <script>
+    (function () {
+      var toast = document.getElementById('toast');
+      var title = document.getElementById('toastTitle');
+      var sub = document.getElementById('toastSub');
+      var timer;
+
+      function showRequest(label, opts) {
+        opts = opts || {};
+        if (opts.urgent) {
+          title.textContent = '보호자를 부르고 있어요';
+          sub.textContent = label + ' — 가족에게도 동시에 알림을 보냈어요.';
+        } else {
+          title.textContent = label + ' 요청했어요';
+          sub.textContent = '보호자에게 알림을 보냈습니다. 곧 와요.';
+        }
+        toast.classList.add('show');
+        clearTimeout(timer);
+        timer = setTimeout(function () { toast.classList.remove('show'); }, 2600);
+      }
+
+      document.querySelectorAll('.help-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var label = btn.getAttribute('data-req') || '도움';
+          var urgent = btn.getAttribute('data-urgent') === '1';
+          showRequest(label, { urgent: urgent });
+        });
+      });
+
+      var famBtn = document.getElementById('familyNotify');
+      famBtn.addEventListener('click', function () {
+        title.textContent = '가족에게 알림 보냈어요';
+        sub.textContent = '민지 · 서연 · 태우 세 분께 "도움이 필요해요" 전달됐어요.';
+        toast.classList.add('show');
+        clearTimeout(timer);
+        timer = setTimeout(function () { toast.classList.remove('show'); }, 2600);
+      });
+
+      // 토스트 자체 클릭 시 닫기
+      toast.addEventListener('click', function () {
+        toast.classList.remove('show');
+        clearTimeout(timer);
+      });
+    })();
+  </script>
+
+</body>
+</html>

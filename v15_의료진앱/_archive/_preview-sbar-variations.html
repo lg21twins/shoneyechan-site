@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ko" data-role="medical" data-platform="mobile">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SBAR Situation 카드 — 베리에이션 3종</title>
+<link rel="stylesheet" href="../07_디자인/tokens/tokens.css">
+<script src="../07_디자인/_app-theme.js"></script>
+<link rel="stylesheet" href="./_shared.css?v=20260525p">
+<script src="../07_디자인/_iconify-icon.min.js"></script>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:var(--color-bg-canvas);color:var(--t1);font-family:var(--font-family-base);letter-spacing:-.2px;-webkit-font-smoothing:antialiased;}
+  body{padding:40px 24px 80px;}
+  .pv-wrap{max-width:1280px;margin:0 auto;}
+  .pv-h{font-size:13px;font-weight:700;color:var(--t3);letter-spacing:.4px;text-transform:uppercase;margin-bottom:8px;}
+  .pv-title{font-size:22px;font-weight:800;color:var(--t1);margin-bottom:4px;letter-spacing:-.4px;}
+  .pv-sub{font-size:14px;color:var(--t2);margin-bottom:32px;line-height:1.5;}
+  .pv-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:32px;}
+  .pv-col{display:flex;flex-direction:column;gap:14px;}
+  .pv-tag{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:11px;font-weight:700;color:var(--t2);letter-spacing:.3px;
+  }
+  .pv-tag::before{content:"";width:6px;height:6px;border-radius:50%;background:#5DBE60;}
+  .pv-caption{font-size:12px;font-weight:600;color:var(--t3);line-height:1.5;}
+  .pv-note{font-size:12px;color:var(--t3);line-height:1.6;margin-top:8px;}
+
+  /* 공통 카드 베이스 */
+  .card{
+    background:#fff;border-radius:20px;padding:22px;
+    box-shadow:0 2px 12px rgba(0,0,0,.04);
+  }
+
+  /* ===== V1 Vital Hero ===== */
+  .v1-eyebrow{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:18px;
+  }
+  .v1-cat{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:12px;font-weight:700;color:var(--t2);letter-spacing:.4px;text-transform:uppercase;
+  }
+  .v1-cat .v1-s{
+    width:18px;height:18px;border-radius:50%;
+    background:var(--palette-red-100,#FEE2E2);color:var(--palette-red-700);
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:10px;font-weight:800;
+  }
+  .v1-actions{display:flex;gap:8px;}
+  .v1-pill-risk{
+    display:inline-flex;align-items:center;gap:5px;
+    height:22px;padding:0 10px;border-radius:999px;
+    font-size:11px;font-weight:700;
+    background:var(--danger-soft);color:var(--palette-red-700);
+  }
+  .v1-pill-risk iconify-icon{font-size:12px;}
+  .v1-edit{
+    width:28px;height:28px;border-radius:50%;
+    background:transparent;border:0;cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;
+  }
+  .v1-edit iconify-icon{font-size:16px;color:var(--t3);}
+  .v1-metric{
+    display:flex;align-items:baseline;gap:8px;
+    margin-bottom:6px;
+  }
+  .v1-num{font-size:52px;font-weight:800;color:var(--palette-red-700);letter-spacing:-2px;line-height:1;}
+  .v1-unit{font-size:14px;font-weight:600;color:var(--t3);}
+  .v1-headline{font-size:14px;font-weight:600;color:var(--t1);margin-bottom:18px;line-height:1.45;}
+  .v1-trend{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:12px;font-weight:700;color:var(--palette-red-700);
+    margin-bottom:18px;
+  }
+  .v1-trend iconify-icon{font-size:14px;}
+  .v1-trend b{font-weight:800;}
+  .v1-meta{
+    display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;
+    padding-top:16px;border-top:1px solid rgba(0,0,0,.06);
+  }
+  .v1-meta-row{display:flex;flex-direction:column;gap:2px;}
+  .v1-meta-k{font-size:11px;font-weight:600;color:var(--t3);letter-spacing:.2px;}
+  .v1-meta-v{font-size:13.5px;font-weight:700;color:var(--t1);line-height:1.35;letter-spacing:-.2px;}
+  .v1-meta-v span{font-weight:500;color:var(--t2);}
+
+  /* ===== V2 Timeline Steps ===== */
+  .v2-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .v2-cat{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:13px;font-weight:700;color:var(--t1);letter-spacing:-.2px;
+  }
+  .v2-cat-s{
+    font-size:11px;font-weight:800;color:var(--t3);letter-spacing:.4px;
+  }
+  .v2-risk{
+    display:inline-flex;align-items:center;gap:5px;
+    height:24px;padding:0 11px;border-radius:999px;
+    font-size:11.5px;font-weight:800;
+    background:var(--danger-soft);color:var(--palette-red-700);letter-spacing:-.1px;
+  }
+  .v2-risk iconify-icon{font-size:13px;}
+  .v2-headline{
+    font-size:30px;font-weight:800;color:var(--palette-red-700);letter-spacing:-1px;
+    line-height:1.1;margin-bottom:6px;
+  }
+  .v2-sub{font-size:13.5px;font-weight:600;color:var(--t2);margin-bottom:22px;line-height:1.45;}
+  .v2-steps{display:flex;flex-direction:column;gap:0;}
+  .v2-step{
+    display:grid;grid-template-columns:24px 1fr;gap:14px;
+    padding:0 0 14px;position:relative;
+  }
+  .v2-step:last-child{padding-bottom:0;}
+  .v2-step::after{
+    content:"";position:absolute;left:11px;top:18px;bottom:-2px;
+    width:2px;background:rgba(0,0,0,.08);
+  }
+  .v2-step:last-child::after{display:none;}
+  .v2-dot{
+    width:24px;height:24px;border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;
+    background:#F2F2F7;color:var(--t2);position:relative;z-index:1;
+  }
+  .v2-dot iconify-icon{font-size:13px;}
+  .v2-dot.is-done{background:#E8F5E9;color:#1B5E20;}
+  .v2-dot.is-active{background:var(--danger-soft);color:var(--palette-red-700);}
+  .v2-step-body{padding-top:2px;min-width:0;}
+  .v2-step-k{
+    font-size:11px;font-weight:700;color:var(--t3);letter-spacing:.3px;
+    text-transform:uppercase;margin-bottom:2px;
+  }
+  .v2-step-v{font-size:14px;font-weight:600;color:var(--t1);line-height:1.4;letter-spacing:-.2px;}
+  .v2-step-v b{font-weight:800;}
+  .v2-step-time{font-size:11.5px;font-weight:600;color:var(--t3);margin-top:1px;}
+
+  /* ===== V3 Compact Glance ===== */
+  .v3-head{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:18px;
+  }
+  .v3-cat{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:12px;font-weight:700;color:var(--t2);letter-spacing:.3px;
+  }
+  .v3-cat-dot{
+    width:7px;height:7px;border-radius:50%;background:var(--palette-red-600,#DC2626);
+  }
+  .v3-risk{
+    display:inline-flex;align-items:center;gap:5px;
+    font-size:11px;font-weight:800;color:var(--palette-red-700);
+    letter-spacing:-.1px;
+  }
+  .v3-risk iconify-icon{font-size:13px;}
+  .v3-hero{
+    display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:end;
+    margin-bottom:18px;
+  }
+  .v3-num-wrap{display:flex;flex-direction:column;}
+  .v3-num-k{font-size:12px;font-weight:700;color:var(--t3);letter-spacing:.2px;margin-bottom:2px;}
+  .v3-num{
+    font-size:44px;font-weight:800;color:var(--t1);letter-spacing:-1.4px;line-height:1;
+    font-feature-settings:"tnum";
+  }
+  .v3-num-sub{font-size:12px;font-weight:600;color:var(--t3);margin-top:6px;}
+  .v3-side{display:flex;flex-direction:column;gap:6px;align-items:flex-end;text-align:right;}
+  .v3-side-k{font-size:11px;font-weight:600;color:var(--t3);letter-spacing:.2px;}
+  .v3-side-v{font-size:14px;font-weight:700;color:var(--palette-red-700);line-height:1.3;letter-spacing:-.2px;}
+  .v3-grid{
+    display:grid;grid-template-columns:1fr 1fr;
+    gap:12px 18px;
+    padding-top:14px;border-top:1px solid rgba(0,0,0,.06);
+  }
+  .v3-cell{display:flex;flex-direction:column;gap:2px;min-width:0;}
+  .v3-cell-k{font-size:11px;font-weight:600;color:var(--t3);letter-spacing:.2px;}
+  .v3-cell-v{font-size:13.5px;font-weight:700;color:var(--t1);line-height:1.4;letter-spacing:-.2px;}
+  .v3-cell-v span{font-weight:500;color:var(--t2);}
+  .v3-foot{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:14px;padding-top:12px;border-top:1px solid rgba(0,0,0,.06);
+  }
+  .v3-foot-meta{font-size:11.5px;font-weight:600;color:var(--t3);}
+  .v3-foot-edit{
+    display:inline-flex;align-items:center;gap:5px;
+    background:transparent;border:0;cursor:pointer;
+    font-size:12px;font-weight:700;color:var(--t2);
+    padding:0;font-family:inherit;
+  }
+  .v3-foot-edit iconify-icon{font-size:13px;}
+
+  /* 비교용 — 현재(베이스라인) */
+  .base-card{
+    background:#fff;border-radius:20px;padding:18px 22px;
+    box-shadow:0 2px 12px rgba(0,0,0,.04);
+  }
+  .base-head{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+  .base-s{
+    width:32px;height:32px;border-radius:50%;
+    background:var(--danger-soft);color:var(--palette-red-700);
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:13px;font-weight:800;
+  }
+  .base-lbl{font-size:13px;font-weight:700;color:var(--t1);flex:1;letter-spacing:-.2px;}
+  .base-risk{
+    display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 11px;border-radius:999px;
+    font-size:11px;font-weight:800;background:var(--danger-soft);color:var(--palette-red-700);
+  }
+  .base-risk iconify-icon{font-size:13px;}
+  .base-edit{width:28px;height:28px;border-radius:8px;background:#F4F4F5;border:0;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;}
+  .base-edit iconify-icon{font-size:14px;color:var(--t2);}
+  .base-hl{font-size:21px;font-weight:800;color:var(--palette-red-700);letter-spacing:-.5px;margin-bottom:12px;line-height:1.25;}
+  .base-div{height:1px;background:rgba(0,0,0,.06);margin-bottom:8px;}
+  .base-kv{display:flex;gap:12px;padding:8px 0;border-top:1px solid rgba(0,0,0,.04);}
+  .base-kv:first-of-type{border-top:0;}
+  .base-kv-k{width:40px;font-size:12px;font-weight:700;color:var(--t3);}
+  .base-kv-v{font-size:13.5px;font-weight:500;color:var(--t1);}
+  .base-kv-v b{font-weight:700;}
+</style>
+</head>
+<body>
+<div class="pv-wrap">
+  <div class="pv-h">SBAR · Situation 카드 베리에이션</div>
+  <div class="pv-title">레퍼런스 기반 3종 비교</div>
+  <div class="pv-sub">Mobbin · Bevel/TIDE/Gentler Streak/Withings의 메디컬 데이터 카드 패턴을 적용. 아바타 제거, 메트릭 위계화, 메타데이터 컴팩트화 방향.</div>
+
+  <div class="pv-grid">
+
+    <!-- 현재(베이스라인) -->
+    <div class="pv-col">
+      <span class="pv-tag" style="--accent:#999;">현재 · BASELINE</span>
+      <div class="base-card">
+        <div class="base-head">
+          <span class="base-s">S</span>
+          <span class="base-lbl">Situation · 상황</span>
+          <span class="base-risk"><iconify-icon icon="fluent:warning-24-filled"></iconify-icon>위험</span>
+          <button class="base-edit" aria-label="편집"><iconify-icon icon="fluent:edit-24-filled"></iconify-icon></button>
+        </div>
+        <div class="base-hl">혈압 180/110 · 24h 내 수축기 170+ 3회</div>
+        <div class="base-div"></div>
+        <div class="base-kv"><div class="base-kv-k">환자</div><div class="base-kv-v"><b>최명자</b> 82F · 2층 B-2호</div></div>
+        <div class="base-kv"><div class="base-kv-k">측정</div><div class="base-kv-v"><b>180/110</b> · 14:02</div></div>
+        <div class="base-kv"><div class="base-kv-k">보고</div><div class="base-kv-v">이상훈 촉탁의 보고 완료</div></div>
+        <div class="base-kv"><div class="base-kv-k">처방</div><div class="base-kv-v">암로디핀 <b>5→10mg</b> 증량</div></div>
+      </div>
+      <div class="pv-note">아바타 + 헤더 라벨 + 위험 칩 + 편집이 한 줄에 몰림. 핵심 수치 180/110이 24h 내용과 겹쳐 위계 없음.</div>
+    </div>
+
+    <!-- V1 Vital Hero -->
+    <div class="pv-col">
+      <span class="pv-tag">V1 · VITAL HERO</span>
+      <div class="card">
+        <div class="v1-eyebrow">
+          <div class="v1-cat">
+            <span class="v1-s">S</span>
+            SITUATION
+          </div>
+          <div class="v1-actions">
+            <span class="v1-pill-risk"><iconify-icon icon="fluent:warning-24-filled"></iconify-icon>위험</span>
+            <button class="v1-edit" aria-label="편집"><iconify-icon icon="fluent:edit-24-regular"></iconify-icon></button>
+          </div>
+        </div>
+        <div class="v1-metric">
+          <span class="v1-num">180<span style="opacity:.5;">/</span>110</span>
+          <span class="v1-unit">mmHg</span>
+        </div>
+        <div class="v1-trend">
+          <iconify-icon icon="fluent:arrow-trending-24-filled"></iconify-icon>
+          <span>24h 내 수축기 170+ <b>3회</b></span>
+        </div>
+        <div class="v1-meta">
+          <div class="v1-meta-row">
+            <span class="v1-meta-k">환자</span>
+            <span class="v1-meta-v">최명자 <span>82F · 2층 B-2호</span></span>
+          </div>
+          <div class="v1-meta-row">
+            <span class="v1-meta-k">측정</span>
+            <span class="v1-meta-v">14:02 <span>· 재측정 1회</span></span>
+          </div>
+          <div class="v1-meta-row">
+            <span class="v1-meta-k">보고</span>
+            <span class="v1-meta-v">이상훈 촉탁의 <span>· 완료</span></span>
+          </div>
+          <div class="v1-meta-row">
+            <span class="v1-meta-k">처방</span>
+            <span class="v1-meta-v">암로디핀 5→10mg <span>증량</span></span>
+          </div>
+        </div>
+      </div>
+      <div class="pv-note">Bevel/Withings 패턴. 180/110을 거대 메트릭으로 끌어올리고, 24h 추세는 한 줄 트렌드 칩으로 분리. 메타는 2열로 컴팩트.</div>
+    </div>
+
+    <!-- V2 Timeline Steps -->
+    <div class="pv-col">
+      <span class="pv-tag">V2 · TIMELINE STEPS</span>
+      <div class="card">
+        <div class="v2-head">
+          <div class="v2-cat">
+            <span class="v2-cat-s">S</span>
+            Situation · 상황
+          </div>
+          <span class="v2-risk"><iconify-icon icon="fluent:warning-24-filled"></iconify-icon>위험</span>
+        </div>
+        <div class="v2-headline">혈압 180/110</div>
+        <div class="v2-sub">24h 내 수축기 170+ <b style="font-weight:800;color:var(--palette-red-700);">3회</b> · 재측정 필요</div>
+        <div class="v2-steps">
+          <div class="v2-step">
+            <span class="v2-dot is-done"><iconify-icon icon="fluent:person-24-filled"></iconify-icon></span>
+            <div class="v2-step-body">
+              <div class="v2-step-k">환자</div>
+              <div class="v2-step-v"><b>최명자</b> 82F · 2층 B-2호</div>
+            </div>
+          </div>
+          <div class="v2-step">
+            <span class="v2-dot is-active"><iconify-icon icon="fluent:pulse-24-filled"></iconify-icon></span>
+            <div class="v2-step-body">
+              <div class="v2-step-k">측정</div>
+              <div class="v2-step-v"><b>180/110 mmHg</b></div>
+              <div class="v2-step-time">14:02 · 재측정 1회</div>
+            </div>
+          </div>
+          <div class="v2-step">
+            <span class="v2-dot is-done"><iconify-icon icon="fluent:checkmark-24-filled"></iconify-icon></span>
+            <div class="v2-step-body">
+              <div class="v2-step-k">보고</div>
+              <div class="v2-step-v">이상훈 촉탁의 보고 완료</div>
+            </div>
+          </div>
+          <div class="v2-step">
+            <span class="v2-dot is-done"><iconify-icon icon="fluent:pill-24-filled"></iconify-icon></span>
+            <div class="v2-step-body">
+              <div class="v2-step-k">처방</div>
+              <div class="v2-step-v">암로디핀 <b>5→10mg</b> 증량</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="pv-note">Linear/Notion 알림 + 의료 진료기록 흐름. 측정→보고→처방의 시간 흐름이 한눈에. 활성 단계는 빨강 dot, 완료는 그린 dot.</div>
+    </div>
+
+    <!-- V3 Compact Glance -->
+    <div class="pv-col">
+      <span class="pv-tag">V3 · COMPACT GLANCE</span>
+      <div class="card">
+        <div class="v3-head">
+          <div class="v3-cat">
+            <span class="v3-cat-dot"></span>
+            S · Situation
+          </div>
+          <span class="v3-risk"><iconify-icon icon="fluent:warning-24-filled"></iconify-icon>위험 · 재측정</span>
+        </div>
+        <div class="v3-hero">
+          <div class="v3-num-wrap">
+            <span class="v3-num-k">혈압 (mmHg)</span>
+            <span class="v3-num">180<span style="opacity:.4;font-weight:600;">/</span>110</span>
+            <span class="v3-num-sub">14:02 · 재측정 1회</span>
+          </div>
+          <div class="v3-side">
+            <span class="v3-side-k">24h 추세</span>
+            <span class="v3-side-v">수축기 170+<br>3회</span>
+          </div>
+        </div>
+        <div class="v3-grid">
+          <div class="v3-cell">
+            <span class="v3-cell-k">환자</span>
+            <span class="v3-cell-v">최명자 <span>82F · 2층 B-2호</span></span>
+          </div>
+          <div class="v3-cell">
+            <span class="v3-cell-k">처방</span>
+            <span class="v3-cell-v">암로디핀 <span>5→10mg 증량</span></span>
+          </div>
+        </div>
+        <div class="v3-foot">
+          <span class="v3-foot-meta">보고 · 이상훈 촉탁의 완료</span>
+          <button class="v3-foot-edit"><iconify-icon icon="fluent:edit-24-regular"></iconify-icon>편집</button>
+        </div>
+      </div>
+      <div class="pv-note">TIDE/Gentler Streak 패턴. 핵심 수치 + 추세 옆에 나란히. 환자·처방은 컴팩트 2열, 보고와 편집은 푸터로 빠짐. 정보 밀도 최고.</div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

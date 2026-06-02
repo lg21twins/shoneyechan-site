@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="ko" data-role="patient" data-platform="mobile">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#FFF5E8">
+  <title>하루안부 · 가족 카드 베리어블 비교 (3종)</title>
+
+  <link rel="icon" type="image/svg+xml" href="../07_디자인/logo/brand-system/01_심볼단독.svg">
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css">
+
+  <script src="../07_디자인/_app-theme.js"></script>
+  <link rel="stylesheet" href="patient.css">
+  <script src="../07_디자인/_iconify-icon.min.js"></script>
+
+  <style>
+    body { overflow-y: auto; }
+    .compare-page {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 32px 28px 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 36px;
+    }
+    .compare-head h1 {
+      font: 700 32px/1.2 var(--font-family-base);
+      letter-spacing: -0.5px;
+    }
+    .compare-head p {
+      font: 500 17px/1.5 var(--font-family-base);
+      color: var(--color-text-secondary);
+      margin-top: 6px;
+    }
+    .compare-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    .variant {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .variant-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--brand-orange-100);
+      color: var(--brand-orange-700);
+      font: 700 13px/1 var(--font-family-base);
+      width: fit-content;
+      letter-spacing: 0.3px;
+    }
+    .variant h2 {
+      font: 700 22px/1.2 var(--font-family-base);
+      letter-spacing: -0.3px;
+    }
+    .variant-desc {
+      font: 500 15px/1.5 var(--font-family-base);
+      color: var(--color-text-secondary);
+      letter-spacing: -0.1px;
+    }
+    .variant-mockup {
+      background: rgba(255, 255, 255, 0.82);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      border-radius: 28px;
+      box-shadow: 0 6px 28px rgba(0,0,0,0.07);
+      backdrop-filter: blur(20px);
+      padding: 14px 16px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .mockup-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 2px 4px 0;
+    }
+    .mockup-title {
+      display: inline-flex; align-items: center; gap: 8px;
+      font: 700 18px/1 var(--font-family-base);
+      letter-spacing: -0.3px;
+    }
+    .mockup-title iconify-icon { color: var(--brand-orange-500); }
+    .mockup-more {
+      display: inline-flex; align-items: center; gap: 2px;
+      font: 700 14px/1 var(--font-family-base);
+      color: var(--brand-orange-700);
+      text-decoration: none;
+      padding: 4px 6px; border-radius: 10px;
+    }
+
+    /* 공통 아바타 */
+    .av {
+      border-radius: 50%;
+      position: relative; flex-shrink: 0;
+      box-shadow: 0 4px 14px rgba(0,0,0,.12);
+      overflow: hidden;
+      background: #FED7AA;
+    }
+    .av img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .av-dot {
+      position: absolute; right: 1px; bottom: 1px; z-index: 1;
+      width: 14px; height: 14px; border-radius: 50%;
+      border: 2.5px solid #fff; background: #CBD5E1;
+    }
+    .av-dot--on { background: #22C55E; }
+
+    /* ════════════════════════════════════════════════
+       VARIANT A — 아이콘 버튼 그룹 (WhatsApp/Telegram 컨택트 인포)
+       각 가족 카드 하단에 3개 정사각 아이콘 액션 카드
+       ════════════════════════════════════════════════ */
+    .va-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    }
+    .va-tile {
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      padding: 12px 6px 10px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.7);
+      border: 1.5px solid rgba(0, 0, 0, 0.06);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+      color: var(--color-text-primary);
+    }
+    .va-tile .av { width: 60px; height: 60px; }
+    .va-tile .name { font: 700 17px/1 var(--font-family-base); letter-spacing: -0.3px; }
+    .va-tile .relation { font: 600 13px/1 var(--font-family-base); color: var(--color-text-secondary); }
+    .va-actions {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px;
+      width: 100%;
+      margin-top: 4px;
+    }
+    .va-act {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 4px;
+      padding: 8px 4px 7px;
+      border-radius: 12px;
+      background: var(--brand-orange-50, #FFF7ED);
+      border: 1px solid rgba(251, 146, 60, 0.18);
+      color: var(--brand-orange-700);
+      font: 700 11px/1 var(--font-family-base);
+      letter-spacing: -0.1px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background .12s, transform .1s;
+    }
+    .va-act:hover { background: var(--brand-orange-100); }
+    .va-act:active { transform: scale(.94); }
+    .va-act iconify-icon { font-size: 18px; color: var(--brand-orange-600); }
+    .va-act--primary {
+      background: linear-gradient(135deg, var(--brand-orange-400), var(--brand-orange-500));
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 3px 10px rgba(251, 146, 60, .3);
+    }
+    .va-act--primary iconify-icon { color: #fff; }
+    .va-tile--offline .va-act--primary {
+      background: rgba(0,0,0,.08);
+      color: var(--color-text-secondary);
+      box-shadow: none;
+    }
+    .va-tile--offline .va-act--primary iconify-icon { color: var(--color-text-secondary); }
+
+    /* ════════════════════════════════════════════════
+       VARIANT B — 큰 단일 CTA (Cocoon 바텀시트 영감)
+       각 카드에 풀폭 큰 액션 1개. 상태별 액션 라벨 단순화.
+       ════════════════════════════════════════════════ */
+    .vb-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    }
+    .vb-tile {
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      padding: 16px 10px 14px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.85);
+      border: 1.5px solid rgba(0, 0, 0, 0.06);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+      color: var(--color-text-primary);
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform .12s, box-shadow .15s, border-color .15s;
+    }
+    .vb-tile:hover { border-color: var(--brand-orange-300); box-shadow: 0 6px 18px rgba(251, 146, 60, 0.15); }
+    .vb-tile:active { transform: scale(.97); }
+    .vb-tile .av { width: 72px; height: 72px; }
+    .vb-tile .name { font: 700 19px/1 var(--font-family-base); letter-spacing: -0.3px; }
+    .vb-tile .relation { font: 600 14px/1 var(--font-family-base); color: var(--color-text-secondary); margin-top: -4px; }
+    .vb-cta {
+      width: 100%;
+      margin-top: 6px;
+      height: 48px;
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 7px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--brand-orange-400), var(--brand-orange-500));
+      color: #fff;
+      font: 700 16px/1 var(--font-family-base);
+      letter-spacing: -0.2px;
+      box-shadow: 0 4px 12px rgba(251, 146, 60, 0.35);
+    }
+    .vb-cta iconify-icon { font-size: 18px; }
+    .vb-tile--offline .vb-cta {
+      background: #F3F4F6;
+      color: var(--color-text-secondary);
+      box-shadow: none;
+    }
+
+    /* ════════════════════════════════════════════════
+       VARIANT C — 가로 row + 우측 아이콘 액션 (WhatsApp/Mozi 영감)
+       가족별로 한 줄. 아바타 + 이름/관계/상태 + 우측 영상/음성 아이콘 버튼.
+       이름 길이 변동에도 줄바꿈 없음.
+       ════════════════════════════════════════════════ */
+    .vc-list {
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .vc-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.7);
+      border: 1.5px solid rgba(0, 0, 0, 0.06);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      text-decoration: none;
+      color: var(--color-text-primary);
+      transition: background .12s, border-color .15s;
+    }
+    .vc-row:hover { background: rgba(255,255,255,.95); border-color: var(--brand-orange-300); }
+    .vc-row .av { width: 52px; height: 52px; }
+    .vc-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+    .vc-name-line {
+      display: flex; align-items: center; gap: 8px;
+      font: 700 17px/1.1 var(--font-family-base);
+      letter-spacing: -0.3px;
+    }
+    .vc-relation {
+      font: 600 13px/1 var(--font-family-base);
+      color: var(--color-text-secondary);
+      padding: 2px 8px; border-radius: 999px;
+      background: rgba(0,0,0,.04);
+    }
+    .vc-status {
+      font: 600 13px/1.2 var(--font-family-base);
+      color: var(--brand-green-600, #16A34A);
+    }
+    .vc-status--off { color: var(--color-text-secondary); }
+    .vc-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .vc-icon-btn {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: var(--brand-orange-50, #FFF7ED);
+      border: 1.5px solid rgba(251, 146, 60, 0.22);
+      color: var(--brand-orange-600);
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform .1s, background .12s;
+    }
+    .vc-icon-btn:hover { background: var(--brand-orange-100); }
+    .vc-icon-btn:active { transform: scale(.92); }
+    .vc-icon-btn iconify-icon { font-size: 20px; }
+    .vc-icon-btn--primary {
+      background: linear-gradient(135deg, var(--brand-orange-400), var(--brand-orange-500));
+      border-color: transparent;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(251, 146, 60, .32);
+    }
+    .vc-row--offline .vc-icon-btn--primary {
+      background: #E5E7EB;
+      color: var(--color-text-secondary);
+      box-shadow: none;
+    }
+
+    /* 노트 박스 */
+    .notes {
+      margin-top: 8px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px dashed rgba(0,0,0,.1);
+      font: 500 13px/1.55 var(--font-family-base);
+      color: var(--color-text-secondary);
+    }
+    .notes b { color: var(--color-text-primary); font-weight: 700; }
+
+    @media (max-width: 1100px) {
+      .compare-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="compare-page">
+
+    <header class="compare-head">
+      <h1>가족에게 전화 — 카드 변형 3종</h1>
+      <p>Mobbin 레퍼런스(WhatsApp · Telegram · Cocoon · Mozi)에서 추출한 패턴을 환자앱 디자인 토큰에 맞춰 적용</p>
+    </header>
+
+    <div class="compare-grid">
+
+      <!-- ═══════════════ VARIANT A ═══════════════ -->
+      <section class="variant">
+        <span class="variant-tag">VARIANT A</span>
+        <h2>아이콘 액션 카드 그룹</h2>
+        <p class="variant-desc">WhatsApp/Telegram 컨택트 인포 패턴. 각 가족마다 영상·음성·메시지 액션을 동등한 아이콘 카드로. 다중 행동 즉시 선택 가능.</p>
+
+        <div class="variant-mockup">
+          <header class="mockup-head">
+            <div class="mockup-title">
+              <iconify-icon icon="fluent:people-24-filled" width="20"></iconify-icon>
+              가족에게 전화
+            </div>
+            <a href="#" class="mockup-more">모두 보기 <iconify-icon icon="fluent:chevron-right-24-filled" width="14"></iconify-icon></a>
+          </header>
+
+          <div class="va-grid">
+            <div class="va-tile">
+              <div class="av">
+                <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="">
+                <span class="av-dot av-dot--on"></span>
+              </div>
+              <div class="name">민지</div>
+              <div class="relation">딸</div>
+              <div class="va-actions">
+                <a href="#" class="va-act va-act--primary" aria-label="민지 영상통화">
+                  <iconify-icon icon="fluent:video-24-filled"></iconify-icon>
+                  영상
+                </a>
+                <a href="#" class="va-act" aria-label="민지 음성통화">
+                  <iconify-icon icon="fluent:call-24-filled"></iconify-icon>
+                  음성
+                </a>
+              </div>
+            </div>
+
+            <div class="va-tile">
+              <div class="av">
+                <img src="https://randomuser.me/api/portraits/women/9.jpg" alt="">
+                <span class="av-dot av-dot--on"></span>
+              </div>
+              <div class="name">서연</div>
+              <div class="relation">손녀</div>
+              <div class="va-actions">
+                <a href="#" class="va-act va-act--primary" aria-label="서연 영상통화">
+                  <iconify-icon icon="fluent:video-24-filled"></iconify-icon>
+                  영상
+                </a>
+                <a href="#" class="va-act" aria-label="서연 메시지">
+                  <iconify-icon icon="fluent:chat-24-filled"></iconify-icon>
+                  문자
+                </a>
+              </div>
+            </div>
+
+            <div class="va-tile va-tile--offline">
+              <div class="av">
+                <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="">
+                <span class="av-dot"></span>
+              </div>
+              <div class="name">태우</div>
+              <div class="relation">아들</div>
+              <div class="va-actions">
+                <a href="#" class="va-act va-act--primary" aria-label="태우 음성 메시지">
+                  <iconify-icon icon="fluent:mic-24-filled"></iconify-icon>
+                  녹음
+                </a>
+                <a href="#" class="va-act" aria-label="태우 문자">
+                  <iconify-icon icon="fluent:chat-24-filled"></iconify-icon>
+                  문자
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="notes">
+          <b>장점</b> 한 탭으로 액션 선택. 영상·음성 동등 선택권. <br>
+          <b>단점</b> 시각적 요소 많아 카드 복잡. 어르신에겐 결정 부담 가능성.<br>
+          <b>적합</b> 사용자가 액션을 자주 골라 쓰는 경우.
+        </div>
+      </section>
+
+      <!-- ═══════════════ VARIANT B ═══════════════ -->
+      <section class="variant">
+        <span class="variant-tag">VARIANT B</span>
+        <h2>큰 단일 액션 CTA</h2>
+        <p class="variant-desc">Cocoon 영감. 카드 = 액션 1개. 상태에 따라 자동으로 가장 적합한 액션 노출(접속 중 → 영상통화, 자리 비움 → 메시지). 결정 단순.</p>
+
+        <div class="variant-mockup">
+          <header class="mockup-head">
+            <div class="mockup-title">
+              <iconify-icon icon="fluent:people-24-filled" width="20"></iconify-icon>
+              가족에게 전화
+            </div>
+            <a href="#" class="mockup-more">모두 보기 <iconify-icon icon="fluent:chevron-right-24-filled" width="14"></iconify-icon></a>
+          </header>
+
+          <div class="vb-grid">
+            <a href="#" class="vb-tile">
+              <div class="av">
+                <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="">
+                <span class="av-dot av-dot--on"></span>
+              </div>
+              <div class="name">민지</div>
+              <div class="relation">딸</div>
+              <span class="vb-cta">
+                <iconify-icon icon="fluent:video-24-filled"></iconify-icon>
+                영상통화
+              </span>
+            </a>
+
+            <a href="#" class="vb-tile">
+              <div class="av">
+                <img src="https://randomuser.me/api/portraits/women/9.jpg" alt="">
+                <span class="av-dot av-dot--on"></span>
+              </div>
+              <div class="name">서연</div>
+              <div class="relation">손녀</div>
+              <span class="vb-cta">
+                <iconify-icon icon="fluent:video-24-filled"></iconify-icon>
+                영상통화
+              </span>
+            </a>
+
+            <a href="#" class="vb-tile vb-tile--offline">
+              <div class="av">
+                <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="">
+                <span class="av-dot"></span>
+              </div>
+              <div class="name">태우</div>
+              <div class="relation">아들</div>
+              <span class="vb-cta">
+                <iconify-icon icon="fluent:mic-24-filled"></iconify-icon>
+                메시지
+              </span>
+            </a>
+          </div>
+        </div>
+
+        <div class="notes">
+          <b>장점</b> 결정 단순(One Tap = One Call). 인지 부담 ↓. 어르신에 친화적.<br>
+          <b>단점</b> 음성통화는 별도 화면(p03)에서만 접근.<br>
+          <b>적합</b> 환자앱처럼 빠른 단일 액션이 중요한 경우. <b>(추천)</b>
+        </div>
+      </section>
+
+      <!-- ═══════════════ VARIANT C ═══════════════ -->
+      <section class="variant">
+        <span class="variant-tag">VARIANT C</span>
+        <h2>가로 행 + 우측 아이콘 액션</h2>
+        <p class="variant-desc">WhatsApp/Mozi 영감. 가족 1명 = 한 행. 우측에 원형 아이콘 버튼(영상/음성) 2~3개. 이름 길이 다양해도 줄바꿈 없음.</p>
+
+        <div class="variant-mockup">
+          <header class="mockup-head">
+            <div class="mockup-title">
+              <iconify-icon icon="fluent:people-24-filled" width="20"></iconify-icon>
+              가족에게 전화
+            </div>
+            <a href="#" class="mockup-more">모두 보기 <iconify-icon icon="fluent:chevron-right-24-filled" width="14"></iconify-icon></a>
+          </header>
+
+          <div class="vc-list">
+            <a href="#" class="vc-row">
+              <div class="av">
+                <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="">
+                <span class="av-dot av-dot--on"></span>
+              </div>
+              <div class="vc-meta">
+                <div class="vc-name-line">민지 <span class="vc-relation">딸</span></div>
+                <div class="vc-status">지금 접속 중</div>
+              </div>
+              <div class="vc-actions">
+                <span class="vc-icon-btn vc-icon-btn--primary" aria-label="민지 영상통화">
+                  <iconify-icon icon="fluent:video-24-filled"></iconify-icon>
+                </span>
+                <span class="vc-icon-btn" aria-label="민지 음성통화">
+                  <iconify-icon icon="fluent:call-24-filled"></iconify-icon>
+                </span>
+              </div>
+            </a>
+
+            <a href="#" class="vc-row">
+              <div class="av">
+                <img src="https://randomuser.me/api/portraits/women/9.jpg" alt="">
+                <span class="av-dot av-dot--on"></span>
+              </div>
+              <div class="vc-meta">
+                <div class="vc-name-line">서연 <span class="vc-relation">손녀</span></div>
+                <div class="vc-status">지금 접속 중</div>
+              </div>
+              <div class="vc-actions">
+                <span class="vc-icon-btn vc-icon-btn--primary" aria-label="서연 영상통화">
+                  <iconify-icon icon="fluent:video-24-filled"></iconify-icon>
+                </span>
+                <span class="vc-icon-btn" aria-label="서연 메시지">
+                  <iconify-icon icon="fluent:chat-24-filled"></iconify-icon>
+                </span>
+              </div>
+            </a>
+
+            <a href="#" class="vc-row vc-row--offline">
+              <div class="av">
+                <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="">
+                <span class="av-dot"></span>
+              </div>
+              <div class="vc-meta">
+                <div class="vc-name-line">태우 <span class="vc-relation">아들</span></div>
+                <div class="vc-status vc-status--off">자리 비움</div>
+              </div>
+              <div class="vc-actions">
+                <span class="vc-icon-btn vc-icon-btn--primary" aria-label="태우 음성 메시지">
+                  <iconify-icon icon="fluent:mic-24-filled"></iconify-icon>
+                </span>
+                <span class="vc-icon-btn" aria-label="태우 문자">
+                  <iconify-icon icon="fluent:chat-24-filled"></iconify-icon>
+                </span>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <div class="notes">
+          <b>장점</b> 정보 풍부(상태 텍스트 표시). 텍스트 줄바꿈 0. 친숙한 패턴.<br>
+          <b>단점</b> 세로 공간 더 필요. 작은 아이콘 버튼이 어르신에겐 작을 수 있음.<br>
+          <b>적합</b> 가족 수가 많거나(4~5명) 상태 정보를 명확히 보여주고 싶을 때.
+        </div>
+      </section>
+
+    </div>
+
+  </div>
+
+</body>
+</html>

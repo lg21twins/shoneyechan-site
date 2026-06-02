@@ -1,0 +1,86 @@
+/* ============================================================
+   하루안부 · 의료진 모바일앱 v15 — 공통 별칭 토큰
+   ------------------------------------------------------------
+   tokens.css → _shared.css 순서로 import.
+   각 화면에서 반복 정의되던 :root 별칭과 레이아웃 변수만 모음.
+   화면 컴포넌트 스타일은 점진적으로 system/components.css로 이전.
+   ============================================================ */
+
+:root {
+  /* 의료진 accent */
+  --accent: var(--color-accent);
+  --accent-soft: var(--color-accent-soft);
+  --accent-strong: var(--color-accent-strong);
+
+  /* status */
+  --danger: var(--color-danger);
+  --danger-soft: var(--color-danger-soft);
+  --warn: var(--color-warning);
+  --warn-soft: var(--color-warning-soft);
+
+  /* text */
+  --t1: var(--color-text-primary);
+  --t2: var(--color-text-secondary);
+  --t3: var(--color-text-tertiary);
+
+  /* layout — v11 요양보호사앱과 픽셀 단위까지 통일 (2026-05-21 통일 라운드) */
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: max(env(safe-area-inset-bottom, 0px), 20px);
+  --tab-h: 64px;
+  --tab-bot: 12px;            /* v11과 동일: 14→12 */
+  --pad: 20px;
+  --page-pad: 20px;           /* v11 별칭과 통일 — 두 변수 모두 동작 */
+
+  /* clinical 캔버스/그라디언트는 tokens.css의 SoT를 사용한다. */
+}
+
+/* ============================================================
+   의료진앱 모바일 ↔ 요양보호사앱 디자인 토큰 1:1 정렬.
+   메모리 [[token_sharing_pair]] — 두 앱은 같은 디자인 토큰 공유.
+   medical 역할 + mobile 플랫폼일 때 caregiver 값(18px 본문/48px 터치)
+   을 강제. 클래스명/구조도 동일 컴포넌트 스타일을 따르도록 한다.
+   ============================================================ */
+[data-role="medical"][data-platform="mobile"],
+[data-role="nurse"][data-platform="mobile"],
+[data-role="doctor"][data-platform="mobile"] {
+  --text-body:           var(--font-18);
+  --size-touch-target:   48px;
+  --size-button-default: 52px;
+  --size-row:            60px;
+  --card-padding:        var(--space-5);
+}
+
+/* ============================================================
+   배경 — v11 요양보호사앱 c01-today.html과 동일 (var(--clinical-canvas))
+   html 뿐 아니라 body까지 직접 칠해서 app.css/role 그라디언트와
+   페이지 인라인 스타일이 가려도 같은 색으로 보이도록 한다.
+   ============================================================ */
+html.has-c01-bg,
+html.has-c01-bg body {
+  background: var(--clinical-canvas) !important;
+  background-image: none !important;
+}
+html.has-c01-bg [data-platform="mobile"] .app-shell {
+  background: var(--clinical-canvas) !important;
+  background-image: none !important;
+}
+.ai-orb-bg { display: none; }
+.ai-orb { display: none; }
+.app { position: relative; z-index: 1; }
+
+/* ============================================================
+   Bottom Scrim — 탭바 뒤 페이드 마스크 (배경/탭바 분리감)
+   ============================================================ */
+.bottom-scrim{
+  position:fixed;left:0;right:0;bottom:0;height:108px;z-index:39;pointer-events:none;
+  background:rgba(240,244,248,1);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  -webkit-mask-image:linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 55%);
+          mask-image:linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 55%);
+  transition:opacity .4s cubic-bezier(.32,.72,0,1);
+}
+.bottom-scrim.hide{opacity:0}
+@media (prefers-reduced-transparency: reduce){
+  .bottom-scrim{backdrop-filter:none;-webkit-backdrop-filter:none}
+}

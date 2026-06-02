@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="ko" data-role="medical" data-platform="mobile" class="has-c01-bg">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#DCFCE7">
+  <title>하루안부 · 의료진 · 인수인계</title>
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css">
+
+  <script src="../07_디자인/_app-theme.js"></script>
+  <link rel="stylesheet" href="./_shared.css?v=20260525p">
+  <!-- 의료진 모바일 ↔ 요양보호사 디자인 시스템 통합 (2026-05-21) -->
+  <link rel="stylesheet" href="../v11_요양보호사앱/caregiver.css">
+  <script src="../07_디자인/_iconify-icon.min.js"></script>
+  <style>
+    /* :root 별칭은 _shared.css 에서 정의 */
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+    /* v3.2.12+: clinical 캔버스 (v11 요양보호사앱과 동일 — var(--clinical-canvas) 토큰 참조) */
+    html{height:100%;background:var(--clinical-canvas);font-size:16px;}
+    body{
+      height:100%;color:var(--t1);overflow-x:hidden;
+      font-family:var(--font-family-base);font-size:18px;letter-spacing:-.2px;-webkit-font-smoothing:antialiased;
+      background:transparent;
+    }
+    .bg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background: var(--clinical-bg-image);}
+    .app{
+      max-width:430px;margin:0 auto;min-height:100%;position:relative;
+      padding-bottom:calc(var(--safe-b) + var(--tab-h) + var(--tab-bot) + 40px);
+    }
+
+    /* HEADER (v15 통일 — grid 44·1fr·44 / h-eyebrow + h-name) */
+    .header{padding:calc(var(--safe-t) + 14px) var(--pad) 8px;position:relative;z-index:5;}
+    .top-nav .icon-btn{grid-column:3;justify-self:end;}
+    .h-eyebrow{font-size:11px;font-weight:600;color:var(--accent-strong);letter-spacing:.4px;text-transform:uppercase;}
+    /* v3.2.5: 헤더 icon-btn 글라스 통일 (d01 홈 스펙) */
+    .icon-btn{
+      width:44px;height:44px;border-radius:50%;
+      background:rgba(255,255,255,.55);
+      border:.5px solid rgba(255,255,255,.55);
+      backdrop-filter:blur(12px) saturate(140%);
+      -webkit-backdrop-filter:blur(12px) saturate(140%);
+      cursor:pointer;text-decoration:none;
+      display:inline-flex;align-items:center;justify-content:center;
+      box-shadow:0 1px 1px rgba(255,255,255,.6) inset, 0 4px 16px rgba(0,0,0,.06);
+      position:relative;transition:transform .1s;
+    }
+
+    /* COUNTDOWN — 슬림 인포 스트립 */
+    .countdown{animation:haru-fade-in-up var(--duration-slow,350ms) var(--easing-standard) 60ms both;
+      margin:0 var(--pad);padding:14px 18px;
+      display:flex;align-items:center;gap:14px;
+      background:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.9);
+      border-radius:16px;
+      position:relative;z-index:1;
+    }
+    .countdown-ring{width:44px;height:44px;flex-shrink:0;position:relative;}
+    .countdown-ring svg{transform:rotate(-90deg);}
+    .countdown-val{
+      position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+      font-size:13px;font-weight:700;color:var(--accent-strong);
+      font-variant-numeric:tabular-nums;letter-spacing:-.2px;
+    }
+    .countdown-meta{flex:1;min-width:0;line-height:1.3;}
+    .countdown-label{font-size:11px;font-weight:600;color:var(--accent-strong);letter-spacing:.3px;text-transform:uppercase;}
+    .countdown-main{font-size:13px;font-weight:600;color:var(--t1);margin-top:3px;letter-spacing:-.2px;}
+
+    /* SECTION */
+    .sec{margin:20px var(--pad) 0;position:relative;z-index:1;}
+    .sec-head{
+      display:flex;align-items:baseline;justify-content:space-between;
+      margin-bottom:10px;padding:0 2px;
+    }
+    .sec-eyebrow{font-size:11px;font-weight:600;color:var(--accent-strong);letter-spacing:.4px;text-transform:uppercase;}
+    .sec-ttl{font-size:18px;font-weight:700;color:var(--t1);letter-spacing:-.4px;margin-top:5px;}
+    .sec-action{
+      font-size:12px;font-weight:600;padding:7px 12px;border-radius:999px;
+      background:var(--palette-white);color:var(--accent-strong);border:0;
+      cursor:pointer;font-family:inherit;align-self:flex-end;
+      box-shadow:0 1px 3px rgba(0,0,0,.04);
+    }
+
+    /* SBAR — 헤드라인+키밸류 위급 + 접힘 비위급 (배경필·사이드레일 금지) */
+    /* === SBAR 대시보드 컴포짓 (시안 5) ===
+       상단: 24h 추이 차트 / 중단: 2×2 그리드 / 하단: 권고 가중치
+       위계는 타이포·간격·태그 색상으로만. 좌측 스트로크/레일 없음. */
+    .sbar{
+      animation:haru-fade-in-up var(--duration-slow,350ms) var(--easing-standard) both;
+      display:flex;flex-direction:column;gap:10px;
+    }
+
+    /* 상단: 24h 추이 차트 */
+    .sbar-trend{
+      background:var(--palette-white);border-radius:20px;
+      box-shadow:var(--cg-card-shadow);
+      padding:18px 20px 14px;
+    }
+    .sbar-trend-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:6px;}
+    .sbar-trend-ttl{font-size:14px;font-weight:700;color:var(--t1);letter-spacing:-.2px;}
+    .sbar-trend-sub{font-size:11px;color:var(--t3);margin-top:2px;line-height:1.3;}
+    .sbar-trend-val{
+      font-size:26px;font-weight:800;color:var(--color-danger);
+      letter-spacing:-.5px;line-height:1;font-variant-numeric:tabular-nums;text-align:right;
+    }
+    .sbar-trend-val small{font-size:12px;font-weight:600;color:var(--t3);margin-left:2px;}
+    .sbar-trend-time{font-size:10px;font-weight:600;color:var(--t3);margin-top:4px;text-align:right;letter-spacing:.2px;}
+    .sbar-chart{width:100%;height:108px;display:block;}
+    .sbar-chart-legend{
+      margin-top:8px;display:flex;align-items:center;gap:14px;
+      font-size:11px;font-weight:500;color:var(--t3);
+    }
+    .sbar-chart-legend > span{display:inline-flex;align-items:center;gap:5px;}
+    .sbar-chart-legend i{width:8px;height:8px;border-radius:2px;display:inline-block;}
+    .sbar-chart-legend .i-danger{background:var(--color-danger);}
+    .sbar-chart-legend .i-warn{background:var(--color-warning);}
+    .sbar-chart-legend .last{margin-left:auto;color:var(--t2);font-weight:600;}
+    .sbar-chart-legend .last b{color:var(--t1);font-weight:700;}
+
+    /* 중단: 2×2 SBAR 타일 그리드 */
+    .sbar-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+    .sbar-tile{
+      background:var(--palette-white);border-radius:16px;
+      box-shadow:var(--cg-card-shadow);
+      padding:14px 16px;text-align:left;
+      font-family:inherit;border:0;cursor:pointer;
+      display:flex;flex-direction:column;gap:6px;
+      transition:transform .12s;
+    }
+    .sbar-tile:active{transform:scale(.99);}
+    .sbar-tile-head{display:flex;align-items:center;gap:8px;}
+    .sbar-tile-tag{
+      width:22px;height:22px;border-radius:7px;flex-shrink:0;
+      display:inline-flex;align-items:center;justify-content:center;
+      font-size:11px;font-weight:800;letter-spacing:-.2px;
+      background:var(--palette-gray-100);color:var(--palette-gray-700);
+    }
+    .sbar-tile--danger .sbar-tile-tag{background:var(--danger-soft);color:var(--palette-red-700);}
+    .sbar-tile--warn  .sbar-tile-tag{background:var(--warn-soft);color:var(--palette-amber-700);}
+    .sbar-tile-label{font-size:11px;font-weight:600;color:var(--t3);letter-spacing:.3px;text-transform:uppercase;}
+    .sbar-tile-headline{font-size:14px;font-weight:700;color:var(--t1);letter-spacing:-.2px;line-height:1.3;}
+    .sbar-tile--danger .sbar-tile-headline{color:var(--palette-red-700);}
+    .sbar-tile--warn  .sbar-tile-headline{color:var(--palette-amber-700);}
+    .sbar-tile-sub{font-size:11.5px;font-weight:500;color:var(--t2);line-height:1.4;}
+
+    /* 하단: 권고 가중치 */
+    .sbar-rec{
+      background:var(--palette-white);border-radius:20px;
+      box-shadow:var(--cg-card-shadow);
+      padding:16px 20px;
+    }
+    .sbar-rec-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px;}
+    .sbar-rec-ttl{font-size:11px;font-weight:700;color:var(--accent-strong);letter-spacing:.4px;text-transform:uppercase;}
+    .sbar-rec-cnt{font-size:11px;font-weight:500;color:var(--t3);}
+    .sbar-rec-row{
+      display:flex;align-items:center;gap:10px;padding:9px 0;
+      border-top:1px solid rgba(0,0,0,.04);
+    }
+    .sbar-rec-row:first-of-type{border-top:0;}
+    .sbar-rec-num{
+      width:22px;height:22px;border-radius:50%;flex-shrink:0;
+      display:inline-flex;align-items:center;justify-content:center;
+      font-size:11px;font-weight:700;letter-spacing:-.2px;
+      background:var(--palette-gray-100);color:var(--palette-gray-700);
+    }
+    .sbar-rec-row.p-danger .sbar-rec-num{background:var(--color-danger);color:var(--palette-white);}
+    .sbar-rec-row.p-warn   .sbar-rec-num{background:var(--color-warning);color:var(--palette-white);}
+    .sbar-rec-text{flex:1;min-width:0;font-size:13px;font-weight:500;color:var(--t1);line-height:1.35;letter-spacing:-.1px;}
+    .sbar-rec-text b{font-weight:700;}
+    .sbar-rec-weight{width:60px;height:5px;background:rgba(0,0,0,.06);border-radius:3px;overflow:hidden;flex-shrink:0;}
+    .sbar-rec-weight i{display:block;height:100%;width:var(--weight, 0%);background:var(--palette-gray-400);}
+    .sbar-rec-row.p-danger .sbar-rec-weight i{background:var(--color-danger);}
+    .sbar-rec-row.p-warn   .sbar-rec-weight i{background:var(--color-warning);}
+
+    .ai-hint{
+      margin:12px 0 0;padding:14px 18px;background:var(--palette-white);
+      border-radius:20px;
+      box-shadow:0 2px 8px rgba(var(--brand-green-500-rgb), .08);
+      display:flex;align-items:center;gap:12px;
+    }
+    .ai-hint iconify-icon{font-size:20px;color:var(--accent-strong);flex-shrink:0;}
+    .ai-hint-text{font-size:13px;font-weight:600;color:var(--t2);line-height:1.5;}
+    .ai-hint-text b{color:var(--t1);font-weight:700;}
+
+    /* CHECKS */
+    .checks{
+      background:var(--palette-white);border-radius:20px;overflow:hidden;
+      box-shadow:var(--cg-card-shadow);
+    }
+    .check-row{
+      padding:16px 18px;display:flex;align-items:center;gap:14px;
+      border-bottom:1px solid rgba(0,0,0,.05);cursor:pointer;
+    }
+    .check-row:last-child{border-bottom:0;}
+    .check-box{
+      width:26px;height:26px;border-radius:8px;flex-shrink:0;
+      border:2px solid rgba(0,0,0,.12);background:var(--palette-white);
+      display:inline-flex;align-items:center;justify-content:center;
+      transition:.15s;
+    }
+    .check-box iconify-icon{font-size:16px;color:var(--palette-white);opacity:0;transition:.15s;}
+    .check-row.checked .check-box{background:var(--accent);border-color:var(--accent);}
+    .check-row.checked .check-box iconify-icon{opacity:1;}
+    .check-text{flex:1;min-width:0;line-height:1.35;}
+    .check-label{font-size:14px;font-weight:600;color:var(--t1);letter-spacing:-.2px;}
+    .check-row.checked .check-label{color:var(--t2);font-weight:500;}
+    .check-sub{font-size:12px;font-weight:500;color:var(--t3);margin-top:3px;}
+    .check-cnt{
+      font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;
+      background:var(--warn-soft);color:var(--palette-amber-700);flex-shrink:0;
+    }
+
+    /* TIMELINE */
+    .accum{
+      background:var(--palette-white);border-radius:20px;padding:8px 0;
+      box-shadow:var(--cg-card-shadow);
+    }
+    .acc-row{
+      padding:14px 18px;display:flex;align-items:flex-start;gap:14px;
+    }
+    .acc-time{flex-shrink:0;width:54px;text-align:right;line-height:1.05;}
+    .acc-h{font-size:13px;font-weight:700;color:var(--t1);font-variant-numeric:tabular-nums;letter-spacing:-.3px;}
+    .acc-min{font-size:10.5px;font-weight:500;color:var(--t3);margin-top:3px;}
+    .acc-line{flex-shrink:0;width:2px;background:rgba(0,0,0,.06);align-self:stretch;margin-top:5px;position:relative;}
+    .acc-dot{
+      width:12px;height:12px;border-radius:50%;background:var(--accent);
+      position:absolute;top:0;left:50%;transform:translateX(-50%);
+      box-shadow:0 0 0 3px white;
+    }
+    .acc-dot.warn{background:var(--warn);}
+    .acc-dot.danger{background:var(--danger);}
+    .acc-body{flex:1;min-width:0;line-height:1.4;padding-bottom:4px;}
+    .acc-patient{font-size:13.5px;font-weight:600;color:var(--t1);letter-spacing:-.2px;}
+    .acc-msg{font-size:13px;font-weight:500;color:var(--t2);margin-top:4px;}
+    .acc-tag{
+      display:inline-block;font-size:10px;font-weight:600;padding:2px 6px;border-radius:5px;
+      background:var(--accent-soft);color:var(--accent-strong);margin-right:5px;letter-spacing:.2px;
+    }
+    .acc-tag.warn{background:var(--warn-soft);color:var(--palette-amber-700);}
+    .acc-tag.s{background:var(--brand-blue-100);color:var(--brand-blue-600);}
+    .acc-tag.a{background:var(--warn-soft);color:var(--palette-amber-700);}
+
+    /* VOICE */
+    .voice-bar{
+      background:var(--palette-white);border-radius:18px;
+      padding:12px 14px;display:flex;align-items:center;gap:12px;
+      box-shadow:var(--cg-card-shadow);
+    }
+    .voice-mic-lg{
+      width:46px;height:46px;border-radius:50%;flex-shrink:0;
+      background:var(--accent);
+      color:var(--palette-white);display:inline-flex;align-items:center;justify-content:center;
+      box-shadow:0 4px 14px rgba(var(--brand-green-500-rgb), .36);cursor:pointer;border:0;
+    }
+    .voice-mic-lg iconify-icon{font-size:22px;}
+    .voice-info{flex:1;min-width:0;line-height:1.3;}
+    .voice-info-main{font-size:14px;font-weight:700;color:var(--t1);letter-spacing:-.3px;}
+    .voice-info-sub{font-size:12px;font-weight:500;color:var(--t2);margin-top:2px;}
+
+    /* SEND */
+    .send-cta{
+      margin:10px var(--pad) 0;display:grid;grid-template-columns:1fr 2fr;gap:10px;
+      position:relative;z-index:1;
+    }
+    .send-draft{
+      padding:16px;background:var(--palette-white);border:0;
+      border-radius:16px;font-size:14px;font-weight:700;color:var(--t2);
+      cursor:pointer;font-family:inherit;
+      box-shadow:var(--cg-card-shadow);
+    }
+    .send-now{
+      padding:16px;background:var(--accent);
+      border:0;border-radius:14px;color:var(--palette-white);
+      font-size:15px;font-weight:700;letter-spacing:-.2px;
+      cursor:pointer;font-family:inherit;
+      box-shadow:0 6px 18px rgba(var(--brand-green-500-rgb), .35);
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    }
+    .send-now iconify-icon{font-size:18px;}
+
+    /* TAB BAR · v3.2.5: 세 앱 탭바 위치 통일 — env(safe-bottom) + 12px (d01 기준) */
+    .tab-wrap{
+      position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);
+      left:50%;transform:translateX(-50%);
+      display:flex;align-items:center;gap:10px;
+      width:calc(100% - 32px);max-width:398px;z-index:40;
+    }
+    /* v3.2.5: 탭바 — 보호자 스타일 통일 (글라스 + 아이콘 26px, 라벨 숨김) */
+    .tabbar{
+      flex:1;min-width:0;height:var(--tab-h);
+      background:rgba(255,255,255,.85);
+      backdrop-filter:blur(20px) saturate(140%);
+      -webkit-backdrop-filter:blur(20px) saturate(140%);
+      border:1px solid rgba(255,255,255,.55);
+      border-radius:999px;
+      box-shadow:0 6px 22px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.4);
+      display:flex;align-items:stretch;justify-content:space-around;padding:0 10px;
+    }
+    .tab iconify-icon{font-size:26px;}
+    .tab-label{display:none;}
+    .tab.active{color:var(--accent-strong);}
+    .tab.active iconify-icon{filter:drop-shadow(0 2px 6px rgba(var(--brand-green-500-rgb), .28));}
+    .sos{
+      position:relative;width:var(--tab-h);height:var(--tab-h);flex-shrink:0;border-radius:50%;
+      background:var(--color-danger);border:0;
+      box-shadow:0 6px 22px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.4);
+      display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
+    }
+    .sos iconify-icon{font-size:26px;color:var(--palette-white);}
+    .toast{
+      position:fixed;left:50%;bottom:calc(var(--safe-b) + var(--tab-h) + var(--tab-bot) + 18px);
+      transform:translateX(-50%) translateY(20px);
+      background:rgba(28,28,30,.92);color:var(--palette-white);font-size:14px;font-weight:600;
+      padding:11px 20px;border-radius:999px;
+      opacity:0;transition:.25s;pointer-events:none;z-index:300;white-space:nowrap;
+    }
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+    /* ===== HANDOVER SEND CONFIRMATION SHEET ===== */
+    .conf-overlay{
+      position:fixed;inset:0;background:rgba(0,0,0,.45);
+      backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+      display:none;align-items:flex-end;justify-content:center;z-index:400;
+    }
+    .conf-overlay.show{display:flex;}
+    .conf-sheet{
+      background:var(--palette-white);color:var(--t1);
+      width:100%;max-width:430px;
+      border-radius:24px 24px 0 0;
+      padding:14px 22px calc(24px + env(safe-area-inset-bottom,0px));
+      box-shadow:0 -8px 28px rgba(0,0,0,.2);
+      animation: haru-fade-in-up var(--duration-slow, 350ms) var(--easing-standard) both;max-height:88vh;overflow-y:auto;
+    }
+    @keyframes haru-fade-in-up {from{transform:translateY(8px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+    .conf-handle{width:40px;height:4px;background:rgba(0,0,0,.15);border-radius:2px;margin:0 auto 14px;}
+    .conf-eyebrow{font-size:11px;font-weight:700;letter-spacing:.4px;color:var(--accent-strong);text-transform:uppercase;}
+    .conf-ttl{font-size:20px;font-weight:700;color:var(--t1);letter-spacing:-.4px;line-height:1.3;margin-top:4px;}
+    .conf-sub{font-size:13px;font-weight:500;color:var(--t2);line-height:1.5;margin-top:6px;}
+
+    .conf-warn{
+      display:flex;align-items:center;gap:12px;
+      padding:14px 16px;background:var(--warn-soft);
+      border-radius:14px;margin:18px 0 16px;
+    }
+    .conf-warn iconify-icon{font-size:22px;color:var(--palette-amber-700);flex-shrink:0;}
+    .conf-warn-text{font-size:13.5px;font-weight:600;color:var(--palette-amber-700);line-height:1.4;}
+    .conf-warn-text b{display:block;font-size:14px;font-weight:700;}
+    .conf-warn-list{margin-top:6px;font-size:12.5px;font-weight:500;color:var(--palette-amber-700);line-height:1.5;}
+
+    .conf-meta{
+      background:var(--clinical-surface);border-radius:14px;padding:14px 16px;margin-bottom:16px;
+      display:flex;flex-direction:column;gap:8px;
+    }
+    .conf-meta>div{display:flex;justify-content:space-between;align-items:center;font-size:13px;gap:12px;}
+    .conf-meta span{color:var(--t3);font-weight:500;flex-shrink:0;}
+    .conf-meta b{color:var(--t1);font-weight:700;text-align:right;}
+    .conf-meta b.danger{color:var(--palette-red-700);}
+
+    .conf-section-ttl{
+      font-size:11px;font-weight:700;color:var(--t3);
+      letter-spacing:.4px;text-transform:uppercase;margin:6px 0 8px;
+    }
+    .conf-pill-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+    .conf-pill{
+      display:inline-flex;align-items:center;gap:5px;
+      font-size:12px;font-weight:600;padding:6px 10px;border-radius:999px;
+      background:var(--accent-soft);color:var(--accent-strong);
+    }
+    .conf-pill.warn{background:var(--warn-soft);color:var(--palette-amber-700);}
+    .conf-pill.danger{background:var(--danger-soft);color:var(--palette-red-700);}
+    .conf-pill iconify-icon{font-size:13px;}
+
+    .conf-action-primary{
+      width:100%;padding:18px;border:0;border-radius:14px;cursor:pointer;font-family:inherit;
+      background:var(--accent);color:var(--palette-white);
+      font-size:16px;font-weight:700;letter-spacing:-.2px;
+      display:inline-flex;align-items:center;justify-content:center;gap:10px;
+      box-shadow:0 6px 18px rgba(var(--brand-green-500-rgb), .3);
+    }
+    .conf-action-primary iconify-icon{font-size:20px;}
+    .conf-cancel{
+      width:100%;margin-top:10px;padding:14px;
+      background:transparent;border:0;cursor:pointer;font-family:inherit;
+      font-size:14px;font-weight:700;color:var(--t2);
+    }
+  </style>
+</head>
+<body>
+  <div class="bg" aria-hidden="true"></div>
+  <div class="ai-orb-bg" aria-hidden="true"><div class="ai-orb"></div></div>
+  <div class="app">
+
+    <header class="header">
+      <div class="top-nav">
+        <span class="h-left" aria-hidden="true"></span>
+        <div class="title-block">
+          <div class="h-name">SBAR</div>
+        </div>
+        <button class="icon-btn" aria-label="이력"><iconify-icon icon="fluent:history-24-filled"></iconify-icon></button>
+      </div>
+    </header>
+
+    <section class="countdown">
+      <div class="countdown-ring">
+        <svg class="countdown-ring-svg" viewBox="0 0 44 44" width="44" height="44">
+          <circle cx="22" cy="22" r="19" fill="none" stroke="rgba(34,197,94,.15)" stroke-width="3"/>
+          <circle cx="22" cy="22" r="19" fill="none" stroke="var(--accent)" stroke-width="3"
+                  stroke-dasharray="119" stroke-dashoffset="44" stroke-linecap="round"/>
+        </svg>
+        <div class="countdown-val">2:18</div>
+      </div>
+      <div class="countdown-meta">
+        <div class="countdown-label">다음 인수인계까지</div>
+        <div class="countdown-main">17:30 · 김혜정 간호사에게</div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head">
+        <div>
+          <h2 class="sec-ttl">음성 메모</h2>
+        </div>
+      </div>
+      <div class="voice-bar">
+        <button class="voice-mic-lg" onclick="toast('녹음 시작 — 60초');" aria-label="음성 메모 녹음">
+          <iconify-icon icon="fluent:mic-24-filled"></iconify-icon>
+        </button>
+        <div class="voice-info">
+          <div class="voice-info-main">1분 음성 메모 추가</div>
+          <div class="voice-info-sub">STT로 변환되어 SBAR 끝에 첨부</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head">
+        <div>
+          <div class="sec-eyebrow">AI 자동 분류</div>
+          <h2 class="sec-ttl">SBAR 초안</h2>
+        </div>
+        <button class="sec-action" onclick="toast('AI 재생성');">재생성</button>
+      </div>
+
+      <div class="sbar">
+
+        <!-- 상단: 24h 혈압 추이 -->
+        <div class="sbar-trend">
+          <div class="sbar-trend-head">
+            <div>
+              <div class="sbar-trend-ttl">최명자 어르신 · 24h 혈압</div>
+              <div class="sbar-trend-sub">2층 B-2호 · 82F · 고혈압 기저</div>
+            </div>
+            <div>
+              <div class="sbar-trend-val">180<small>/110</small></div>
+              <div class="sbar-trend-time">14:02 측정</div>
+            </div>
+          </div>
+          <svg class="sbar-chart" viewBox="0 0 320 108" preserveAspectRatio="none" role="img" aria-label="24시간 혈압 추이">
+            <defs>
+              <linearGradient id="bpAreaFill" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0" stop-color="var(--color-danger)" stop-opacity=".18"/>
+                <stop offset="1" stop-color="var(--color-danger)" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <line x1="0" y1="28" x2="320" y2="28" stroke="var(--color-danger)" stroke-width="1" stroke-dasharray="3 3" opacity=".5"/>
+            <text x="4" y="24" font-size="9" fill="var(--color-danger)" font-weight="700">위험 170+</text>
+            <line x1="0" y1="56" x2="320" y2="56" stroke="var(--color-warning)" stroke-width="1" stroke-dasharray="3 3" opacity=".35"/>
+            <text x="4" y="52" font-size="9" fill="var(--palette-amber-700)" font-weight="600">주의 140+</text>
+            <path d="M0,80 L40,72 L80,66 L120,58 L160,52 L200,40 L240,28 L280,18 L320,10 L320,108 L0,108 Z" fill="url(#bpAreaFill)"/>
+            <path d="M0,80 L40,72 L80,66 L120,58 L160,52 L200,40 L240,28 L280,18 L320,10" fill="none" stroke="var(--color-danger)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="80" cy="66" r="3" fill="#fff" stroke="var(--color-warning)" stroke-width="2"/>
+            <circle cx="160" cy="52" r="3" fill="#fff" stroke="var(--color-warning)" stroke-width="2"/>
+            <circle cx="240" cy="28" r="3.5" fill="var(--color-danger)" stroke="#fff" stroke-width="2"/>
+            <circle cx="320" cy="10" r="5" fill="var(--color-danger)" stroke="#fff" stroke-width="2"/>
+          </svg>
+          <div class="sbar-chart-legend">
+            <span><i class="i-danger"></i>위험</span>
+            <span><i class="i-warn"></i>주의</span>
+            <span class="last">06시 → 현재 <b>14:02</b></span>
+          </div>
+        </div>
+
+        <!-- 중단: 2×2 SBAR 타일 -->
+        <div class="sbar-grid">
+          <button class="sbar-tile sbar-tile--danger" type="button" onclick="toast('S · 상황 상세');">
+            <div class="sbar-tile-head"><span class="sbar-tile-tag">S</span><span class="sbar-tile-label">상황</span></div>
+            <div class="sbar-tile-headline">위험 측정 3회</div>
+            <div class="sbar-tile-sub">촉탁의 보고 완료 · 5→10mg</div>
+          </button>
+          <button class="sbar-tile" type="button" onclick="toast('B · 배경 상세');">
+            <div class="sbar-tile-head"><span class="sbar-tile-tag">B</span><span class="sbar-tile-label">배경</span></div>
+            <div class="sbar-tile-headline">기저질환 2건</div>
+            <div class="sbar-tile-sub">평균 수축기 165 · 보호자 OK</div>
+          </button>
+          <button class="sbar-tile sbar-tile--warn" type="button" onclick="toast('A · 평가 상세');">
+            <div class="sbar-tile-head"><span class="sbar-tile-tag">A</span><span class="sbar-tile-label">평가</span></div>
+            <div class="sbar-tile-headline">재측정 필요</div>
+            <div class="sbar-tile-sub">16시·20시 · 야간 낙상</div>
+          </button>
+          <button class="sbar-tile" type="button" onclick="toast('R · 권고 상세');">
+            <div class="sbar-tile-head"><span class="sbar-tile-tag">R</span><span class="sbar-tile-label">권고</span></div>
+            <div class="sbar-tile-headline">4건 대기</div>
+            <div class="sbar-tile-sub">의사 호출 · 측정 · 보호자</div>
+          </button>
+        </div>
+
+        <!-- 하단: 권고 가중치 -->
+        <div class="sbar-rec">
+          <div class="sbar-rec-head">
+            <div class="sbar-rec-ttl">권고 가중치</div>
+            <div class="sbar-rec-cnt">4건 · 우선순위 순</div>
+          </div>
+          <div class="sbar-rec-row p-danger">
+            <span class="sbar-rec-num">1</span>
+            <span class="sbar-rec-text">수축기 <b>160+</b> 시 즉시 의사 호출</span>
+            <span class="sbar-rec-weight"><i style="--weight:95%"></i></span>
+          </div>
+          <div class="sbar-rec-row p-warn">
+            <span class="sbar-rec-num">2</span>
+            <span class="sbar-rec-text">16시·20시 혈압 측정</span>
+            <span class="sbar-rec-weight"><i style="--weight:80%"></i></span>
+          </div>
+          <div class="sbar-rec-row p-warn">
+            <span class="sbar-rec-num">3</span>
+            <span class="sbar-rec-text">침상 주변 정돈, 수면등 ON</span>
+            <span class="sbar-rec-weight"><i style="--weight:55%"></i></span>
+          </div>
+          <div class="sbar-rec-row">
+            <span class="sbar-rec-num">4</span>
+            <span class="sbar-rec-text">보호자에게 저녁 상태 공유</span>
+            <span class="sbar-rec-weight"><i style="--weight:30%"></i></span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="ai-hint">
+        <iconify-icon icon="fluent:sparkle-24-filled"></iconify-icon>
+        <div class="ai-hint-text">라운드 중 입력한 음성·메모 7건을 <b>SBAR 4영역으로 자동 분류</b>했어요.</div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head">
+        <div>
+          <div class="sec-eyebrow">교대 전 확인</div>
+          <h2 class="sec-ttl">5필수 체크 · 3/5</h2>
+        </div>
+      </div>
+      <div class="checks">
+        <div class="check-row checked" onclick="this.classList.toggle('checked')">
+          <span class="check-box"><iconify-icon icon="fluent:checkmark-24-filled"></iconify-icon></span>
+          <div class="check-text">
+            <div class="check-label">낙상 위험 환자 확인</div>
+            <div class="check-sub">이정숙 어르신 · 침대 난간 ON</div>
+          </div>
+        </div>
+        <div class="check-row checked" onclick="this.classList.toggle('checked')">
+          <span class="check-box"><iconify-icon icon="fluent:checkmark-24-filled"></iconify-icon></span>
+          <div class="check-text">
+            <div class="check-label">복약 미투여 확인</div>
+            <div class="check-sub">22/28 완료, 6건 18시 예정</div>
+          </div>
+        </div>
+        <div class="check-row checked" onclick="this.classList.toggle('checked')">
+          <span class="check-box"><iconify-icon icon="fluent:checkmark-24-filled"></iconify-icon></span>
+          <div class="check-text">
+            <div class="check-label">통증 호소 환자 인계</div>
+            <div class="check-sub">박영자 어르신 (VAS 4 → 3)</div>
+          </div>
+        </div>
+        <div class="check-row" onclick="this.classList.toggle('checked')">
+          <span class="check-box"><iconify-icon icon="fluent:checkmark-24-filled"></iconify-icon></span>
+          <div class="check-text">
+            <div class="check-label">배회·폭력 위험 환자</div>
+            <div class="check-sub">이정숙 · 야간 활동 증가 관찰 필요</div>
+          </div>
+          <span class="check-cnt">미확인</span>
+        </div>
+        <div class="check-row" onclick="this.classList.toggle('checked')">
+          <span class="check-box"><iconify-icon icon="fluent:checkmark-24-filled"></iconify-icon></span>
+          <div class="check-text">
+            <div class="check-label">가족 통보 완료</div>
+            <div class="check-sub">최명자 보호자 통화 OK, 김순자 보호자 미회신</div>
+          </div>
+          <span class="check-cnt">미확인</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head">
+        <div>
+          <div class="sec-eyebrow">오늘 적립</div>
+          <h2 class="sec-ttl">메모 7건</h2>
+        </div>
+        <button class="sec-action" onclick="toast('전체 보기');">전체</button>
+      </div>
+      <div class="accum">
+
+        <div class="acc-row">
+          <div class="acc-time"><div class="acc-h">14:02</div><div class="acc-min">방금</div></div>
+          <div class="acc-line"><span class="acc-dot danger"></span></div>
+          <div class="acc-body">
+            <div class="acc-patient">최명자 · 2층 B-2호</div>
+            <div class="acc-msg"><span class="acc-tag s">S</span>혈압 180/110, 의사 보고 → 처방 증량</div>
+          </div>
+        </div>
+
+        <div class="acc-row">
+          <div class="acc-time"><div class="acc-h">13:45</div><div class="acc-min">17분</div></div>
+          <div class="acc-line"><span class="acc-dot warn"></span></div>
+          <div class="acc-body">
+            <div class="acc-patient">박영자 · 2층 A-3호</div>
+            <div class="acc-msg"><span class="acc-tag a">A</span>무릎 통증 VAS 4, 진통제 후 감소</div>
+          </div>
+        </div>
+
+        <div class="acc-row">
+          <div class="acc-time"><div class="acc-h">13:30</div><div class="acc-min">32분</div></div>
+          <div class="acc-line"><span class="acc-dot warn"></span></div>
+          <div class="acc-body">
+            <div class="acc-patient">김순자 · 2층 A-5호</div>
+            <div class="acc-msg"><span class="acc-tag a">A</span>체온 37.8 미열 · 1시간 후 재측정</div>
+          </div>
+        </div>
+
+        <div class="acc-row">
+          <div class="acc-time"><div class="acc-h">12:15</div><div class="acc-min">1시간</div></div>
+          <div class="acc-line"><span class="acc-dot"></span></div>
+          <div class="acc-body">
+            <div class="acc-patient">정성호 · 3층 C-3호</div>
+            <div class="acc-msg"><span class="acc-tag">정상</span>식사 1인분 모두, 산소포화도 96%</div>
+          </div>
+        </div>
+
+        <div class="acc-row">
+          <div class="acc-time"><div class="acc-h">10:50</div><div class="acc-min">3시간</div></div>
+          <div class="acc-line"></div>
+          <div class="acc-body">
+            <div class="acc-patient">이정숙 · 3층 C-1호</div>
+            <div class="acc-msg"><span class="acc-tag a">A</span>야간 배회 1회, 낙상 위험 인계 필요</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </div>
+
+  <div class="tab-wrap">
+    <nav class="tabbar" role="tablist">
+      <a href="d01-home.html" class="tab" aria-label="지금"><iconify-icon icon="fluent:home-24-filled"></iconify-icon><span class="tab-label">지금</span></a>
+      <a href="d02-round.html" class="tab" aria-label="회진"><iconify-icon icon="fluent:bed-24-filled"></iconify-icon><span class="tab-label">회진</span></a>
+      <a href="d03-inbox.html" class="tab" aria-label="소통"><iconify-icon icon="fluent:chat-24-filled"></iconify-icon><span class="tab-label">소통</span></a>
+      <a href="d04-handover.html" class="tab active" aria-label="인수인계"><iconify-icon icon="fluent:document-arrow-right-24-filled"></iconify-icon><span class="tab-label">인계</span></a>
+    </nav>
+    <a href="d-sos.html" class="sos" aria-label="SOS"><iconify-icon icon="fluent:warning-24-filled"></iconify-icon></a>
+  </div>
+
+  <!-- ============ SEND CONFIRMATION SHEET ============ -->
+  <div class="conf-overlay" id="sendOverlay" onclick="if(event.target===this)closeSendConfirm();">
+    <div class="conf-sheet" role="dialog" aria-labelledby="sendTitle">
+      <div class="conf-handle"></div>
+      <div class="conf-eyebrow">교대조 전송</div>
+      <div class="conf-ttl" id="sendTitle">이브닝 교대조에게 전송하시겠어요?</div>
+      <div class="conf-sub">전송 후에도 메모는 계속 추가할 수 있습니다. 위험·미확인 항목은 빨간 배지로 함께 전달됩니다.</div>
+
+      <div id="sendWarn" class="conf-warn">
+        <iconify-icon icon="fluent:warning-24-filled"></iconify-icon>
+        <div class="conf-warn-text">
+          <b>미확인 체크리스트 <span id="sendUncheckedCnt">2</span>건</b>
+          <div class="conf-warn-list" id="sendUncheckedList">· 배회·폭력 위험 환자<br>· 가족 통보 완료</div>
+        </div>
+      </div>
+
+      <div class="conf-meta">
+        <div><span>받는 곳</span><b>이브닝 교대조 (15:00~)</b></div>
+        <div><span>인계 환자</span><b>15명</b></div>
+        <div><span>위험·주의</span><b class="danger">최명자 · 이정숙 · 박영자</b></div>
+        <div><span>SBAR 분류</span><b>음성/메모 7건 자동 분류 완료</b></div>
+      </div>
+
+      <div class="conf-section-ttl">함께 전달되는 항목</div>
+      <div class="conf-pill-row">
+        <span class="conf-pill"><iconify-icon icon="fluent:checkmark-24-filled"></iconify-icon>SBAR 4영역</span>
+        <span class="conf-pill"><iconify-icon icon="fluent:list-24-filled"></iconify-icon>5필수 체크</span>
+        <span class="conf-pill"><iconify-icon icon="fluent:note-edit-24-filled"></iconify-icon>적립 메모 7건</span>
+        <span class="conf-pill warn"><iconify-icon icon="fluent:alert-urgent-24-filled"></iconify-icon>주의 환자 3명</span>
+      </div>
+
+      <button class="conf-action-primary" onclick="confirmSend()">
+        <iconify-icon icon="fluent:send-24-filled"></iconify-icon>전송하기
+      </button>
+      <button class="conf-cancel" onclick="closeSendConfirm()">취소 · 더 확인</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script>
+    function toast(msg){
+      const el=document.getElementById('toast');
+      el.textContent=msg;el.classList.add('show');
+      clearTimeout(window.__t);window.__t=setTimeout(()=>el.classList.remove('show'),1800);
+    }
+    function openSendConfirm(){
+      const rows = document.querySelectorAll('.check-row');
+      const unchecked = Array.from(rows).filter(r=>!r.classList.contains('checked'));
+      const warn = document.getElementById('sendWarn');
+      if(unchecked.length===0){
+        warn.style.display='none';
+      } else {
+        warn.style.display='flex';
+        document.getElementById('sendUncheckedCnt').textContent = unchecked.length;
+        document.getElementById('sendUncheckedList').innerHTML =
+          unchecked.map(r=>'· '+r.querySelector('.check-label').textContent).join('<br>');
+      }
+      document.getElementById('sendOverlay').classList.add('show');
+    }
+    function closeSendConfirm(){
+      document.getElementById('sendOverlay').classList.remove('show');
+    }
+    function confirmSend(){
+      closeSendConfirm();
+      toast('이브닝 교대조에게 전송 완료 · 읽음 대기 중');
+    }
+  </script>
+  <div class="bottom-scrim" aria-hidden="true"></div>
+</body>
+</html>

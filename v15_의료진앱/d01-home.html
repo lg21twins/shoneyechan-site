@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ko" data-role="medical" data-platform="mobile" class="has-c01-bg">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#DCFCE7">
+  <title>하루안부 · 의료진 · 지금</title>
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css">
+  <link rel="stylesheet" href="../07_디자인/system/app.css">
+  <!-- system/components.css?v=20260523e 제거: .tabbar position 등이 의료진 페이지 고유 .tab-wrap 구조와 충돌 (d04-handover 등 다른 의료진 페이지와 불일치 유발) -->
+  <link rel="stylesheet" href="../07_디자인/system/home.css">
+
+  <script src="../07_디자인/_app-theme.js"></script>
+  <link rel="stylesheet" href="./_shared.css?v=20260525p">
+  <!-- 의료진 모바일 ↔ 요양보호사 디자인 시스템 통합 (2026-05-21) -->
+  <link rel="stylesheet" href="../v11_요양보호사앱/caregiver.css">
+  <script src="../07_디자인/_iconify-icon.min.js"></script>
+  <style>
+    /* :root 별칭은 _shared.css 에서 정의 */
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+    /* v3.2.12+: clinical 캔버스 (v11 요양보호사앱과 동일 — var(--clinical-canvas) 토큰 참조) */
+    html{height:100%;background:var(--clinical-canvas);font-size:16px;}
+    body{
+      height:100%;color:var(--t1);overflow-x:hidden;
+      font-family:var(--font-family-base);font-size:18px;letter-spacing:-.2px;
+      -webkit-font-smoothing:antialiased;
+      background:transparent;
+    }
+    .bg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background:var(--clinical-bg-image);}
+    .app{
+      max-width:430px;margin:0 auto;min-height:100%;position:relative;
+      /* 하단바와 next-list 마지막 카드 겹침 방지: 여유 60px 추가 */
+      padding-bottom:calc(var(--safe-b) + var(--tab-h) + var(--tab-bot) + 60px);
+    }
+
+    /* ===== HEADER ===== */
+    .header{
+      padding:calc(var(--safe-t) + 6px) var(--page-pad) 0;
+      position:static;
+    }
+    /* v3.2.5: 세 앱 헤더 통일 — brand SVG 28px + 4px tap zone */
+    .logo{display:inline-flex;align-items:center;text-decoration:none;color:var(--color-accent-strong);padding:4px;margin:-4px;}
+    .logo svg{width:28px;height:28px;display:block;}
+    /* v3.2.5: 세 앱 헤더 통일 — 44×44 / 22px icon / 8×8 dot @ 10,10 (medical 기준) */
+    .icon-btn{
+      width:44px;height:44px;border-radius:50%;
+      background:rgba(255,255,255,.55);
+      border:.5px solid rgba(255,255,255,.55);
+      backdrop-filter:blur(12px) saturate(140%);
+      -webkit-backdrop-filter:blur(12px) saturate(140%);
+      cursor:pointer;text-decoration:none;
+      display:inline-flex;align-items:center;justify-content:center;
+      box-shadow:0 1px 1px rgba(255,255,255,.6) inset, 0 4px 16px rgba(0,0,0,.06);
+      position:relative;transition:transform .1s;
+    }
+
+    /* ===== GREETING ===== */
+    .greet{animation:haru-fade-in-up var(--duration-slow,350ms) var(--easing-standard) both;padding:0 var(--pad);position:relative;z-index:1;}
+    .greet-eyebrow{
+      font-size:11px;font-weight:600;color:var(--accent-strong);
+      letter-spacing:.4px;text-transform:uppercase;margin-bottom:10px;
+      display:inline-flex;align-items:center;gap:6px;
+    }
+    .greet-eyebrow .pulse{
+      width:8px;height:8px;border-radius:50%;background:var(--accent);
+      box-shadow:0 0 0 0 rgba(var(--brand-green-500-rgb), .5);
+      animation: haru-pulse 2s ease-in-out infinite;
+    }
+    .greet-main{
+      /* v3.2.4: 헤드라인 weight 700 통일 (audit doc §4.3) */
+      font-size:24px;font-weight:700;line-height:1.25;letter-spacing:-.6px;
+      color:var(--t1);margin-bottom:8px;
+    }
+    .greet-main b{font-weight:700;}
+    .greet-sub{
+      font-size:14px;font-weight:500;color:var(--t2);line-height:1.5;
+      letter-spacing:-.2px;
+    }
+    .greet-sub b{color:var(--t1);font-weight:600;}
+
+    /* ===== HERO ALERT — 위험 환자 (근거 + 권장 액션 + CTA 2개) ===== */
+    .alert{animation:haru-fade-in-up var(--duration-slow,350ms) var(--easing-standard) 80ms both;
+      margin:28px var(--pad) 0;padding:20px;
+      background:var(--card-bg);
+      border-radius:var(--radius-card-lg);
+      /* 위험 의미 보존: red-tinted shadow */
+      box-shadow:0 12px 32px rgba(var(--color-danger-rgb), .10), var(--shadow-card-borderless);
+      position:relative;z-index:1;
+    }
+    .alert-top{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+    .alert-ico{
+      width:44px;height:44px;border-radius:14px;flex-shrink:0;
+      background:var(--color-danger);
+      color:var(--palette-white);
+      display:inline-flex;align-items:center;justify-content:center;
+      box-shadow:0 6px 16px rgba(var(--color-danger-rgb), .35);
+    }
+    .alert-ico iconify-icon{font-size:22px;}
+    .alert-tag{
+      flex:1;font-size:11px;font-weight:700;letter-spacing:.5px;
+      color:var(--palette-red-700);text-transform:uppercase;
+    }
+    .alert-main{
+      font-size:20px;font-weight:700;color:var(--t1);letter-spacing:-.6px;
+      line-height:1.3;margin-bottom:2px;
+    }
+    .alert-sub{
+      font-size:13px;font-weight:500;color:var(--t3);line-height:1.45;
+      display:flex;align-items:center;gap:6px;margin-bottom:14px;
+    }
+    .alert-sub iconify-icon{font-size:14px;color:var(--t3);}
+
+    /* 임상 근거 리스트 */
+    .alert-evidence{
+      display:flex;flex-direction:column;gap:8px;
+      padding:12px 14px;border-radius:12px;
+      background:var(--color-bg-surface-muted);
+      margin-bottom:12px;
+    }
+    .evi-row{
+      display:grid;grid-template-columns:18px auto 1fr;
+      align-items:baseline;gap:8px;line-height:1.35;
+    }
+    .evi-row iconify-icon{font-size:16px;color:var(--palette-red-700);align-self:center;}
+    .evi-row.warn iconify-icon{color:var(--palette-amber-700);}
+    .evi-main{font-size:14px;font-weight:700;color:var(--t1);letter-spacing:-.2px;}
+    .evi-sub{font-size:12px;font-weight:500;color:var(--t3);text-align:right;}
+
+    /* 권장 액션 한 줄 */
+    .alert-recommend{
+      display:flex;align-items:baseline;gap:8px;
+      padding:0 2px;margin-bottom:16px;line-height:1.4;
+    }
+    .rec-label{
+      flex-shrink:0;font-size:11px;font-weight:700;letter-spacing:.4px;
+      color:var(--accent-strong);text-transform:uppercase;
+    }
+    .rec-list{font-size:13px;font-weight:600;color:var(--t2);letter-spacing:-.1px;}
+
+    /* CTA 2개 (지금 확인 · 회진 카드 열기) */
+    .alert-ctas{display:flex;gap:8px;}
+    .alert-cta{
+      flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+      height:48px;border-radius:14px;text-decoration:none;
+      font-size:15px;font-weight:700;letter-spacing:-.2px;
+      transition:transform .12s;
+    }
+    .alert-cta:active{transform:scale(.98);}
+    .alert-cta iconify-icon{font-size:18px;}
+    .alert-cta.primary{
+      background:var(--color-danger);color:var(--palette-white);
+    }
+    .alert-cta.secondary{
+      background:var(--accent-soft);color:var(--accent-strong);
+    }
+
+    /* ===== SECTION ===== */
+    .sec{animation:haru-fade-in-up var(--duration-slow,350ms) var(--easing-standard) 160ms both;margin:32px var(--pad) 0;position:relative;z-index:1;}
+    .sec-head{
+      display:flex;align-items:baseline;justify-content:space-between;
+      margin-bottom:14px;padding:0 2px;
+    }
+    .sec-eyebrow{
+      font-size:11px;font-weight:600;color:var(--accent-strong);
+      letter-spacing:.4px;text-transform:uppercase;
+    }
+    .sec-ttl{font-size:18px;font-weight:700;color:var(--t1);letter-spacing:-.4px;margin-top:5px;}
+    .sec-more{
+      font-size:12px;font-weight:500;color:var(--t3);text-decoration:none;
+      display:inline-flex;align-items:center;gap:2px;align-self:flex-end;
+    }
+    .sec-more iconify-icon{font-size:14px;}
+
+    /* ===== ACTION QUEUE — 미처리 임상 액션 (우선순위 큐) ===== */
+    .sec-count{
+      display:inline-flex;align-items:center;justify-content:center;
+      min-width:22px;height:22px;padding:0 7px;border-radius:999px;
+      background:var(--color-danger);color:var(--palette-white);
+      font-size:12px;font-weight:700;letter-spacing:-.1px;
+      margin-left:8px;vertical-align:1px;
+    }
+    .act-list{display:flex;flex-direction:column;gap:6px;}
+    /* 그룹 헤더 (상태별 묶음) — 카드 좌측 칩 제거, 헤더로 상태 표시 */
+    .act-group-head{
+      display:flex;align-items:center;gap:6px;
+      margin:14px 4px 6px;
+      font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;
+      color:var(--t3);
+    }
+    .act-list > .act-group-head:first-child{margin-top:0;}
+    .act-group-head iconify-icon{font-size:14px;}
+    .act-group-head .cnt{font-size:11px;font-weight:600;color:var(--t3);margin-left:2px;}
+    .act-group-head.warn-h{color:var(--palette-amber-700);}
+    .act-group-head.warn-h iconify-icon{color:var(--color-warning);}
+    .act-group-head.watch-h{color:var(--accent-strong);}
+    .act-group-head.watch-h iconify-icon{color:var(--accent);}
+    .act-group-head.wait-h{color:var(--t2);}
+    .act-group-head.wait-h iconify-icon{color:var(--t3);}
+    .act-group-head.due-h{color:var(--palette-red-700);}
+    .act-group-head.due-h iconify-icon{color:var(--color-danger);}
+
+    .act-card{
+      background:var(--card-bg);border-radius:var(--radius-card-lg);
+      box-shadow:var(--shadow-card-borderless);
+      padding:14px 16px;
+      display:flex;align-items:center;gap:12px;
+      cursor:pointer;text-decoration:none;color:inherit;
+      transition:transform .12s;
+    }
+    .act-card:active{transform:scale(.99);}
+    /* 좌측 환자/항목 아바타 — 칩 대체, 상태별 톤만 다름 */
+    .act-avatar{
+      flex-shrink:0;width:36px;height:36px;border-radius:50%;
+      display:inline-flex;align-items:center;justify-content:center;
+      font-size:14px;font-weight:700;letter-spacing:-.2px;
+      background:var(--accent-soft);color:var(--accent-strong);
+    }
+    .act-avatar iconify-icon{font-size:18px;}
+    .act-card.warn  .act-avatar{background:var(--color-warning-soft);color:var(--palette-amber-700);}
+    .act-card.watch .act-avatar{background:var(--accent-soft);color:var(--accent-strong);}
+    .act-card.wait  .act-avatar{background:var(--palette-gray-100);color:var(--t2);}
+    .act-card.due   .act-avatar{background:var(--color-danger-soft);color:var(--palette-red-700);}
+
+    .act-meta{flex:1;min-width:0;line-height:1.35;}
+    .act-main{font-size:15px;font-weight:700;color:var(--t1);letter-spacing:-.2px;}
+    .act-sub{
+      font-size:13px;font-weight:500;color:var(--t3);margin-top:4px;
+      display:flex;align-items:center;gap:6px;
+    }
+    .act-sub iconify-icon{font-size:14px;color:var(--t3);}
+    .act-chev{flex-shrink:0;color:var(--t3);}
+    .act-chev iconify-icon{font-size:20px;}
+
+    .act-card .act-status{
+      display:inline;font-size:13px;font-weight:600;color:var(--t2);
+    }
+    .act-card .act-status .vital{
+      color:var(--t3);font-variant-numeric:tabular-nums;font-weight:500;font-size:12px;
+    }
+    .act-card.warn  .act-status{color:var(--palette-amber-700);}
+    .act-card.watch .act-status{color:var(--accent-strong);}
+    .act-card.due   .act-status{color:var(--palette-red-700);}
+
+    /* ===== TAB BAR + SOS ===== */
+    /* v3.2.5: 세 앱 탭바 위치 통일 — env(safe-bottom) + 12px (보호자/요양보호사 기준) */
+    .tab-wrap{
+      position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);
+      left:50%;transform:translateX(-50%);
+      display:flex;align-items:center;gap:10px;
+      width:calc(100% - 32px);max-width:398px;z-index:40;
+    }
+    /* v3.2.4: 탭바 글라스 — 옅은 그린 role tint (의료진 케어 정체성) */
+    .tabbar{
+      flex:1;min-width:0;height:var(--tab-h);
+      background:rgba(255,255,255,.85);
+      backdrop-filter:blur(20px) saturate(140%);
+      -webkit-backdrop-filter:blur(20px) saturate(140%);
+      border:1px solid rgba(255,255,255,.55);
+      border-radius:999px;
+      box-shadow:0 6px 22px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.4);
+      display:flex;align-items:stretch;justify-content:space-around;padding:0 10px;
+    }
+    /* v3.2.5: 보호자 탭바 스타일로 통일 — 아이콘만, 26px (라벨 제거) */
+    .tab{
+      flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+      text-decoration:none;color:rgba(28,28,30,.45);border-radius:999px;
+      padding:8px 4px;transition:all .18s;touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+    }
+    .tab iconify-icon{font-size:26px;}
+    .tab-label{display:none;} /* 라벨 숨김 — 보호자 탭바 통일 */
+    .tab.active{color:var(--accent-strong);}
+    .tab.active iconify-icon{filter:drop-shadow(0 2px 6px rgba(var(--brand-green-500-rgb), .28));}
+    .sos{
+      position:relative;width:var(--tab-h);height:var(--tab-h);flex-shrink:0;border-radius:50%;
+      background:var(--color-danger);border:0;
+      box-shadow:0 6px 22px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.4);
+      display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
+    }
+    .sos iconify-icon{font-size:26px;color:var(--palette-white);}
+
+    .toast{
+      position:fixed;left:50%;bottom:calc(var(--safe-b) + var(--tab-h) + var(--tab-bot) + 18px);
+      transform:translateX(-50%) translateY(20px);
+      background:rgba(28,28,30,.92);color:var(--palette-white);font-size:14px;font-weight:600;
+      padding:11px 20px;border-radius:999px;
+      opacity:0;transition:.25s;pointer-events:none;z-index:300;white-space:nowrap;
+    }
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+    /* Inline 대체 */
+    .ico-accent-strong { color: var(--accent-strong); }
+  </style>
+</head>
+<body>
+  <div class="bg" aria-hidden="true"></div>
+  <div class="ai-orb-bg" aria-hidden="true"><div class="ai-orb"></div></div>
+  <div class="app">
+
+    <!-- ============ HEADER ============ -->
+    <header class="header">
+      <div class="top-nav">
+        <a class="logo" href="d01-home.html" aria-label="하루안부 홈">
+          <svg viewBox="0 0 512 512" fill="none">
+            <g transform="translate(50,50) scale(0.163)">
+              <path d="M2521.32 2506.66C1239.65 2657.48 1239.65 1895.6 1239.65 1279.34L2497.69 0C2518.68 494.198 2522.27 1157.92 1658.86 1262.48C2641.88 1314.25 2521.32 2101.84 2521.32 2506.66Z" fill="currentColor" class="ico-accent-strong"/>
+              <path d="M4.68 19.34C1286.35-131.48 1286.35 630.4 1286.35 1246.66L28.31 2526C7.32 2031.8 3.73 1368.08 867.14 1263.52C-115.88 1211.75 4.68 424.16 4.68 19.34Z" fill="currentColor" class="ico-accent-strong"/>
+            </g>
+          </svg>
+        </a>
+        <div class="top-actions">
+          <a href="d03-inbox.html" class="icon-btn" aria-label="알림">
+            <iconify-icon icon="fluent:alert-24-filled"></iconify-icon>
+            <span class="notif-dot"></span>
+          </a>
+          <a href="d05-mypage.html" class="icon-btn" aria-label="마이">
+            <iconify-icon icon="fluent:person-24-filled"></iconify-icon>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- ============ GREETING ============ -->
+    <section class="greet">
+      <div class="greet-eyebrow">
+        <span class="pulse"></span>데이 근무 · 인수인계 2시간 18분 전
+      </div>
+      <h1 class="greet-main"><b>박지현</b> 간호사님,<br>오늘 환자 15명을 돌보고 계세요.</h1>
+    </section>
+
+    <!-- ============ ALERT — 위험 환자: 근거 + 권장 액션 + CTA 2개 ============ -->
+    <article class="alert">
+      <div class="alert-top">
+        <span class="alert-ico"><iconify-icon icon="fluent:heart-pulse-24-filled"></iconify-icon></span>
+        <span class="alert-tag">즉시 확인</span>
+      </div>
+      <div class="alert-main">최명자 어르신</div>
+      <div class="alert-sub">
+        <iconify-icon icon="fluent:location-24-filled"></iconify-icon>2층 B-2호
+        <span aria-hidden="true">·</span>
+        <iconify-icon icon="fluent:clock-24-filled"></iconify-icon>14:02 측정
+      </div>
+
+      <div class="alert-evidence" aria-label="임상 근거">
+        <div class="evi-row">
+          <iconify-icon icon="fluent:heart-pulse-24-filled"></iconify-icon>
+          <span class="evi-main">혈압 180/110</span>
+          <span class="evi-sub">직전 162/96 대비 상승</span>
+        </div>
+        <div class="evi-row warn">
+          <iconify-icon icon="fluent:emoji-meh-24-filled"></iconify-icon>
+          <span class="evi-main">두통 호소</span>
+          <span class="evi-sub">13:50 보고</span>
+        </div>
+      </div>
+
+      <div class="alert-recommend">
+        <span class="rec-label">권장</span>
+        <span class="rec-list">재측정 · 담당의 보고 · 회진 우선순위 상향</span>
+      </div>
+
+      <div class="alert-ctas">
+        <a class="alert-cta primary" href="d02-round.html?focus=10">
+          <iconify-icon icon="fluent:checkmark-24-filled"></iconify-icon>지금 확인
+        </a>
+        <a class="alert-cta secondary" href="d02-round.html?focus=10&open=card">
+          <iconify-icon icon="fluent:bed-24-filled"></iconify-icon>회진 카드 열기
+        </a>
+      </div>
+    </article>
+
+    <!-- ============ 오늘의 우선순위 — 환자·작업 통합 큐 ============ -->
+    <section class="sec">
+      <div class="sec-head">
+        <div>
+          <div class="sec-eyebrow">AI 판단</div>
+          <h2 class="sec-ttl">오늘의 우선순위<span class="sec-count" aria-label="총 5건">5</span></h2>
+        </div>
+        <a class="sec-more" href="d02-round.html">회진 시작 <iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></a>
+      </div>
+      <div class="act-list">
+
+        <div class="act-group-head warn-h"><iconify-icon icon="fluent:warning-24-filled"></iconify-icon>오늘 처리<span class="cnt">· 2</span></div>
+
+        <a class="act-card warn" href="d02-round.html?focus=11">
+          <span class="act-avatar">김</span>
+          <div class="act-meta">
+            <div class="act-main">김순자 · 미열 + 투약 확인</div>
+            <div class="act-sub"><iconify-icon icon="fluent:location-24-filled"></iconify-icon>2층 A-5호 · <span class="act-status">37.8°C <span class="vital">13:30</span></span> · 보호자 문의</div>
+          </div>
+          <span class="act-chev"><iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></span>
+        </a>
+
+        <a class="act-card warn" href="d02-round.html?focus=12">
+          <span class="act-avatar">이</span>
+          <div class="act-meta">
+            <div class="act-main">이정숙 · 낙상 회진</div>
+            <div class="act-sub"><iconify-icon icon="fluent:location-24-filled"></iconify-icon>3층 C-1호 · <span class="act-status">야간 배회 ↑</span></div>
+          </div>
+          <span class="act-chev"><iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></span>
+        </a>
+
+        <div class="act-group-head watch-h"><iconify-icon icon="fluent:eye-24-filled"></iconify-icon>관찰<span class="cnt">· 1</span></div>
+
+        <a class="act-card watch" href="d02-round.html?focus=9">
+          <span class="act-avatar">박</span>
+          <div class="act-meta">
+            <div class="act-main">박영자 · 통증 추이</div>
+            <div class="act-sub"><iconify-icon icon="fluent:location-24-filled"></iconify-icon>2층 A-3호 · <span class="act-status">VAS 4 <span class="vital">14:15</span></span></div>
+          </div>
+          <span class="act-chev"><iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></span>
+        </a>
+
+        <div class="act-group-head wait-h"><iconify-icon icon="fluent:chat-24-filled"></iconify-icon>대기<span class="cnt">· 1</span></div>
+
+        <a class="act-card wait" href="d03-inbox.html?thread=g1">
+          <span class="act-avatar"><iconify-icon icon="fluent:chat-24-filled"></iconify-icon></span>
+          <div class="act-meta">
+            <div class="act-main">보호자 답변</div>
+            <div class="act-sub"><iconify-icon icon="fluent:person-24-filled"></iconify-icon>김미영 외 2건 · 회신 필요</div>
+          </div>
+          <span class="act-chev"><iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></span>
+        </a>
+
+        <div class="act-group-head due-h"><iconify-icon icon="fluent:flag-24-filled"></iconify-icon>마감 임박<span class="cnt">· 1</span></div>
+
+        <a class="act-card due" href="d04-handover.html">
+          <span class="act-avatar"><iconify-icon icon="fluent:document-24-filled"></iconify-icon></span>
+          <div class="act-meta">
+            <div class="act-main">SBAR 인계 작성</div>
+            <div class="act-sub"><iconify-icon icon="fluent:document-edit-24-filled"></iconify-icon>이브닝 전 2시간 18분</div>
+          </div>
+          <span class="act-chev"><iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></span>
+        </a>
+
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ============ TAB BAR + SOS ============ -->
+  <div class="tab-wrap">
+    <nav class="tabbar" role="tablist">
+      <a href="d01-home.html" class="tab active" aria-label="지금"><iconify-icon icon="fluent:home-24-filled"></iconify-icon><span class="tab-label">지금</span></a>
+      <a href="d02-round.html" class="tab" aria-label="회진"><iconify-icon icon="fluent:bed-24-filled"></iconify-icon><span class="tab-label">회진</span></a>
+      <a href="d03-inbox.html" class="tab" aria-label="소통"><iconify-icon icon="fluent:chat-24-filled"></iconify-icon><span class="tab-label">소통</span></a>
+      <a href="d04-handover.html" class="tab" aria-label="인수인계"><iconify-icon icon="fluent:document-arrow-right-24-filled"></iconify-icon><span class="tab-label">인계</span></a>
+    </nav>
+    <a href="d-sos.html" class="sos" aria-label="SOS"><iconify-icon icon="fluent:warning-24-filled"></iconify-icon></a>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script>
+    function toast(msg){
+      const el=document.getElementById('toast');
+      el.textContent=msg;el.classList.add('show');
+      clearTimeout(window.__t);window.__t=setTimeout(()=>el.classList.remove('show'),1800);
+    }
+  </script>
+  <div class="bottom-scrim" aria-hidden="true"></div>
+</body>
+</html>

@@ -1,0 +1,3189 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>하루안부 — 의료진 대시보드 v2</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <style>
+    *,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+
+    :root {
+      --green:    #5CC88D;
+      --green-d:  #3AA870;
+      --green-l:  #8FDDB0;
+      --green-bg: rgba(92,200,141,.13);
+      --green-b:  rgba(92,200,141,.30);
+      /* alias for backward compat */
+      --teal:     #5CC88D;
+      --teal-d:   #3AA870;
+      --teal-l:   #8FDDB0;
+      --teal-bg:  rgba(92,200,141,.13);
+      --teal-b:   rgba(92,200,141,.30);
+      --red:      #F30900;
+      --red-d:    #D10800;
+      --red-bg:   rgba(243,9,0,.08);
+      --red-b:    rgba(243,9,0,.20);
+      --ink:      #161616;
+      --ink-2:    #2C2C2C;
+      --ink-3:    #444444;
+      --ink-4:    #6E6E6E;
+      --ink-5:    #ABABAB;
+      --surface:  #F5F5F5;
+      --gray:     #E4E2DE;
+      --glass:    rgba(255,255,255,.88);
+      --glass-b:  rgba(255,255,255,.78);
+      --glass-sh: 0 1px 4px rgba(0,0,0,.08), 0 6px 24px rgba(0,0,0,.12);
+      --font:     'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont,
+                  'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    }
+
+    html { height:100%; }
+
+    body {
+      font-family: var(--font);
+      background: transparent;
+      color: var(--ink);
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ══════════ 배경 ══════════ */
+    .bg {
+      position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none;
+      background: linear-gradient(145deg, #F2F2F2 0%, #EDEDED 35%, #E8E8E8 65%, #E2E2E2 100%);
+      contain: layout style paint;
+    }
+
+    .bg-logo {
+      position:absolute; width:55%; height:auto;
+      left:55%; top:42%; transform:translate(-50%,-50%);
+      opacity:.025; filter:blur(36px);
+    }
+
+    .bg-g1 {
+      position:absolute; width:700px; height:700px;
+      left:35%; top:-10%; transform:translateX(-50%);
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(0,0,0,.04) 0%, transparent 70%);
+    }
+    .bg-g2 {
+      position:absolute; width:900px; height:600px;
+      left:65%; top:50%; transform:translate(-50%,-50%);
+      border-radius:50%;
+      background:radial-gradient(ellipse, rgba(245,245,245,.55) 0%, transparent 70%);
+    }
+    .bg-g3 {
+      position:absolute; width:600px; height:600px;
+      right:-5%; bottom:-5%; border-radius:50%;
+      background:radial-gradient(ellipse, rgba(0,0,0,.03) 0%, transparent 75%);
+    }
+
+    /* ══════════ SIDEBAR ══════════ */
+    .sidebar {
+      position:fixed; left:0; top:0; bottom:0; width:240px;
+      background:#161616;
+      display:flex; flex-direction:column; z-index:100;
+    }
+
+    .sidebar-logo {
+      padding:18px 16px 14px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+
+    .logo-mark { display:flex; align-items:center; gap:10px; }
+
+    .logo-icon {
+      width:36px; height:36px;
+      background:var(--teal);
+      border-radius:11px;
+      display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    }
+
+    .logo-name { font-size:16px; font-weight:800; color:#fff; letter-spacing:-0.5px; }
+    .logo-sub  { font-size:10px; color:#444444; margin-top:1px; }
+
+    .sidebar-facility {
+      margin:10px 12px;
+      padding:8px 12px;
+      background:rgba(255,255,255,.05);
+      border-radius:10px;
+      border:0.5px solid rgba(255,255,255,.07);
+      display:flex; align-items:center; gap:8px;
+    }
+
+    .facility-dot {
+      width:6px; height:6px; border-radius:50%;
+      background:#22C55E; flex-shrink:0;
+    }
+
+    .facility-name { font-size:12px; color:#888888; font-weight:500; }
+
+    .nav-section-label {
+      padding:10px 16px 4px;
+      font-size:10px; color:#3A3A3A;
+      text-transform:uppercase; letter-spacing:0.8px; font-weight:700;
+    }
+
+    .nav-list { list-style:none; padding:0 8px; flex:1; overflow-y:auto; }
+    .nav-list::-webkit-scrollbar { width:0; }
+
+    .nav-item { margin-bottom:1px; }
+
+    .nav-link {
+      display:flex; align-items:center; gap:10px;
+      padding:9px 12px; border-radius:10px;
+      color:#606060; text-decoration:none;
+      font-size:13px; font-weight:500;
+      cursor:pointer; transition:background .15s, color .15s;
+    }
+
+    .nav-link:hover:not(.active) {
+      background:rgba(255,255,255,.05);
+      color:#AAAAAA;
+    }
+
+    .nav-link.active {
+      background:var(--teal);
+      color:#fff; font-weight:700;
+    }
+
+    .nav-icon { width:17px; height:17px; flex-shrink:0; opacity:0.65; }
+    .nav-link.active .nav-icon { opacity:1; }
+
+    .nav-badge {
+      margin-left:auto;
+      background:var(--red); color:#fff;
+      font-size:10px; font-weight:700;
+      padding:1px 7px; border-radius:999px;
+      min-width:18px; text-align:center;
+    }
+    .nav-badge.muted { background:rgba(255,255,255,.10); color:#606060; }
+
+    .sidebar-user {
+      padding:12px 16px; border-top:1px solid rgba(255,255,255,.08);
+      display:flex; align-items:center; gap:10px;
+    }
+
+    .user-avatar {
+      width:34px; height:34px; border-radius:50%;
+      background:var(--teal-d);
+      display:flex; align-items:center; justify-content:center;
+      font-size:13px; font-weight:700; color:rgba(204,251,241,.9); flex-shrink:0;
+    }
+
+    .user-name { font-size:13px; font-weight:700; color:#F0F0F0; }
+    .user-role { font-size:11px; color:#555555; margin-top:1px; }
+
+    /* ══════════ MAIN WRAPPER ══════════ */
+    .main-wrapper {
+      margin-left:240px; margin-right:320px;
+      min-height:100vh; display:flex; flex-direction:column;
+      position:relative; z-index:1;
+    }
+
+    /* ── Top Bar ── */
+    .top-bar {
+      background:rgba(255,255,255,.97);
+      border-bottom:0.5px solid rgba(0,0,0,.06);
+      box-shadow:0 1px 12px rgba(0,0,0,.06);
+      padding:0 24px; height:58px;
+      display:flex; align-items:center; gap:14px;
+      position:sticky; top:0; z-index:50;
+    }
+
+    .top-bar-left { flex:1; display:flex; align-items:center; gap:12px; }
+
+    .page-title { font-size:15px; font-weight:800; color:var(--ink); letter-spacing:-.3px; }
+
+    .page-date {
+      font-size:12px; color:var(--ink-3);
+      background:rgba(0,0,0,.05);
+      border:none;
+      padding:3px 10px; border-radius:999px;
+    }
+
+    .search-wrap { position:relative; flex:1; max-width:260px; }
+
+    .search-icon {
+      position:absolute; left:10px; top:50%; transform:translateY(-50%);
+      width:14px; color:var(--ink-4);
+    }
+
+    .search-input {
+      width:100%; padding:7px 12px 7px 30px;
+      background:rgba(0,0,0,.05);
+      border:none; border-radius:999px;
+      font-size:13px; color:var(--ink-2); outline:none;
+      font-family:var(--font);
+    }
+
+    .search-input:focus {
+      border-color:var(--green);
+      background:var(--surface);
+      box-shadow:0 0 0 3px rgba(13,148,136,.12);
+    }
+
+    .top-actions { display:flex; align-items:center; gap:6px; }
+
+    .icon-btn {
+      width:36px; height:36px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      background:rgba(0,0,0,.05);
+      border:none;
+      cursor:pointer; color:var(--ink-3); position:relative;
+    }
+
+    .icon-btn:active { opacity:.75; }
+    .icon-btn svg { width:18px; height:18px; }
+
+    .notif-dot {
+      position:absolute; top:7px; right:7px;
+      width:7px; height:7px; border-radius:50%;
+      background:var(--red); border:2px solid rgba(255,255,255,.8);
+    }
+
+    .sos-btn {
+      display:flex; align-items:center; gap:6px;
+      padding:8px 16px;
+      background:var(--red); color:#fff;
+      border:none; border-radius:999px;
+      font-size:12px; font-weight:700;
+      cursor:pointer; font-family:var(--font);
+    }
+
+    .sos-btn:active { opacity:.85; }
+
+    /* ── Content ── */
+    .content { padding:20px 24px; flex:1; }
+
+    /* Greeting */
+    .greeting { margin-bottom:16px; }
+    .greeting h1 { font-size:20px; font-weight:700; color:var(--ink); letter-spacing:-.4px; }
+    .greeting p  { font-size:13px; color:var(--ink-3); margin-top:4px; }
+    .greeting strong { color:var(--ink-2); font-weight:700; }
+
+    /* ── Summary Cards ── */
+    .summary-cards {
+      display:grid; grid-template-columns:repeat(5,1fr);
+      gap:14px; margin-bottom:16px;
+    }
+
+    /* Liquid Glass base */
+    .lq {
+      background:rgba(255,255,255,.97);
+      border:0.5px solid rgba(0,0,0,.09);
+      box-shadow:var(--glass-sh);
+      border-radius:20px;
+      position:relative; overflow:hidden;
+    }
+
+    .lq::before {
+      content:''; position:absolute; inset:0; border-radius:inherit;
+      background:linear-gradient(148deg, rgba(255,255,255,.50) 0%, transparent 55%);
+      pointer-events:none; z-index:0;
+    }
+
+    .lq > * { position:relative; z-index:1; }
+
+    /* Summary card */
+    .s-card { padding:16px; }
+
+    .s-card-head {
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:11px;
+    }
+
+    .s-label { font-size:11px; color:var(--ink-3); font-weight:600; }
+
+    .s-icon {
+      width:30px; height:30px; border-radius:9px;
+      display:flex; align-items:center; justify-content:center;
+      background:rgba(0,0,0,.06); color:var(--ink-3);
+    }
+    .s-icon.alert { background:var(--red-bg); color:var(--red); }
+    .s-icon svg { width:14px; height:14px; }
+
+    .s-value {
+      font-size:28px; font-weight:800; color:var(--ink);
+      line-height:1; margin-bottom:5px; letter-spacing:-1px;
+    }
+    .s-value.danger { color:var(--ink); }
+
+    .s-sub { font-size:11px; color:var(--ink-4); display:flex; align-items:center; gap:5px; }
+    .s-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; background:var(--teal); }
+    .s-dot.red { background:var(--red); }
+
+    .s-bar { height:3px; background:rgba(0,0,0,.06); border-radius:2px; margin-top:10px; overflow:hidden; }
+    .s-fill { height:100%; border-radius:2px; background:var(--teal); }
+    .s-fill.red { background:var(--red); }
+
+    /* ── Content Grid ── */
+    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px; }
+
+    .card-head {
+      padding:14px 16px 12px;
+      border-bottom:0.5px solid rgba(0,0,0,.08);
+      display:flex; align-items:center; justify-content:space-between;
+    }
+
+    .card-title {
+      font-size:13px; font-weight:700; color:var(--ink-2);
+      display:flex; align-items:center; gap:7px;
+    }
+
+    .title-dot { width:7px; height:7px; border-radius:50%; background:var(--teal); }
+    .title-dot.red { background:var(--red); }
+
+    .card-more {
+      font-size:12px; color:var(--ink-3); cursor:pointer; font-weight:600;
+      padding:3px 10px; border-radius:999px; background:rgba(0,0,0,.06);
+    }
+
+    /* ── Timeline ── */
+    .tl-wrap {
+      padding:14px 16px 8px;
+      max-height:420px; overflow-y:auto;
+    }
+
+    .tl-wrap::-webkit-scrollbar { width:4px; }
+    .tl-wrap::-webkit-scrollbar-thumb { background:rgba(0,0,0,.1); border-radius:2px; }
+
+    .tl-now {
+      display:flex; align-items:center; gap:8px;
+      padding:8px 12px; margin-bottom:16px;
+      background:rgba(0,0,0,.04); border:0.5px solid rgba(0,0,0,.10);
+      border-radius:10px; font-size:12px; color:var(--ink-2); font-weight:700;
+    }
+
+    .tl-now-dot {
+      width:7px; height:7px; border-radius:50%; background:var(--ink-3);
+      animation:blink 1.5s infinite; flex-shrink:0;
+    }
+
+    @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:.2; } }
+
+    .tl-row {
+      display:flex; gap:0; position:relative; align-items:stretch;
+    }
+
+    .tl-time {
+      width:46px; font-size:10.5px; color:var(--ink-4);
+      padding-top:5px; text-align:right; flex-shrink:0;
+      font-weight:500; letter-spacing:-.3px; line-height:1;
+    }
+
+    .tl-node {
+      width:30px; display:flex; flex-direction:column;
+      align-items:center; flex-shrink:0; padding-top:4px;
+    }
+
+    .tl-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; z-index:1; }
+    .tl-dot.done     { background:var(--teal); }
+    .tl-dot.current  { background:var(--teal); box-shadow:0 0 0 3px rgba(92,200,141,.28); width:12px; height:12px; margin-top:-1px; }
+    .tl-dot.upcoming { background:var(--surface); border:2px solid rgba(0,0,0,.14); }
+    .tl-dot.alert    { background:var(--red); }
+
+    .tl-line {
+      width:1.5px; flex:1; min-height:10px;
+      background:rgba(0,0,0,.08); border-radius:1px;
+      margin-top:5px;
+    }
+    .tl-row:last-child .tl-line { opacity:0; }
+
+    .tl-body {
+      flex:1; min-width:0; padding:2px 0 14px 6px;
+    }
+
+    .tl-row-current .tl-body {
+      background:rgba(0,0,0,.03);
+      border:0.5px solid rgba(0,0,0,.09);
+      border-radius:12px;
+      padding:9px 12px;
+      margin-bottom:14px;
+    }
+
+    .tl-head-row {
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:3px; gap:8px;
+    }
+
+    .tl-name { font-size:12.5px; font-weight:600; color:var(--ink-2); flex:1; min-width:0; }
+    .tl-name.done     { color:var(--ink-4); font-weight:500; text-decoration:line-through; }
+    .tl-name.current  { color:var(--ink); font-weight:700; }
+    .tl-name.upcoming { color:var(--ink-3); }
+
+    .tl-desc { font-size:11px; color:var(--ink-4); line-height:1.4; }
+
+    .tl-tag {
+      padding:2px 7px; border-radius:999px;
+      font-size:10px; font-weight:700; flex-shrink:0;
+    }
+    .tl-tag.done     { background:rgba(0,0,0,.06); color:var(--ink-4); }
+    .tl-tag.current  { background:var(--teal); color:#fff; }
+    .tl-tag.upcoming { background:rgba(0,0,0,.06); color:var(--ink-3); }
+    .tl-tag.alert    { background:var(--red-bg); color:var(--red-d); }
+
+    /* ── Alert Feed ── */
+    .alert-list { padding:10px 16px; }
+
+    .al-item {
+      display:flex; gap:10px;
+      padding:12px 14px; border-radius:14px; margin-bottom:8px;
+      border:0.5px solid rgba(0,0,0,.09);
+      background:rgba(255,255,255,.82);
+      cursor:pointer;
+    }
+
+    .al-item:active { opacity:.8; }
+
+    .al-item.critical {
+      background:var(--red-bg);
+      border-color:var(--red-b);
+    }
+
+    .al-icon {
+      width:32px; height:32px; border-radius:10px;
+      display:flex; align-items:center; justify-content:center; flex-shrink:0;
+      background:rgba(0,0,0,.06); color:var(--ink-3);
+    }
+    .al-icon.critical { background:var(--red); color:#fff; }
+    .al-icon svg { width:15px; height:15px; }
+
+    .al-body { flex:1; min-width:0; }
+    .al-patient { font-size:12px; font-weight:700; color:var(--ink-2); margin-bottom:8px; }
+    .al-msg     { font-size:12px; color:var(--ink-3); line-height:1.4; }
+    .al-time    { font-size:10px; color:var(--ink-4); margin-top:3px; }
+
+    .al-btn {
+      align-self:center; padding:5px 12px;
+      border-radius:999px; font-size:11px; font-weight:700;
+      border:none; cursor:pointer; font-family:var(--font);
+      white-space:nowrap;
+    }
+    .al-btn:active { opacity:.8; }
+    .al-btn.critical { background:var(--red); color:#fff; }
+    .al-btn.default  { background:rgba(0,0,0,.06); color:var(--ink-2); }
+
+    /* ── AI Panel ── */
+    .ai-panel-head {
+      padding:14px 16px 12px;
+      border-bottom:0.5px solid rgba(0,0,0,.08);
+      display:flex; align-items:center; justify-content:space-between;
+    }
+
+    .ai-head-left { display:flex; align-items:center; gap:10px; }
+
+    .ai-head-icon {
+      width:36px; height:36px; border-radius:12px;
+      background:var(--teal); color:#fff;
+      display:flex; align-items:center; justify-content:center; flex-shrink:0;
+      box-shadow:0 2px 8px rgba(92,200,141,.40);
+    }
+
+    .ai-panel-head h3   { font-size:13px; font-weight:700; color:var(--ink-2); letter-spacing:-.2px; }
+    .ai-panel-head span { font-size:11px; color:var(--ink-4); margin-top:2px; display:block; }
+
+    .ai-grid {
+      padding:14px 16px;
+      display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
+    }
+
+    .ai-card {
+      padding:14px; border-radius:14px;
+      background:rgba(255,255,255,.82);
+      border:0.5px solid rgba(0,0,0,.09);
+    }
+
+    .ai-card.danger {
+      background:var(--red-bg);
+      border-color:var(--red-b);
+    }
+
+    .ai-tag {
+      font-size:10px; font-weight:700;
+      padding:2px 8px; border-radius:999px;
+      margin-bottom:8px; display:inline-block;
+      background:rgba(0,0,0,.06); color:var(--ink-3);
+    }
+    .ai-card.danger .ai-tag { background:var(--red); color:#fff; }
+
+    .ai-patient { font-size:12px; font-weight:700; color:var(--ink-2); margin-bottom:4px; }
+    .ai-text    { font-size:12px; color:var(--ink-3); line-height:1.5; }
+
+    /* ══════════ COMM PANEL ══════════ */
+    .comm-panel {
+      position:fixed; right:0; top:0; bottom:0; width:320px;
+      background:rgba(255,255,255,.99);
+      border-left:0.5px solid rgba(0,0,0,.09);
+      box-shadow:-2px 0 20px rgba(0,0,0,.10);
+      display:flex; flex-direction:column; z-index:100;
+    }
+
+    .cp-header {
+      padding:14px 16px 12px;
+      border-bottom:0.5px solid rgba(0,0,0,.06);
+    }
+
+    .cp-header-top {
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:10px;
+    }
+
+    .cp-title { font-size:14px; font-weight:800; color:var(--ink-2); letter-spacing:-.3px; }
+
+    .focus-btn {
+      font-size:11px; padding:4px 12px;
+      border-radius:999px; border:none;
+      background:rgba(0,0,0,.05); color:var(--ink-3);
+      cursor:pointer; font-family:var(--font); font-weight:600;
+    }
+
+    .focus-btn.on {
+      background:var(--red-bg); border-color:var(--red-b); color:var(--red-d);
+    }
+
+    .cp-tabs {
+      display:flex; gap:3px;
+      background:rgba(0,0,0,.05); border-radius:999px; padding:3px;
+    }
+
+    .cp-tab {
+      flex:1; padding:6px; border-radius:999px;
+      font-size:12px; font-weight:500; color:var(--ink-3);
+      text-align:center; cursor:pointer;
+    }
+
+    .cp-tab.active {
+      background:#fff; color:var(--ink); font-weight:700;
+      box-shadow:0 1px 4px rgba(0,0,0,.12);
+    }
+
+    .cp-body { flex:1; overflow-y:auto; }
+    .cp-body::-webkit-scrollbar { width:4px; }
+    .cp-body::-webkit-scrollbar-thumb { background:rgba(0,0,0,.1); border-radius:2px; }
+
+    .ch-label {
+      padding:9px 16px 6px;
+      font-size:10px; color:var(--ink-3);
+      font-weight:700; text-transform:uppercase; letter-spacing:.6px;
+      background:rgba(0,0,0,.022);
+      border-top:0.5px solid rgba(0,0,0,.06);
+      border-bottom:0.5px solid rgba(0,0,0,.04);
+      position:sticky; top:0; z-index:1;
+    }
+
+    .cp-body > .ch-label:first-child { border-top:none; }
+
+    .chat-row {
+      padding:10px 16px; display:flex; gap:10px; cursor:pointer;
+      border-bottom:0.5px solid rgba(0,0,0,.04);
+    }
+
+    .chat-row:hover { background:rgba(0,0,0,.015); }
+
+    .chat-av {
+      width:38px; height:38px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:13px; font-weight:800; flex-shrink:0; position:relative;
+      background:linear-gradient(145deg, #E8E8E8, #D4D4D4); color:#161616;
+    }
+
+    .st-dot {
+      position:absolute; bottom:1px; right:1px;
+      width:9px; height:9px; border-radius:50%;
+      border:1.5px solid rgba(255,255,255,.8);
+    }
+    .st-dot.online { background:#22C55E; }
+    .st-dot.away   { background:#FACC15; }
+
+    .chat-info { flex:1; min-width:0; }
+
+    .name-row {
+      display:flex; justify-content:space-between; align-items:baseline;
+      margin-bottom:1px;
+    }
+
+    .chat-name  { font-size:13px; font-weight:700; color:var(--ink-2); }
+    .chat-time  { font-size:10px; color:var(--ink-4); flex-shrink:0; }
+    .chat-pt    { font-size:10px; color:var(--ink-4); font-weight:600; margin-bottom:2px; }
+    .chat-prev-row {
+      display:flex; align-items:center; justify-content:space-between;
+      gap:8px; margin-top:2px;
+    }
+
+    .chat-prev  {
+      font-size:12px; color:var(--ink-3);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      flex:1; min-width:0;
+    }
+    .chat-prev.unread { color:var(--ink-2); font-weight:600; }
+
+    .unread-pill {
+      display:inline-flex; align-items:center; justify-content:center;
+      background:var(--teal); color:#fff;
+      font-size:10px; font-weight:700;
+      padding:2px 7px; border-radius:999px;
+      flex-shrink:0; min-width:20px;
+    }
+
+    /* AI Feed */
+    .ai-feed { padding:12px 16px; border-top:0.5px solid rgba(0,0,0,.06); }
+
+    .ai-feed-title {
+      font-size:10px; color:var(--ink-4); font-weight:700;
+      text-transform:uppercase; letter-spacing:.6px; margin-bottom:8px;
+      display:flex; align-items:center; gap:5px;
+    }
+
+    .af-card {
+      padding:10px 12px; border-radius:12px; margin-bottom:6px;
+      border:0.5px solid rgba(0,0,0,.09);
+      background:rgba(255,255,255,.82);
+    }
+
+    .af-card.urgent  { background:var(--red-bg); border-color:var(--red-b); }
+    .af-card.caution { background:rgba(255,255,255,.82); border-color:rgba(0,0,0,.09); }
+    .af-card.normal  { background:rgba(255,255,255,.82); border-color:rgba(0,0,0,.09); }
+
+    .af-text { font-size:12px; color:var(--ink-2); line-height:1.45; }
+    .af-text strong { font-weight:700; color:var(--ink); }
+
+    /* Input */
+    .cp-input-wrap { padding:10px 16px; border-top:0.5px solid rgba(0,0,0,.07); }
+
+    .cp-input-box {
+      display:flex; gap:8px;
+      background:rgba(0,0,0,.04); border-radius:999px;
+      padding:8px 8px 8px 16px; align-items:center;
+      border:0.5px solid rgba(0,0,0,.06);
+    }
+
+    .cp-input {
+      flex:1; border:none; background:transparent; outline:none;
+      font-size:13px; font-family:var(--font); color:var(--ink-2);
+    }
+
+    .cp-input::placeholder { color:var(--ink-4); }
+
+    .send-btn {
+      width:30px; height:30px; border-radius:50%;
+      background:var(--teal); border:none; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    }
+
+    .send-btn:active { opacity:.8; }
+    .send-btn svg { width:13px; height:13px; color:#fff; }
+
+    /* ══════════ PAGE SWITCHING ══════════ */
+    .page { display:none; flex-direction:column; flex:1; }
+    .page.active { display:flex; }
+
+    /* ══════════ SHARED ══════════ */
+    .pg-head { margin-bottom:16px; }
+    .pg-head h1 { font-size:18px; font-weight:700; color:var(--ink); letter-spacing:-.3px; }
+    .pg-head p  { font-size:13px; color:var(--ink-4); margin-top:3px; }
+
+    .filter-bar { display:flex; gap:8px; align-items:center; margin-bottom:16px; flex-wrap:wrap; }
+    .seg { display:flex; gap:3px; background:rgba(0,0,0,.05); border-radius:999px; padding:3px; }
+    .seg-btn { padding:5px 14px; border-radius:999px; font-size:12px; font-weight:500; color:var(--ink-3); cursor:pointer; border:none; background:transparent; font-family:var(--font); }
+    .seg-btn.active { background:#fff; color:var(--ink); font-weight:700; box-shadow:0 1px 4px rgba(0,0,0,.12); }
+    .btn-g { display:inline-flex; align-items:center; gap:6px; padding:7px 16px; border-radius:999px; background:var(--teal); color:#fff; border:none; font-size:12px; font-weight:700; cursor:pointer; font-family:var(--font); }
+    .btn-g svg { width:14px; height:14px; }
+    .btn-n { display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border-radius:999px; background:rgba(0,0,0,.06); color:var(--ink-3); border:none; font-size:12px; font-weight:600; cursor:pointer; font-family:var(--font); }
+
+    /* ══════════ 환자 관리 ══════════ */
+    .pt-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+    .pt-card { padding:16px; cursor:pointer; transition:transform .12s; }
+    .pt-card:hover { transform:translateY(-2px); }
+    .pt-card-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:10px; }
+    .pt-room { font-size:11px; color:var(--ink-4); font-weight:600; }
+    .pt-badge { font-size:10px; font-weight:700; padding:2px 8px; border-radius:999px; }
+    .pt-badge.critical { background:var(--red-bg); color:var(--red-d); }
+    .pt-badge.caution  { background:rgba(234,179,8,.13); color:#92400E; }
+    .pt-badge.stable   { background:var(--teal-bg); color:var(--teal-d); }
+    .pt-name { font-size:16px; font-weight:700; color:var(--ink); letter-spacing:-.3px; }
+    .pt-meta { font-size:11px; color:var(--ink-4); margin-top:2px; margin-bottom:12px; }
+    .pt-vitals { display:flex; flex-direction:column; gap:6px; }
+    .pt-vrow { display:flex; align-items:center; justify-content:space-between; }
+    .pt-vlabel { font-size:11px; color:var(--ink-4); }
+    .pt-vval { font-size:11px; font-weight:700; color:var(--ink-2); }
+    .pt-vval.warn { color:var(--red-d); }
+    .pt-divider { height:0.5px; background:rgba(0,0,0,.07); margin:12px 0; }
+    .pt-footer { display:flex; align-items:center; justify-content:space-between; }
+    .pt-level { font-size:10px; color:var(--ink-4); }
+    .pt-updated { font-size:10px; color:var(--ink-5); }
+
+    /* ══════════ eMAR ══════════ */
+    .emar-scroll { overflow-x:auto; }
+    .emar-tbl { width:100%; border-collapse:separate; border-spacing:0; min-width:660px; }
+    .emar-tbl thead th { padding:10px 12px; font-size:11px; font-weight:700; color:var(--ink-3); background:rgba(0,0,0,.03); border-bottom:0.5px solid rgba(0,0,0,.08); text-align:center; white-space:nowrap; }
+    .emar-tbl thead th:first-child { text-align:left; min-width:160px; }
+    .emar-tbl td { padding:9px 12px; border-bottom:0.5px solid rgba(0,0,0,.05); vertical-align:middle; text-align:center; }
+    .emar-tbl td:first-child { text-align:left; }
+    .emar-tbl tr:last-child td { border-bottom:none; }
+    .emar-tbl .grp-head td { background:rgba(0,0,0,.025); padding:5px 12px; font-size:10px; font-weight:700; color:var(--ink-4); text-transform:uppercase; letter-spacing:.5px; }
+    .em-pt { font-size:12.5px; font-weight:700; color:var(--ink-2); }
+    .em-room { font-size:10px; color:var(--ink-4); margin-top:1px; }
+    .em-drug { font-size:10.5px; color:var(--ink-4); margin-top:2px; }
+    .ms { display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:9px; font-size:11px; font-weight:700; }
+    .ms.done    { background:var(--teal-bg); color:var(--teal-d); }
+    .ms.sched   { background:rgba(0,0,0,.06); color:var(--ink-4); }
+    .ms.refused { background:var(--red-bg); color:var(--red-d); }
+    .ms.na      { color:var(--ink-5); font-size:16px; line-height:1; }
+    .emar-legend { display:flex; gap:14px; padding:10px 16px 14px; border-top:0.5px solid rgba(0,0,0,.06); flex-wrap:wrap; }
+    .leg-item { display:flex; align-items:center; gap:6px; font-size:11px; color:var(--ink-4); }
+    .leg-sw { width:22px; height:22px; border-radius:7px; display:inline-flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; }
+
+    /* ══════════ 케어 체크리스트 ══════════ */
+    .ck-summary { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px; }
+    .ck-scard { padding:14px 16px; }
+    .ck-slabel { font-size:11px; color:var(--ink-4); font-weight:600; margin-bottom:6px; }
+    .ck-sval { font-size:24px; font-weight:800; color:var(--ink); line-height:1; letter-spacing:-0.5px; }
+    .ck-ssub { font-size:11px; color:var(--ink-4); margin-top:3px; }
+    .ck-cols { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .ck-sec-head { display:flex; align-items:center; gap:8px; padding:12px 16px 10px; border-bottom:0.5px solid rgba(0,0,0,.07); }
+    .ck-sec-title { font-size:12px; font-weight:700; color:var(--ink-2); flex:1; }
+    .ck-sec-count { font-size:11px; color:var(--ink-5); }
+    .ck-items { padding:10px 14px 14px; display:flex; flex-direction:column; gap:7px; }
+    .ck-item { display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border-radius:12px; background:rgba(255,255,255,.82); border:0.5px solid rgba(0,0,0,.07); cursor:pointer; }
+    .ck-item.done { opacity:.55; }
+    .ck-chk { width:20px; height:20px; border-radius:6px; flex-shrink:0; margin-top:1px; display:flex; align-items:center; justify-content:center; border:1.5px solid rgba(0,0,0,.18); }
+    .ck-item.done .ck-chk { background:var(--teal); border-color:var(--teal); }
+    .ck-chk svg { display:none; width:11px; height:11px; color:#fff; }
+    .ck-item.done .ck-chk svg { display:block; }
+    .ck-body { flex:1; min-width:0; }
+    .ck-task { font-size:12.5px; font-weight:600; color:var(--ink-2); }
+    .ck-item.done .ck-task { text-decoration:line-through; color:var(--ink-4); }
+    .ck-sub { font-size:11px; color:var(--ink-4); margin-top:2px; }
+    .ck-pri { width:6px; height:6px; border-radius:50%; flex-shrink:0; margin-top:5px; }
+    .ck-pri.high { background:var(--red); }
+    .ck-pri.mid  { background:#FBBF24; }
+    .ck-pri.low  { background:rgba(0,0,0,.18); }
+
+    /* ══════════ 인수인계 ══════════ */
+    .ho-grid { display:grid; grid-template-columns:220px 1fr; gap:14px; align-items:start; }
+    .ho-pt-list { padding:10px 12px; display:flex; flex-direction:column; gap:6px; }
+    .ho-pt-item { padding:11px 13px; border-radius:12px; cursor:pointer; background:rgba(255,255,255,.82); border:0.5px solid rgba(0,0,0,.08); }
+    .ho-pt-item.sel { background:var(--teal-bg); border-color:var(--teal-b); }
+    .ho-pt-name { font-size:12.5px; font-weight:700; color:var(--ink-2); }
+    .ho-pt-item.sel .ho-pt-name { color:var(--teal-d); }
+    .ho-pt-note { font-size:11px; color:var(--ink-4); margin-top:3px; line-height:1.4; }
+    .sbar-inner { padding:14px 16px; }
+    .sbar-sec { margin-bottom:14px; }
+    .sbar-sec:last-child { margin-bottom:0; }
+    .sbar-lbl { display:flex; align-items:center; gap:6px; font-size:10px; font-weight:700; color:var(--ink-3); text-transform:uppercase; letter-spacing:.7px; margin-bottom:7px; }
+    .sbar-ldot { width:6px; height:6px; border-radius:50%; background:var(--teal); flex-shrink:0; }
+    .sbar-box { padding:11px 13px; border-radius:12px; background:rgba(0,0,0,.03); border:0.5px solid rgba(0,0,0,.07); font-size:12px; color:var(--ink-3); line-height:1.65; }
+    .sbar-box strong { color:var(--ink-2); font-weight:700; }
+    .ai-gen { display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:700; color:var(--teal-d); background:var(--teal-bg); border-radius:999px; padding:2px 8px; margin-left:6px; vertical-align:middle; }
+    .ho-write { padding:14px 16px; border-top:0.5px solid rgba(0,0,0,.06); }
+    .ho-textarea { width:100%; padding:12px 14px; border-radius:12px; background:rgba(0,0,0,.03); border:0.5px solid rgba(0,0,0,.08); font-size:12px; color:var(--ink-2); font-family:var(--font); resize:none; outline:none; line-height:1.65; min-height:88px; }
+    .ho-textarea:focus { border-color:var(--teal-b); background:rgba(255,255,255,.95); }
+    .ho-actions { display:flex; gap:8px; margin-top:8px; }
+
+    /* ══════════ 스케줄 ══════════ */
+    .sch-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+    .sch-nav { display:flex; align-items:center; gap:10px; }
+    .sch-nav-btn { width:32px; height:32px; border-radius:50%; background:rgba(0,0,0,.06); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--ink-3); }
+    .sch-period { font-size:14px; font-weight:700; color:var(--ink); }
+    .sch-week { display:grid; grid-template-columns:repeat(7,1fr); gap:10px; }
+    .sch-day { border-radius:16px; overflow:hidden; }
+    .sch-day-head { padding:10px 12px 8px; text-align:center; border-bottom:0.5px solid rgba(0,0,0,.07); }
+    .sch-dow { font-size:11px; font-weight:700; color:var(--ink-4); }
+    .sch-day.today .sch-dow { color:var(--teal-d); }
+    .sch-date { font-size:20px; font-weight:800; color:var(--ink); line-height:1.2; margin-top:2px; }
+    .sch-day.today .sch-date { color:var(--teal); }
+    .sch-events { padding:10px 10px 12px; display:flex; flex-direction:column; gap:5px; }
+    .sch-ev { padding:5px 8px; border-radius:8px; font-size:10px; font-weight:700; line-height:1.35; cursor:pointer; }
+    .sch-ev.green { background:var(--teal-bg); color:var(--teal-d); border-left:2px solid var(--teal); }
+    .sch-ev.gray  { background:rgba(0,0,0,.06); color:var(--ink-3); border-left:2px solid rgba(0,0,0,.2); }
+    .sch-ev.red   { background:var(--red-bg); color:var(--red-d); border-left:2px solid var(--red); }
+    .sch-ev.blue  { background:rgba(59,130,246,.10); color:#1E40AF; border-left:2px solid #3B82F6; }
+    .sch-ev-t { font-size:9px; opacity:.65; margin-bottom:1px; }
+    .sch-empty { font-size:11px; color:var(--ink-5); text-align:center; padding:16px 0; }
+
+    /* ══════════ 기록·보고서 ══════════ */
+    .rec-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px; }
+    .rec-list { display:flex; flex-direction:column; gap:8px; }
+    .rec-item { display:flex; align-items:center; gap:12px; padding:13px 16px; border-radius:14px; cursor:pointer; background:rgba(255,255,255,.82); border:0.5px solid rgba(0,0,0,.08); }
+    .rec-item:hover { background:rgba(255,255,255,.99); }
+    .rec-ic { width:36px; height:36px; border-radius:11px; display:flex; align-items:center; justify-content:center; flex-shrink:0; background:rgba(0,0,0,.06); color:var(--ink-3); }
+    .rec-ic svg { width:16px; height:16px; }
+    .rec-ic.green  { background:var(--teal-bg); color:var(--teal-d); }
+    .rec-ic.red    { background:var(--red-bg); color:var(--red-d); }
+    .rec-ic.blue   { background:rgba(59,130,246,.10); color:#1D4ED8; }
+    .rec-ic.purple { background:rgba(124,58,237,.10); color:#6D28D9; }
+    .rec-body { flex:1; min-width:0; }
+    .rec-title { font-size:13px; font-weight:700; color:var(--ink-2); }
+    .rec-desc  { font-size:11px; color:var(--ink-4); margin-top:2px; }
+    .rec-right { text-align:right; flex-shrink:0; }
+    .rec-time  { font-size:10px; color:var(--ink-5); }
+    .rec-badge { display:inline-block; margin-top:4px; font-size:10px; font-weight:700; padding:2px 8px; border-radius:999px; }
+    .rb-vital    { background:var(--teal-bg); color:var(--teal-d); }
+    .rb-med      { background:rgba(59,130,246,.10); color:#1D4ED8; }
+    .rb-care     { background:rgba(124,58,237,.10); color:#6D28D9; }
+    .rb-incident { background:var(--red-bg); color:var(--red-d); }
+    .rb-report   { background:rgba(0,0,0,.06); color:var(--ink-3); }
+
+    /* ══════════ 마이페이지 ══════════ */
+    .mp-grid { display:grid; grid-template-columns:300px 1fr; gap:14px; align-items:start; }
+    .mp-profile { padding:24px 20px 20px; text-align:center; }
+    .mp-av { width:72px; height:72px; border-radius:50%; background:var(--teal-d); display:inline-flex; align-items:center; justify-content:center; font-size:26px; font-weight:700; color:rgba(204,251,241,.9); margin-bottom:12px; }
+    .mp-name { font-size:18px; font-weight:700; color:var(--ink); letter-spacing:-.3px; }
+    .mp-role { font-size:12px; color:var(--ink-4); margin-top:3px; }
+    .mp-tags { display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin-top:10px; }
+    .mp-tag { font-size:11px; font-weight:600; padding:3px 10px; border-radius:999px; background:rgba(0,0,0,.06); color:var(--ink-3); }
+    .mp-tag.green { background:var(--teal-bg); color:var(--teal-d); }
+    .mp-split { height:0.5px; background:rgba(0,0,0,.07); margin:16px 0; }
+    .mp-stat-row { display:flex; justify-content:space-around; }
+    .mp-stat { text-align:center; }
+    .mp-stat-val { font-size:20px; font-weight:800; color:var(--ink); letter-spacing:-.5px; }
+    .mp-stat-lbl { font-size:10px; color:var(--ink-4); margin-top:2px; }
+    .mp-sec-head { padding:12px 16px 10px; border-bottom:0.5px solid rgba(0,0,0,.07); }
+    .mp-sec-title { font-size:11px; font-weight:700; color:var(--ink-3); text-transform:uppercase; letter-spacing:.6px; }
+    .mp-rows { padding:4px 16px 14px; }
+    .mp-row { display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:0.5px solid rgba(0,0,0,.05); }
+    .mp-row:last-child { border-bottom:none; }
+    .mp-row-key { font-size:13px; color:var(--ink-2); }
+    .mp-row-sub { font-size:11px; color:var(--ink-4); margin-top:1px; }
+    .mp-row-val { font-size:12px; font-weight:600; color:var(--ink-3); }
+    .toggle { width:40px; height:24px; border-radius:999px; border:none; cursor:pointer; background:rgba(0,0,0,.14); position:relative; flex-shrink:0; transition:background .2s; }
+    .toggle.on { background:var(--teal); }
+    .toggle::after { content:''; position:absolute; top:4px; left:4px; width:16px; height:16px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.25); transition:transform .2s; }
+    .toggle.on::after { transform:translateX(16px); }
+    .mp-week { padding:12px 16px 16px; display:flex; flex-direction:column; gap:6px; }
+    .mp-wrow { display:flex; align-items:center; gap:10px; }
+    .mp-wday { width:24px; font-size:11px; font-weight:700; color:var(--ink-4); }
+    .mp-wday.today { color:var(--teal-d); }
+    .mp-wshift { flex:1; padding:7px 12px; border-radius:9px; font-size:11px; font-weight:600; }
+    .mp-wshift.am    { background:var(--teal-bg); color:var(--teal-d); }
+    .mp-wshift.pm    { background:rgba(59,130,246,.10); color:#1D4ED8; }
+    .mp-wshift.night { background:rgba(124,58,237,.10); color:#6D28D9; }
+    .mp-wshift.off   { background:rgba(0,0,0,.05); color:var(--ink-5); }
+
+    /* ══════════ 환자 관리 v2 ══════════ */
+    .pt-split { display:grid; grid-template-columns:256px 1fr; gap:14px; align-items:start; }
+    .pt-list-panel { overflow-y:auto; max-height:calc(100vh - 200px); }
+    .pt-list-panel::-webkit-scrollbar { width:4px; }
+    .pt-list-panel::-webkit-scrollbar-thumb { background:rgba(0,0,0,.10); border-radius:2px; }
+    .pt-list-header { padding:10px 14px 8px; border-bottom:0.5px solid rgba(0,0,0,.06); }
+    .pt-list-header span { font-size:11px; font-weight:700; color:var(--ink-4); text-transform:uppercase; letter-spacing:.6px; }
+    .pt-list-item { display:flex; align-items:center; gap:10px; padding:10px 14px; cursor:pointer; border-bottom:0.5px solid rgba(0,0,0,.04); transition:background .12s; }
+    .pt-list-item:hover:not(.sel) { background:rgba(0,0,0,.015); }
+    .pt-list-item.sel { background:var(--teal-bg); }
+    .pt-list-av { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0; }
+    .pt-list-av.critical { background:var(--red-bg); color:var(--red-d); }
+    .pt-list-av.caution  { background:rgba(234,179,8,.14); color:#92400E; }
+    .pt-list-av.stable   { background:var(--teal-bg); color:var(--teal-d); }
+    .pt-list-name { font-size:12.5px; font-weight:700; color:var(--ink-2); }
+    .pt-list-meta { font-size:10.5px; color:var(--ink-4); margin-top:1px; }
+    .pt-list-badge { margin-left:auto; font-size:9.5px; font-weight:700; padding:2px 7px; border-radius:999px; flex-shrink:0; }
+    .pt-list-badge.critical { background:var(--red-bg); color:var(--red-d); }
+    .pt-list-badge.caution  { background:rgba(234,179,8,.14); color:#92400E; }
+    .pt-list-badge.stable   { background:var(--teal-bg); color:var(--teal-d); }
+
+    .pt-detail { display:flex; flex-direction:column; gap:14px; overflow-y:auto; max-height:calc(100vh - 200px); }
+    .pt-detail::-webkit-scrollbar { width:4px; }
+    .pt-detail::-webkit-scrollbar-thumb { background:rgba(0,0,0,.10); border-radius:2px; }
+
+    .pt-profile-card { padding:20px; display:flex; align-items:flex-start; gap:16px; }
+    .pt-profile-av { width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:700; flex-shrink:0; }
+    .pt-profile-av.critical { background:var(--red-bg); color:var(--red-d); }
+    .pt-profile-av.caution  { background:rgba(234,179,8,.14); color:#92400E; }
+    .pt-profile-av.stable   { background:var(--teal-bg); color:var(--teal-d); }
+    .pt-profile-name { font-size:20px; font-weight:800; color:var(--ink); letter-spacing:-.4px; }
+    .pt-profile-id { font-size:11.5px; color:var(--ink-4); margin-top:3px; }
+    .pt-profile-tags { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+    .pt-profile-tag { font-size:10.5px; padding:2px 10px; border-radius:999px; background:rgba(0,0,0,.06); color:var(--ink-3); font-weight:600; }
+    .pt-profile-info { margin-top:10px; display:grid; grid-template-columns:1fr 1fr; gap:4px 20px; }
+    .pt-info-row { display:flex; gap:6px; align-items:baseline; }
+    .pt-info-key { font-size:11px; color:var(--ink-4); flex-shrink:0; min-width:42px; }
+    .pt-info-val { font-size:11px; font-weight:600; color:var(--ink-2); }
+
+    /* Health Systems */
+    .hs-grid { display:flex; flex-direction:column; gap:9px; padding:12px 16px 16px; }
+    .hs-row { display:flex; align-items:center; gap:10px; }
+    .hs-icon { width:26px; height:26px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; }
+    .hs-name { font-size:11.5px; color:var(--ink-3); flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .hs-bar-wrap { width:90px; height:5px; background:rgba(0,0,0,.07); border-radius:3px; overflow:hidden; flex-shrink:0; }
+    .hs-bar-fill { height:100%; border-radius:3px; }
+    .hs-score { font-size:11px; font-weight:700; width:34px; text-align:right; flex-shrink:0; }
+
+    /* Vitals grid */
+    .vt-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:12px 16px 16px; }
+    .vt-card { padding:10px 8px; border-radius:12px; background:rgba(0,0,0,.03); border:0.5px solid rgba(0,0,0,.06); text-align:center; }
+    .vt-emoji { font-size:16px; margin-bottom:3px; }
+    .vt-value { font-size:15px; font-weight:800; color:var(--ink); letter-spacing:-.5px; line-height:1; }
+    .vt-value.warn { color:var(--red-d); }
+    .vt-label { font-size:9.5px; color:var(--ink-4); margin-top:3px; }
+
+    /* Allergy */
+    .alg-grid { display:flex; gap:8px; flex-wrap:wrap; padding:10px 16px 14px; }
+    .alg-tag { display:flex; align-items:center; gap:6px; padding:6px 12px; border-radius:10px; border:0.5px solid; }
+    .alg-tag.mild { background:var(--teal-bg); border-color:var(--teal-b); color:var(--teal-d); }
+    .alg-tag.severe { background:var(--red-bg); border-color:var(--red-b); color:var(--red-d); }
+    .alg-tag.caution { background:rgba(234,179,8,.12); border-color:rgba(234,179,8,.30); color:#92400E; }
+    .alg-name { font-size:12px; font-weight:700; }
+    .alg-lvl { font-size:10px; font-weight:600; }
+
+    /* ══════════ eMAR v2 ══════════ */
+    .emar-summary { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px; }
+
+    .emar-view-btn { display:inline-flex; align-items:center; gap:6px; padding:7px 12px; border-radius:999px; font-size:12px; font-weight:600; cursor:pointer; border:0.5px solid rgba(0,0,0,.10); background:#fff; color:var(--ink-3); font-family:var(--font); }
+    .emar-view-btn.active { background:var(--ink); color:#fff; border-color:var(--ink); }
+    .emar-view-btn svg { width:14px; height:14px; }
+
+    .emar-card-grid { display:flex; flex-direction:column; gap:10px; }
+    .emar-pt-card { border-radius:18px; overflow:hidden; }
+    .emar-pt-header { display:flex; align-items:center; gap:12px; padding:14px 16px; cursor:pointer; border-bottom:0.5px solid rgba(0,0,0,.06); }
+    .emar-pt-header:hover { background:rgba(0,0,0,.015); }
+    .emar-pt-av { width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; flex-shrink:0; }
+    .emar-pt-av.critical { background:var(--red-bg); color:var(--red-d); }
+    .emar-pt-av.caution  { background:rgba(234,179,8,.14); color:#92400E; }
+    .emar-pt-av.stable   { background:var(--teal-bg); color:var(--teal-d); }
+    .emar-pt-nm { font-size:13px; font-weight:700; color:var(--ink-2); }
+    .emar-pt-info { font-size:11px; color:var(--ink-4); margin-top:1px; }
+    .emar-slots { display:flex; gap:8px; margin-left:auto; align-items:center; }
+    .emar-slot { display:flex; flex-direction:column; align-items:center; gap:3px; }
+    .emar-slot-lbl { font-size:9px; color:var(--ink-5); font-weight:600; text-align:center; }
+    .emar-slot-btn { width:38px; height:38px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; cursor:pointer; border:1.5px solid transparent; transition:transform .1s; }
+    .emar-slot-btn:active { transform:scale(.93); }
+    .emar-slot-btn.done    { background:var(--teal-bg); color:var(--teal-d); border-color:var(--teal-b); }
+    .emar-slot-btn.sched   { background:rgba(0,0,0,.05); color:var(--ink-4); }
+    .emar-slot-btn.refused { background:var(--red-bg); color:var(--red-d); border-color:var(--red-b); }
+    .emar-slot-btn.na      { background:transparent; color:var(--ink-5); font-size:18px; cursor:default; }
+    .emar-expand { padding:10px 16px 14px; display:flex; flex-direction:column; gap:7px; }
+    .emar-drug-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:11px; background:rgba(0,0,0,.028); border:0.5px solid rgba(0,0,0,.06); }
+    .emar-drug-ic { width:30px; height:30px; border-radius:8px; background:rgba(59,130,246,.10); color:#1D4ED8; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .emar-drug-ic svg { width:14px; height:14px; }
+    .emar-drug-nm { font-size:12px; font-weight:700; color:var(--ink-2); }
+    .emar-drug-dose { font-size:10.5px; color:var(--ink-4); margin-top:1px; }
+    .emar-drug-st { margin-left:auto; font-size:10px; font-weight:700; padding:3px 10px; border-radius:999px; white-space:nowrap; }
+    .emar-drug-st.done    { background:var(--teal-bg); color:var(--teal-d); }
+    .emar-drug-st.pending { background:rgba(0,0,0,.06); color:var(--ink-3); }
+    .emar-drug-st.refused { background:var(--red-bg); color:var(--red-d); }
+    .emar-note { display:flex; align-items:center; gap:6px; padding:7px 12px; border-radius:10px; background:rgba(234,179,8,.08); border:0.5px solid rgba(234,179,8,.25); font-size:11px; color:#92400E; }
+
+    /* ══════════ 케어 체크리스트 v2 ══════════ */
+    .ck-cat-bar { display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap; }
+    .ck-cat-btn { display:inline-flex; align-items:center; gap:5px; padding:7px 14px; border-radius:999px; font-size:12px; font-weight:600; color:var(--ink-3); background:rgba(0,0,0,.05); cursor:pointer; border:none; font-family:var(--font); transition:background .12s, color .12s; }
+    .ck-cat-btn.active { background:var(--ink); color:#fff; }
+    .ck-cat-count { font-size:10px; font-weight:700; }
+
+    .ck-pg { margin-bottom:12px; }
+    .ck-pg-header { display:flex; align-items:center; gap:12px; padding:12px 16px; cursor:pointer; }
+    .ck-pg-header:hover { background:rgba(0,0,0,.015); }
+    .ck-pg-av { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0; }
+    .ck-pg-av.critical { background:var(--red-bg); color:var(--red-d); }
+    .ck-pg-av.caution  { background:rgba(234,179,8,.14); color:#92400E; }
+    .ck-pg-av.stable   { background:var(--teal-bg); color:var(--teal-d); }
+    .ck-pg-name { font-size:13px; font-weight:700; color:var(--ink-2); }
+    .ck-pg-room { font-size:11px; color:var(--ink-4); margin-top:1px; }
+    .ck-pg-prog { margin-left:auto; display:flex; align-items:center; gap:8px; }
+    .ck-pg-bar { width:56px; height:5px; background:rgba(0,0,0,.07); border-radius:3px; overflow:hidden; }
+    .ck-pg-fill { height:100%; border-radius:3px; background:var(--teal); }
+    .ck-pg-cnt { font-size:11px; font-weight:700; color:var(--ink-3); min-width:32px; text-align:right; }
+    .ck-pg-chev { width:16px; height:16px; color:var(--ink-4); transition:transform .2s; margin-left:4px; }
+    .ck-pg-header.open .ck-pg-chev { transform:rotate(180deg); }
+    .ck-pg-body { padding:4px 14px 14px; display:none; flex-direction:column; gap:6px; }
+    .ck-pg-body.open { display:flex; }
+
+    .ck2 { display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border-radius:12px; background:rgba(0,0,0,.025); border:0.5px solid rgba(0,0,0,.06); cursor:pointer; transition:background .12s; }
+    .ck2:hover { background:rgba(0,0,0,.04); }
+    .ck2.done { opacity:.50; }
+    .ck2-chk { width:22px; height:22px; border-radius:7px; flex-shrink:0; margin-top:1px; display:flex; align-items:center; justify-content:center; border:1.5px solid rgba(0,0,0,.18); transition:all .15s; }
+    .ck2.done .ck2-chk { background:var(--teal); border-color:var(--teal); }
+    .ck2-chk svg { display:none; width:12px; height:12px; color:#fff; }
+    .ck2.done .ck2-chk svg { display:block; }
+    .ck2-cat { width:24px; height:24px; border-radius:7px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:13px; margin-top:0; }
+    .ck2-task { font-size:12.5px; font-weight:600; color:var(--ink-2); }
+    .ck2.done .ck2-task { text-decoration:line-through; color:var(--ink-4); }
+    .ck2-sub { font-size:11px; color:var(--ink-4); margin-top:1px; }
+    .ck2-right { margin-left:auto; display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex-shrink:0; }
+    .ck2-time { font-size:10px; color:var(--ink-5); }
+    .ck2-pri { font-size:9.5px; font-weight:700; padding:2px 7px; border-radius:999px; }
+    .ck2-pri.high { background:var(--red-bg); color:var(--red-d); }
+    .ck2-pri.mid  { background:rgba(234,179,8,.12); color:#92400E; }
+    .ck2-pri.low  { background:rgba(0,0,0,.06); color:var(--ink-4); }
+  </style>
+</head>
+<body>
+
+<!-- ════════ BACKGROUND ════════ -->
+<div class="bg" aria-hidden="true">
+  <svg class="bg-logo" viewBox="0 0 2526 2526" fill="none">
+    <path d="M2521.32 2506.66C1239.65 2657.48 1239.65 1895.6 1239.65 1279.34L2497.69 .00017C2518.68 494.198 2522.27 1157.92 1658.86 1262.48 2641.88 1314.25 2521.32 2101.84 2521.32 2506.66Z" fill="#0D9488"/>
+    <path d="M4.677 19.335C1286.35-131.481 1286.35 630.399 1286.35 1246.66L28.315 2526C7.322 2031.8 3.73 1368.08 867.143 1263.52-115.881 1211.75 4.677 424.157 4.677 19.335Z" fill="#0D9488"/>
+  </svg>
+  <div class="bg-g1"></div>
+  <div class="bg-g2"></div>
+  <div class="bg-g3"></div>
+</div>
+
+<!-- ════════ SIDEBAR ════════ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-icon">
+        <svg width="22" height="22" viewBox="0 0 2526 2526" fill="white">
+          <path d="M2521.32 2506.66C1239.65 2657.48 1239.65 1895.6 1239.65 1279.34L2497.69 0C2518.68 494.198 2522.27 1157.92 1658.86 1262.48C2641.88 1314.25 2521.32 2101.84 2521.32 2506.66Z"/>
+          <path d="M4.677 19.335C1286.35-131.481 1286.35 630.399 1286.35 1246.66L28.315 2526C7.322 2031.8 3.73 1368.08 867.143 1263.52C-115.881 1211.75 4.677 424.157 4.677 19.335Z"/>
+        </svg>
+      </div>
+      <div>
+        <div class="logo-name">하루안부</div>
+        <div class="logo-sub">오늘 하루도, 안녕하셨습니다</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-facility">
+    <div class="facility-dot"></div>
+    <span class="facility-name">햇살요양원 · 2병동</span>
+  </div>
+
+  <div class="nav-section-label">메인 메뉴</div>
+
+  <ul class="nav-list">
+    <li class="nav-item">
+      <a class="nav-link active" data-page="dashboard" onclick="setActive(this)">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
+        </svg>
+        대시보드
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-page="patients" onclick="setActive(this)">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+        </svg>
+        환자 관리
+        <span class="nav-badge muted">25</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-page="emar" onclick="setActive(this)">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/>
+        </svg>
+        투약 관리 (eMAR)
+        <span class="nav-badge">2</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-page="checklist" onclick="setActive(this)">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+          <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
+        </svg>
+        케어 체크리스트
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-page="handover" onclick="setActive(this)">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M8 5a1 1 0 100 2h5.586l-1.293 1.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L13.586 5H8zM12 15a1 1 0 100-2H6.414l1.293-1.293a1 1 0 10-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L6.414 15H12z" clip-rule="evenodd"/>
+        </svg>
+        인수인계
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-page="schedule" onclick="setActive(this)">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+        </svg>
+        스케줄
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-page="records" onclick="setActive(this)">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
+        </svg>
+        기록·보고서
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-page="mypage" onclick="setActive(this)">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd"/>
+        </svg>
+        마이페이지
+      </a>
+    </li>
+  </ul>
+
+  <div class="sidebar-user">
+    <div class="user-avatar">김</div>
+    <div>
+      <div class="user-name">김코디</div>
+      <div class="user-role">간호사 · 오전 2교대</div>
+    </div>
+  </div>
+</aside>
+
+
+<!-- ════════ MAIN WRAPPER ════════ -->
+<div class="main-wrapper">
+
+  <!-- Top Bar -->
+  <header class="top-bar">
+    <div class="top-bar-left">
+      <span class="page-title">대시보드</span>
+      <span class="page-date">2026년 4월 16일 목요일</span>
+    </div>
+
+    <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+      </svg>
+      <input class="search-input" type="text" placeholder="환자명, 약품명, 기록 검색...">
+    </div>
+
+    <div class="top-actions">
+      <button class="icon-btn" title="알림">
+        <svg viewBox="0 0 20 20" fill="currentColor">
+          <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
+        </svg>
+        <span class="notif-dot"></span>
+      </button>
+
+      <button class="sos-btn">
+        <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+        </svg>
+        SOS 발신
+      </button>
+    </div>
+  </header>
+
+  <!-- ═══ Page: 대시보드 ═══ -->
+  <div class="page active" id="page-dashboard">
+  <main class="content">
+
+    <!-- Greeting -->
+    <div class="greeting">
+      <h1>안녕하세요, 김코디 간호사님</h1>
+      <p>오늘 담당 환자 <strong>25명</strong> 중 <strong>3명</strong>의 상태를 주의 깊게 확인해 주세요. 다음 인수인계까지 <strong>4시간 20분</strong> 남았습니다.</p>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+
+      <div class="lq s-card">
+        <div class="s-card-head">
+          <span class="s-label">케어 완료율</span>
+          <div class="s-icon">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+        </div>
+        <div class="s-value">68%</div>
+        <div class="s-sub"><span class="s-dot"></span>17 / 25 완료</div>
+        <div class="s-bar"><div class="s-fill" style="width:68%"></div></div>
+      </div>
+
+      <div class="lq s-card">
+        <div class="s-card-head">
+          <span class="s-label">투약 현황</span>
+          <div class="s-icon">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+        </div>
+        <div class="s-value">12<span style="font-size:14px;color:var(--ink-4);font-weight:500;letter-spacing:0"> / 22</span></div>
+        <div class="s-sub"><span class="s-dot red"></span>미투여 2건 · 예정 8건</div>
+        <div class="s-bar"><div class="s-fill" style="width:55%"></div></div>
+      </div>
+
+      <div class="lq s-card">
+        <div class="s-card-head">
+          <span class="s-label">주의 환자</span>
+          <div class="s-icon alert">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+        </div>
+        <div class="s-value danger">3명</div>
+        <div class="s-sub"><span class="s-dot red"></span>이상 징후 감지</div>
+      </div>
+
+      <div class="lq s-card">
+        <div class="s-card-head">
+          <span class="s-label">활성 SOS</span>
+          <div class="s-icon alert">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+        </div>
+        <div class="s-value danger">1건</div>
+        <div class="s-sub"><span class="s-dot red"></span>대응 중</div>
+      </div>
+
+      <div class="lq s-card">
+        <div class="s-card-head">
+          <span class="s-label">소통 현황</span>
+          <div class="s-icon">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+              <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"/>
+              <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="s-value">7</div>
+        <div class="s-sub"><span class="s-dot"></span>미읽은 메시지</div>
+      </div>
+
+    </div><!-- /summary-cards -->
+
+    <!-- Content Grid -->
+    <div class="grid-2">
+
+      <!-- Timeline -->
+      <div class="lq">
+        <div class="card-head">
+          <div class="card-title">
+            <span class="title-dot"></span>
+            시간대별 업무 타임라인
+          </div>
+          <span class="card-more">전체보기</span>
+        </div>
+        <div class="tl-wrap">
+
+          <div class="tl-now">
+            <div class="tl-now-dot"></div>
+            현재 10:24 — 상처 관리 진행 중
+          </div>
+
+          <div class="tl-row">
+            <div class="tl-time">06:00</div>
+            <div class="tl-node"><div class="tl-dot done"></div><div class="tl-line"></div></div>
+            <div class="tl-body">
+              <div class="tl-head-row">
+                <span class="tl-name done">아침 투약</span>
+                <span class="tl-tag done">완료</span>
+              </div>
+              <div class="tl-desc">전체 25명 · 23명 완료</div>
+            </div>
+          </div>
+
+          <div class="tl-row">
+            <div class="tl-time">07:00</div>
+            <div class="tl-node"><div class="tl-dot done"></div><div class="tl-line"></div></div>
+            <div class="tl-body">
+              <div class="tl-head-row">
+                <span class="tl-name done">아침 식사 체크</span>
+                <span class="tl-tag done">완료</span>
+              </div>
+              <div class="tl-desc">섭취율 확인 완료</div>
+            </div>
+          </div>
+
+          <div class="tl-row">
+            <div class="tl-time">08:30</div>
+            <div class="tl-node"><div class="tl-dot alert"></div><div class="tl-line"></div></div>
+            <div class="tl-body">
+              <div class="tl-head-row">
+                <span class="tl-name done">바이탈 측정</span>
+                <span class="tl-tag alert">이상 2건</span>
+              </div>
+              <div class="tl-desc">혈압·체온·맥박</div>
+            </div>
+          </div>
+
+          <div class="tl-row tl-row-current">
+            <div class="tl-time">10:00</div>
+            <div class="tl-node"><div class="tl-dot current"></div><div class="tl-line"></div></div>
+            <div class="tl-body">
+              <div class="tl-head-row">
+                <span class="tl-name current">상처 관리</span>
+                <span class="tl-tag current">진행중</span>
+              </div>
+              <div class="tl-desc">301호 박영수님 · 드레싱 교체</div>
+            </div>
+          </div>
+
+          <div class="tl-row">
+            <div class="tl-time">11:00</div>
+            <div class="tl-node"><div class="tl-dot upcoming"></div><div class="tl-line"></div></div>
+            <div class="tl-body">
+              <div class="tl-head-row">
+                <span class="tl-name upcoming">중간 투약 (PRN)</span>
+                <span class="tl-tag upcoming">예정</span>
+              </div>
+              <div class="tl-desc">303호 이철수님 · 진통제</div>
+            </div>
+          </div>
+
+          <div class="tl-row">
+            <div class="tl-time">12:00</div>
+            <div class="tl-node"><div class="tl-dot upcoming"></div><div class="tl-line"></div></div>
+            <div class="tl-body">
+              <div class="tl-head-row">
+                <span class="tl-name upcoming">점심 식사 체크</span>
+                <span class="tl-tag upcoming">예정</span>
+              </div>
+              <div class="tl-desc">전체 환자 섭취율 기록</div>
+            </div>
+          </div>
+
+          <div class="tl-row">
+            <div class="tl-time">14:00</div>
+            <div class="tl-node"><div class="tl-dot upcoming"></div><div class="tl-line"></div></div>
+            <div class="tl-body">
+              <div class="tl-head-row">
+                <span class="tl-name upcoming">재활 치료 동행</span>
+                <span class="tl-tag upcoming">예정</span>
+              </div>
+              <div class="tl-desc">305호 최미경님 · 물리치료실</div>
+            </div>
+          </div>
+
+          <div class="tl-row">
+            <div class="tl-time">17:00</div>
+            <div class="tl-node"><div class="tl-dot upcoming"></div><div class="tl-line"></div></div>
+            <div class="tl-body">
+              <div class="tl-head-row">
+                <span class="tl-name upcoming">저녁 투약</span>
+                <span class="tl-tag upcoming">예정</span>
+              </div>
+              <div class="tl-desc">전체 환자</div>
+            </div>
+          </div>
+
+          <div class="tl-row">
+            <div class="tl-time">22:00</div>
+            <div class="tl-node"><div class="tl-dot upcoming"></div><div class="tl-line"></div></div>
+            <div class="tl-body">
+              <div class="tl-head-row">
+                <span class="tl-name upcoming">인수인계</span>
+                <span class="tl-tag upcoming">예정</span>
+              </div>
+              <div class="tl-desc">AI SBAR 리포트 자동 생성</div>
+            </div>
+          </div>
+
+        </div>
+      </div><!-- /timeline -->
+
+      <!-- Alert Feed -->
+      <div class="lq">
+        <div class="card-head">
+          <div class="card-title">
+            <span class="title-dot red"></span>
+            주의 환자 알림
+          </div>
+          <span class="card-more">모두 보기</span>
+        </div>
+        <div class="alert-list">
+
+          <div class="al-item critical">
+            <div class="al-icon critical">
+              <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+            <div class="al-body">
+              <div class="al-patient">301호 박영수 (남/82세)</div>
+              <div class="al-msg">혈압 180/110 측정 · 2시간 내 재측정 후 이송 검토 권장</div>
+              <div class="al-time">10분 전 · AI 감지</div>
+            </div>
+            <button class="al-btn critical">대응</button>
+          </div>
+
+          <div class="al-item">
+            <div class="al-icon">
+              <svg viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="4"/></svg>
+            </div>
+            <div class="al-body">
+              <div class="al-patient">302호 김순자 (여/78세)</div>
+              <div class="al-msg">식사량 3일 연속 30% 미만 · 영양 상담 및 보호자 알림 고려</div>
+              <div class="al-time">어제부터 추이 감지</div>
+            </div>
+            <button class="al-btn default">확인</button>
+          </div>
+
+          <div class="al-item">
+            <div class="al-icon">
+              <svg viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="4"/></svg>
+            </div>
+            <div class="al-body">
+              <div class="al-patient">303호 이철수 (남/75세)</div>
+              <div class="al-msg">09:00 투약 미완료 · 본인 거부 의사 표시</div>
+              <div class="al-time">1시간 전 요양보호사 보고</div>
+            </div>
+          </div>
+
+          <div class="al-item">
+            <div class="al-icon">
+              <svg viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="4"/></svg>
+            </div>
+            <div class="al-body">
+              <div class="al-patient">305호 최미경 보호자</div>
+              <div class="al-msg">"오늘 어머니 재활 치료 결과 어떻게 됐나요?" 미확인 메시지</div>
+              <div class="al-time">30분 전</div>
+            </div>
+            <button class="al-btn default">답장</button>
+          </div>
+
+        </div>
+      </div><!-- /alert -->
+
+    </div><!-- /grid-2 -->
+
+    <!-- AI Panel -->
+    <div class="lq">
+      <div class="ai-panel-head">
+        <div class="ai-head-left">
+          <div class="ai-head-icon">
+            <svg width="18" height="18" viewBox="0 0 2526 2526" fill="currentColor">
+              <path d="M2521.32 2506.66C1239.65 2657.48 1239.65 1895.6 1239.65 1279.34L2497.69 0C2518.68 494.198 2522.27 1157.92 1658.86 1262.48C2641.88 1314.25 2521.32 2101.84 2521.32 2506.66Z"/>
+              <path d="M4.677 19.335C1286.35-131.481 1286.35 630.399 1286.35 1246.66L28.315 2526C7.322 2031.8 3.73 1368.08 867.143 1263.52C-115.881 1211.75 4.677 424.157 4.677 19.335Z"/>
+            </svg>
+          </div>
+          <div>
+            <h3>하루 AI 어시스턴트</h3>
+            <span>오늘 주요 감지 사항 · 2026.04.16 10:24 기준</span>
+          </div>
+        </div>
+        <span class="card-more">전체 리포트</span>
+      </div>
+      <div class="ai-grid">
+        <div class="ai-card danger">
+          <span class="ai-tag">긴급</span>
+          <div class="ai-patient">박영수님 (301호)</div>
+          <div class="ai-text">혈압 180/110, 2시간 내 재측정 후 이송 검토 권장. 지난주 비슷한 패턴 후 응급실 방문 이력 있음.</div>
+        </div>
+        <div class="ai-card">
+          <span class="ai-tag">주의</span>
+          <div class="ai-patient">김순자님 (302호)</div>
+          <div class="ai-text">식사량 3일 연속 30% 미만 감지. 영양 상담 및 보호자 알림 고려 권장.</div>
+        </div>
+        <div class="ai-card">
+          <span class="ai-tag">정보</span>
+          <div class="ai-patient">기록 관리</div>
+          <div class="ai-text">이번 달 급여제공기록지 미작성 3건. 실사 전 작성 완료 필요. 자동생성 가능.</div>
+        </div>
+      </div>
+    </div><!-- /ai-panel -->
+
+  </main>
+  </div><!-- /page-dashboard -->
+
+
+  <!-- ═══ Page: 환자 관리 ═══ -->
+  <div class="page" id="page-patients">
+  <main class="content">
+    <div class="pg-head" style="margin-bottom:14px">
+      <h1>환자 관리</h1>
+      <p>2병동 담당 환자 현황 · 2026.04.18 기준</p>
+    </div>
+
+    <div class="filter-bar" style="margin-bottom:14px">
+      <div class="seg">
+        <button class="seg-btn active" onclick="segClick(this)">전체 (25)</button>
+        <button class="seg-btn" onclick="segClick(this)">주의 (3)</button>
+        <button class="seg-btn" onclick="segClick(this)">요주의 (5)</button>
+        <button class="seg-btn" onclick="segClick(this)">안정 (17)</button>
+      </div>
+      <div style="flex:1"></div>
+      <div class="search-wrap" style="max-width:200px">
+        <svg class="search-icon" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+        </svg>
+        <input class="search-input" type="text" placeholder="환자 검색...">
+      </div>
+      <button class="btn-g">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+        환자 추가
+      </button>
+    </div>
+
+    <div class="pt-split">
+
+      <!-- ── 환자 목록 ── -->
+      <div class="lq pt-list-panel">
+        <div class="pt-list-header"><span>환자 목록 · 9명 표시중</span></div>
+
+        <div class="pt-list-item sel" onclick="ptSelect(this,'박','301호 박영수','critical')">
+          <div class="pt-list-av critical">박</div>
+          <div><div class="pt-list-name">박영수</div><div class="pt-list-meta">301호 · 남/82세</div></div>
+          <span class="pt-list-badge critical">주의</span>
+        </div>
+        <div class="pt-list-item" onclick="ptSelect(this,'김','302호 김순자','caution')">
+          <div class="pt-list-av caution">김</div>
+          <div><div class="pt-list-name">김순자</div><div class="pt-list-meta">302호 · 여/78세</div></div>
+          <span class="pt-list-badge caution">요주의</span>
+        </div>
+        <div class="pt-list-item" onclick="ptSelect(this,'이','303호 이철수','caution')">
+          <div class="pt-list-av caution">이</div>
+          <div><div class="pt-list-name">이철수</div><div class="pt-list-meta">303호 · 남/75세</div></div>
+          <span class="pt-list-badge caution">요주의</span>
+        </div>
+        <div class="pt-list-item" onclick="ptSelect(this,'오','304호 오병석','stable')">
+          <div class="pt-list-av stable">오</div>
+          <div><div class="pt-list-name">오병석</div><div class="pt-list-meta">304호 · 남/79세</div></div>
+          <span class="pt-list-badge stable">안정</span>
+        </div>
+        <div class="pt-list-item" onclick="ptSelect(this,'최','305호 최미경','stable')">
+          <div class="pt-list-av stable">최</div>
+          <div><div class="pt-list-name">최미경</div><div class="pt-list-meta">305호 · 여/84세</div></div>
+          <span class="pt-list-badge stable">안정</span>
+        </div>
+        <div class="pt-list-item" onclick="ptSelect(this,'홍','306호 홍말순','stable')">
+          <div class="pt-list-av stable">홍</div>
+          <div><div class="pt-list-name">홍말순</div><div class="pt-list-meta">306호 · 여/88세</div></div>
+          <span class="pt-list-badge stable">안정</span>
+        </div>
+        <div class="pt-list-item" onclick="ptSelect(this,'이','307호 이영자','stable')">
+          <div class="pt-list-av stable">이</div>
+          <div><div class="pt-list-name">이영자</div><div class="pt-list-meta">307호 · 여/76세</div></div>
+          <span class="pt-list-badge stable">안정</span>
+        </div>
+        <div class="pt-list-item" onclick="ptSelect(this,'강','308호 강민수','stable')">
+          <div class="pt-list-av stable">강</div>
+          <div><div class="pt-list-name">강민수</div><div class="pt-list-meta">308호 · 남/71세</div></div>
+          <span class="pt-list-badge stable">안정</span>
+        </div>
+        <div class="pt-list-item" onclick="ptSelect(this,'윤','309호 윤복순','stable')">
+          <div class="pt-list-av stable">윤</div>
+          <div><div class="pt-list-name">윤복순</div><div class="pt-list-meta">309호 · 여/81세</div></div>
+          <span class="pt-list-badge stable">안정</span>
+        </div>
+      </div><!-- /pt-list-panel -->
+
+      <!-- ── 환자 상세 ── -->
+      <div class="pt-detail" id="pt-detail-panel">
+
+        <!-- 프로필 카드 -->
+        <div class="lq">
+          <div class="pt-profile-card">
+            <div class="pt-profile-av critical">박</div>
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:2px">
+                <span class="pt-profile-name">박영수</span>
+                <span class="pt-badge critical" style="font-size:11px;padding:3px 10px">주의</span>
+                <span style="font-size:11px;color:var(--ink-4)">최근 측정: 10분 전</span>
+              </div>
+              <div class="pt-profile-id">301-TES-001 · 담당: 김코디 간호사 · Follow-up 09:15</div>
+              <div class="pt-profile-tags">
+                <span class="pt-profile-tag">요양 3등급</span>
+                <span class="pt-profile-tag">남 · 82세</span>
+                <span class="pt-profile-tag">입소 2023.03.15</span>
+                <span class="pt-profile-tag">고혈압 · 심부전</span>
+              </div>
+              <div class="pt-profile-info">
+                <div class="pt-info-row"><span class="pt-info-key">담당의</span><span class="pt-info-val">김태호 촉탁의</span></div>
+                <div class="pt-info-row"><span class="pt-info-key">보호자</span><span class="pt-info-val">박지영 (딸) · 010-1234-5678</span></div>
+                <div class="pt-info-row"><span class="pt-info-key">주소</span><span class="pt-info-val">서울시 강남구 역삼동</span></div>
+                <div class="pt-info-row"><span class="pt-info-key">이메일</span><span class="pt-info-val">park.young@example.com</span></div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;flex-shrink:0">
+              <button class="btn-g" style="font-size:11px;padding:7px 14px">
+                <svg viewBox="0 0 20 20" fill="currentColor" style="width:13px;height:13px"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5z" clip-rule="evenodd"/></svg>
+                기록 작성
+              </button>
+              <button class="btn-n" style="font-size:11px;padding:7px 14px">
+                <svg viewBox="0 0 20 20" fill="currentColor" style="width:13px;height:13px"><path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"/><path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"/></svg>
+                보호자 알림
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 바이탈 + 건강 시스템 -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+
+          <!-- 바이탈 -->
+          <div class="lq">
+            <div class="card-head">
+              <div class="card-title"><span class="title-dot red"></span>최근 바이탈 측정</div>
+              <span class="card-more">이력 보기</span>
+            </div>
+            <div class="vt-grid">
+              <div class="vt-card">
+                <div class="vt-emoji">🩺</div>
+                <div class="vt-value warn">180/110</div>
+                <div class="vt-label">혈압 mmHg</div>
+              </div>
+              <div class="vt-card">
+                <div class="vt-emoji">❤️</div>
+                <div class="vt-value">88</div>
+                <div class="vt-label">맥박 bpm</div>
+              </div>
+              <div class="vt-card">
+                <div class="vt-emoji">🌡️</div>
+                <div class="vt-value">36.8</div>
+                <div class="vt-label">체온 °C</div>
+              </div>
+              <div class="vt-card">
+                <div class="vt-emoji">💧</div>
+                <div class="vt-value">97</div>
+                <div class="vt-label">산소포화도 %</div>
+              </div>
+              <div class="vt-card">
+                <div class="vt-emoji">⚖️</div>
+                <div class="vt-value">72</div>
+                <div class="vt-label">체중 kg</div>
+              </div>
+              <div class="vt-card">
+                <div class="vt-emoji">🍽️</div>
+                <div class="vt-value warn">45</div>
+                <div class="vt-label">식사량 %</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 건강 시스템 -->
+          <div class="lq">
+            <div class="card-head">
+              <div class="card-title"><span class="title-dot"></span>건강 시스템 개요</div>
+            </div>
+            <div class="hs-grid">
+              <div class="hs-row">
+                <div class="hs-icon" style="background:#FEE2E2">🫀</div>
+                <span class="hs-name">심혈관계</span>
+                <div class="hs-bar-wrap"><div class="hs-bar-fill" style="width:28%;background:var(--red)"></div></div>
+                <span class="hs-score" style="color:var(--red-d)">2.8/10</span>
+              </div>
+              <div class="hs-row">
+                <div class="hs-icon" style="background:#DBEAFE">🧠</div>
+                <span class="hs-name">신경계</span>
+                <div class="hs-bar-wrap"><div class="hs-bar-fill" style="width:72%;background:var(--teal)"></div></div>
+                <span class="hs-score" style="color:var(--teal-d)">7.2/10</span>
+              </div>
+              <div class="hs-row">
+                <div class="hs-icon" style="background:#D1FAE5">🫁</div>
+                <span class="hs-name">호흡기계</span>
+                <div class="hs-bar-wrap"><div class="hs-bar-fill" style="width:82%;background:var(--teal)"></div></div>
+                <span class="hs-score" style="color:var(--teal-d)">8.2/10</span>
+              </div>
+              <div class="hs-row">
+                <div class="hs-icon" style="background:#EDE9FE">🫶</div>
+                <span class="hs-name">소화기계</span>
+                <div class="hs-bar-wrap"><div class="hs-bar-fill" style="width:65%;background:#A78BFA"></div></div>
+                <span class="hs-score" style="color:#7C3AED">6.5/10</span>
+              </div>
+              <div class="hs-row">
+                <div class="hs-icon" style="background:#FEF9C3">🦴</div>
+                <span class="hs-name">근골격계</span>
+                <div class="hs-bar-wrap"><div class="hs-bar-fill" style="width:58%;background:#FBBF24"></div></div>
+                <span class="hs-score" style="color:#92400E">5.8/10</span>
+              </div>
+              <div class="hs-row">
+                <div class="hs-icon" style="background:#F0FDF4">🛡️</div>
+                <span class="hs-name">면역계</span>
+                <div class="hs-bar-wrap"><div class="hs-bar-fill" style="width:76%;background:var(--teal)"></div></div>
+                <span class="hs-score" style="color:var(--teal-d)">7.6/10</span>
+              </div>
+            </div>
+          </div>
+        </div><!-- /vitals + health systems -->
+
+        <!-- 알레르기 + 처방 약품 -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+
+          <!-- 알레르기 -->
+          <div class="lq">
+            <div class="card-head">
+              <div class="card-title"><span class="title-dot"></span>알레르기 <span style="font-size:11px;font-weight:600;color:var(--ink-4);margin-left:4px">3건</span></div>
+              <span class="card-more">수정</span>
+            </div>
+            <div class="alg-grid">
+              <div class="alg-tag severe">
+                <span class="alg-name">페니실린</span>
+                <span class="alg-lvl">⚠ 심각</span>
+              </div>
+              <div class="alg-tag caution">
+                <span class="alg-name">견과류</span>
+                <span class="alg-lvl">주의</span>
+              </div>
+              <div class="alg-tag mild">
+                <span class="alg-name">먼지</span>
+                <span class="alg-lvl">경미</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 처방 약품 -->
+          <div class="lq">
+            <div class="card-head">
+              <div class="card-title"><span class="title-dot"></span>현재 처방 약품</div>
+              <span class="card-more" style="cursor:pointer" onclick="setActive(document.querySelector('[data-page=emar]'))">eMAR 이동</span>
+            </div>
+            <div style="padding:8px 14px 14px;display:flex;flex-direction:column;gap:6px">
+              <div class="emar-drug-item">
+                <div class="emar-drug-ic"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/></svg></div>
+                <div style="flex:1;min-width:0">
+                  <div class="emar-drug-nm">암로디핀 5mg</div>
+                  <div class="emar-drug-dose">1일 1회 · 아침 식후</div>
+                </div>
+                <span class="emar-drug-st done">아침 완료</span>
+              </div>
+              <div class="emar-drug-item">
+                <div class="emar-drug-ic"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/></svg></div>
+                <div style="flex:1;min-width:0">
+                  <div class="emar-drug-nm">히드로클로로티아지드 12.5mg</div>
+                  <div class="emar-drug-dose">1일 1회 · 아침 식후</div>
+                </div>
+                <span class="emar-drug-st done">아침 완료</span>
+              </div>
+              <div class="emar-drug-item">
+                <div class="emar-drug-ic" style="background:rgba(124,58,237,.10);color:#7C3AED"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/></svg></div>
+                <div style="flex:1;min-width:0">
+                  <div class="emar-drug-nm">아스피린 100mg (PRN)</div>
+                  <div class="emar-drug-dose">필요시 · 통증 시</div>
+                </div>
+                <span class="emar-drug-st pending">미투여</span>
+              </div>
+            </div>
+          </div>
+        </div><!-- /allergies + meds -->
+
+        <!-- 이전 진단 + 최근 이벤트 -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+
+          <!-- 이전 진단 -->
+          <div class="lq">
+            <div class="card-head">
+              <div class="card-title"><span class="title-dot"></span>이전 진단 이력</div>
+            </div>
+            <div style="padding:8px 14px 14px;display:flex;flex-direction:column;gap:7px">
+              <div class="al-item" style="margin-bottom:0;background:rgba(0,0,0,.025)">
+                <div class="al-icon" style="background:rgba(59,130,246,.10);color:#1D4ED8">
+                  <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V8z" clip-rule="evenodd"/></svg>
+                </div>
+                <div class="al-body">
+                  <div class="al-patient">고혈압성 위기</div>
+                  <div class="al-msg">혈압 190/120 — 응급실 내원</div>
+                  <div class="al-time">2026.04.11</div>
+                </div>
+                <span class="pt-badge caution" style="font-size:10px">입원</span>
+              </div>
+              <div class="al-item" style="margin-bottom:0;background:rgba(0,0,0,.025)">
+                <div class="al-icon" style="background:rgba(59,130,246,.10);color:#1D4ED8">
+                  <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V8z" clip-rule="evenodd"/></svg>
+                </div>
+                <div class="al-body">
+                  <div class="al-patient">울혈성 심부전 악화</div>
+                  <div class="al-msg">심초음파 검사 후 약제 조정</div>
+                  <div class="al-time">2026.02.28</div>
+                </div>
+                <span class="pt-badge stable" style="font-size:10px">외래</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 최근 이벤트 -->
+          <div class="lq">
+            <div class="card-head">
+              <div class="card-title"><span class="title-dot"></span>최근 케어 이벤트</div>
+              <span class="card-more">전체 기록</span>
+            </div>
+            <div style="padding:8px 14px 14px;display:flex;flex-direction:column;gap:7px">
+              <div class="al-item critical" style="margin-bottom:0">
+                <div class="al-icon critical"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg></div>
+                <div class="al-body">
+                  <div class="al-patient">바이탈 이상 · AI 감지</div>
+                  <div class="al-msg">혈압 180/110 — 재측정 권장</div>
+                  <div class="al-time">오늘 08:30</div>
+                </div>
+              </div>
+              <div class="al-item" style="margin-bottom:0;background:rgba(0,0,0,.025)">
+                <div class="al-icon" style="background:var(--teal-bg);color:var(--teal-d)"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg></div>
+                <div class="al-body">
+                  <div class="al-patient">아침 투약 완료</div>
+                  <div class="al-msg">암로디핀 5mg 투여 완료</div>
+                  <div class="al-time">오늘 06:40</div>
+                </div>
+              </div>
+              <div class="al-item" style="margin-bottom:0;background:rgba(0,0,0,.025)">
+                <div class="al-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5z" clip-rule="evenodd"/></svg></div>
+                <div class="al-body">
+                  <div class="al-patient">AI SBAR 리포트 생성</div>
+                  <div class="al-msg">혈압 이상 — 인수인계용 자동 생성</div>
+                  <div class="al-time">오늘 08:40</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div><!-- /diagnosis + events -->
+
+      </div><!-- /pt-detail -->
+    </div><!-- /pt-split -->
+  </main>
+  </div><!-- /page-patients -->
+
+
+  <!-- ═══ Page: 투약 관리 eMAR ═══ -->
+  <div class="page" id="page-emar">
+  <main class="content">
+    <div class="pg-head" style="margin-bottom:14px">
+      <h1>투약 관리 (eMAR)</h1>
+      <p>2026.04.18 · 2병동 전자 투약 기록 · 실시간 업데이트</p>
+    </div>
+
+    <!-- 요약 통계 -->
+    <div class="emar-summary">
+      <div class="lq s-card">
+        <div class="s-card-head"><span class="s-label">오늘 전체 처방</span>
+          <div class="s-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/></svg></div>
+        </div>
+        <div class="s-value">22<span style="font-size:13px;color:var(--ink-4);font-weight:500;letter-spacing:0">건</span></div>
+        <div class="s-sub"><span class="s-dot"></span>9명 환자 · 오늘 전체</div>
+      </div>
+      <div class="lq s-card">
+        <div class="s-card-head"><span class="s-label">투여 완료</span>
+          <div class="s-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg></div>
+        </div>
+        <div class="s-value" style="color:var(--teal-d)">12</div>
+        <div class="s-sub"><span class="s-dot"></span>완료율 54.5%</div>
+        <div class="s-bar"><div class="s-fill" style="width:55%"></div></div>
+      </div>
+      <div class="lq s-card">
+        <div class="s-card-head"><span class="s-label">거부·미투여</span>
+          <div class="s-icon alert"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg></div>
+        </div>
+        <div class="s-value danger">2</div>
+        <div class="s-sub"><span class="s-dot red"></span>즉시 확인 필요</div>
+      </div>
+      <div class="lq s-card">
+        <div class="s-card-head"><span class="s-label">남은 예정</span>
+          <div class="s-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg></div>
+        </div>
+        <div class="s-value">8</div>
+        <div class="s-sub"><span class="s-dot"></span>점심·저녁·취침 예정</div>
+      </div>
+    </div>
+
+    <!-- 필터바 -->
+    <div class="filter-bar" style="margin-bottom:14px">
+      <div class="seg">
+        <button class="seg-btn active" onclick="segClick(this)">오늘</button>
+        <button class="seg-btn" onclick="segClick(this)">어제</button>
+        <button class="seg-btn" onclick="segClick(this)">주간</button>
+      </div>
+      <div class="seg" style="margin-left:6px">
+        <button class="seg-btn active" onclick="segClick(this)">전체</button>
+        <button class="seg-btn" onclick="segClick(this)">아침 06:00</button>
+        <button class="seg-btn" onclick="segClick(this)">점심 12:00</button>
+        <button class="seg-btn" onclick="segClick(this)">저녁 18:00</button>
+        <button class="seg-btn" onclick="segClick(this)">취침 21:00</button>
+      </div>
+      <div style="flex:1"></div>
+      <button class="emar-view-btn active" onclick="this.classList.toggle('active')">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+        카드 뷰
+      </button>
+      <button class="btn-g">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V8z" clip-rule="evenodd"/></svg>
+        투약 기록
+      </button>
+    </div>
+
+    <!-- ── 카드 그리드 뷰 ── -->
+    <div class="emar-card-grid">
+
+      <!-- 주의 환자 헤더 -->
+      <div style="display:flex;align-items:center;gap:8px;padding:2px 4px">
+        <div style="width:6px;height:6px;border-radius:50%;background:var(--red);flex-shrink:0"></div>
+        <span style="font-size:11px;font-weight:700;color:var(--ink-4);text-transform:uppercase;letter-spacing:.6px">주의 환자</span>
+        <div style="flex:1;height:0.5px;background:rgba(0,0,0,.08)"></div>
+      </div>
+
+      <!-- 301 박영수 -->
+      <div class="lq emar-pt-card">
+        <div class="emar-pt-header" onclick="toggleExpand(this)">
+          <div class="emar-pt-av critical">박</div>
+          <div style="flex:1;min-width:0">
+            <div class="emar-pt-nm">박영수</div>
+            <div class="emar-pt-info">301호 · 남/82세 · 암로디핀 5mg, 히드로클로로티아지드</div>
+          </div>
+          <div class="emar-slots">
+            <div class="emar-slot"><div class="emar-slot-lbl">06:00</div><div class="emar-slot-btn done" title="투여 완료">✓</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">12:00</div><div class="emar-slot-btn sched" title="예정">·</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">18:00</div><div class="emar-slot-btn sched" title="예정">·</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">21:00</div><div class="emar-slot-btn na" title="해당없음">—</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">PRN</div><div class="emar-slot-btn na" title="해당없음">—</div></div>
+          </div>
+          <svg viewBox="0 0 20 20" fill="currentColor" style="width:16px;height:16px;color:var(--ink-4);margin-left:10px;transition:transform .2s;flex-shrink:0"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+        </div>
+        <div class="emar-expand" style="display:none">
+          <div class="emar-drug-list">
+            <div class="emar-drug-item">
+              <div class="emar-drug-ic"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/></svg></div>
+              <div style="flex:1"><div class="emar-drug-nm">암로디핀 5mg</div><div class="emar-drug-dose">1일 1회 · 아침 식후 · 고혈압</div></div>
+              <span class="emar-drug-st done">아침 완료 06:42</span>
+            </div>
+            <div class="emar-drug-item">
+              <div class="emar-drug-ic"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/></svg></div>
+              <div style="flex:1"><div class="emar-drug-nm">히드로클로로티아지드 12.5mg</div><div class="emar-drug-dose">1일 1회 · 아침 식후 · 이뇨제</div></div>
+              <span class="emar-drug-st done">아침 완료 06:42</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 302 김순자 -->
+      <div class="lq emar-pt-card">
+        <div class="emar-pt-header" onclick="toggleExpand(this)">
+          <div class="emar-pt-av caution">김</div>
+          <div style="flex:1;min-width:0">
+            <div class="emar-pt-nm">김순자</div>
+            <div class="emar-pt-info">302호 · 여/78세 · 비타민D 1000IU, 칼슘 500mg</div>
+          </div>
+          <div class="emar-slots">
+            <div class="emar-slot"><div class="emar-slot-lbl">06:00</div><div class="emar-slot-btn done">✓</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">12:00</div><div class="emar-slot-btn done">✓</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">18:00</div><div class="emar-slot-btn sched">·</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">21:00</div><div class="emar-slot-btn na">—</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">PRN</div><div class="emar-slot-btn na">—</div></div>
+          </div>
+          <svg viewBox="0 0 20 20" fill="currentColor" style="width:16px;height:16px;color:var(--ink-4);margin-left:10px;transition:transform .2s;flex-shrink:0"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+        </div>
+        <div class="emar-expand" style="display:none">
+          <div class="emar-drug-list">
+            <div class="emar-drug-item">
+              <div class="emar-drug-ic"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/></svg></div>
+              <div style="flex:1"><div class="emar-drug-nm">비타민D 1000IU</div><div class="emar-drug-dose">1일 1회 · 아침 식후 · 골다공증 예방</div></div>
+              <span class="emar-drug-st done">아침 완료</span>
+            </div>
+            <div class="emar-drug-item">
+              <div class="emar-drug-ic"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/></svg></div>
+              <div style="flex:1"><div class="emar-drug-nm">칼슘 500mg</div><div class="emar-drug-dose">1일 2회 · 아침·저녁 식후</div></div>
+              <span class="emar-drug-st done">아침 완료</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 303 이철수 (거부) -->
+      <div class="lq emar-pt-card">
+        <div class="emar-pt-header" onclick="toggleExpand(this)" style="background:var(--red-bg)">
+          <div class="emar-pt-av critical">이</div>
+          <div style="flex:1;min-width:0">
+            <div class="emar-pt-nm">이철수</div>
+            <div class="emar-pt-info">303호 · 남/75세 · 아스피린 100mg, 리피토 20mg</div>
+          </div>
+          <div class="emar-slots">
+            <div class="emar-slot"><div class="emar-slot-lbl">06:00</div><div class="emar-slot-btn refused">✕</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">12:00</div><div class="emar-slot-btn sched">·</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">18:00</div><div class="emar-slot-btn sched">·</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">21:00</div><div class="emar-slot-btn na">—</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">PRN</div><div class="emar-slot-btn sched">·</div></div>
+          </div>
+          <svg viewBox="0 0 20 20" fill="currentColor" style="width:16px;height:16px;color:var(--ink-4);margin-left:10px;transition:transform .2s;flex-shrink:0"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+        </div>
+        <div class="emar-expand" style="display:none">
+          <div class="emar-note" style="margin-bottom:8px">
+            <svg viewBox="0 0 20 20" fill="currentColor" style="width:14px;height:14px;flex-shrink:0"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+            09:00 투약 거부 — 본인 거부 의사 · 11:00 재시도 예정. 사유: "오늘은 안 먹겠다" 반복 거부
+          </div>
+          <div class="emar-drug-list">
+            <div class="emar-drug-item">
+              <div class="emar-drug-ic"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/></svg></div>
+              <div style="flex:1"><div class="emar-drug-nm">아스피린 100mg</div><div class="emar-drug-dose">1일 1회 · 아침 식후 · 혈전 예방</div></div>
+              <span class="emar-drug-st refused">거부 09:02</span>
+            </div>
+            <div class="emar-drug-item">
+              <div class="emar-drug-ic"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/></svg></div>
+              <div style="flex:1"><div class="emar-drug-nm">리피토 20mg</div><div class="emar-drug-dose">1일 1회 · 아침 식후 · 고지혈증</div></div>
+              <span class="emar-drug-st refused">거부 09:02</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 일반 환자 헤더 -->
+      <div style="display:flex;align-items:center;gap:8px;padding:2px 4px;margin-top:4px">
+        <div style="width:6px;height:6px;border-radius:50%;background:var(--teal);flex-shrink:0"></div>
+        <span style="font-size:11px;font-weight:700;color:var(--ink-4);text-transform:uppercase;letter-spacing:.6px">일반 환자</span>
+        <div style="flex:1;height:0.5px;background:rgba(0,0,0,.08)"></div>
+      </div>
+
+      <!-- 304 오병석 -->
+      <div class="lq emar-pt-card">
+        <div class="emar-pt-header" onclick="toggleExpand(this)">
+          <div class="emar-pt-av stable">오</div>
+          <div style="flex:1;min-width:0">
+            <div class="emar-pt-nm">오병석</div>
+            <div class="emar-pt-info">304호 · 남/79세 · 메트포르민 500mg</div>
+          </div>
+          <div class="emar-slots">
+            <div class="emar-slot"><div class="emar-slot-lbl">06:00</div><div class="emar-slot-btn done">✓</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">12:00</div><div class="emar-slot-btn sched">·</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">18:00</div><div class="emar-slot-btn sched">·</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">21:00</div><div class="emar-slot-btn na">—</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">PRN</div><div class="emar-slot-btn na">—</div></div>
+          </div>
+          <svg viewBox="0 0 20 20" fill="currentColor" style="width:16px;height:16px;color:var(--ink-4);margin-left:10px;transition:transform .2s;flex-shrink:0"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+        </div>
+        <div class="emar-expand" style="display:none">
+          <div class="emar-drug-list">
+            <div class="emar-drug-item">
+              <div class="emar-drug-ic"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/></svg></div>
+              <div style="flex:1"><div class="emar-drug-nm">메트포르민 500mg</div><div class="emar-drug-dose">1일 3회 · 식후 · 당뇨</div></div>
+              <span class="emar-drug-st done">아침 완료</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 305 최미경 -->
+      <div class="lq emar-pt-card">
+        <div class="emar-pt-header" onclick="toggleExpand(this)">
+          <div class="emar-pt-av stable">최</div>
+          <div style="flex:1;min-width:0">
+            <div class="emar-pt-nm">최미경</div>
+            <div class="emar-pt-info">305호 · 여/84세 · 골다공증약, 타이레놀 325mg</div>
+          </div>
+          <div class="emar-slots">
+            <div class="emar-slot"><div class="emar-slot-lbl">06:00</div><div class="emar-slot-btn done">✓</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">12:00</div><div class="emar-slot-btn done">✓</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">18:00</div><div class="emar-slot-btn sched">·</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">21:00</div><div class="emar-slot-btn na">—</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">PRN</div><div class="emar-slot-btn na">—</div></div>
+          </div>
+          <svg viewBox="0 0 20 20" fill="currentColor" style="width:16px;height:16px;color:var(--ink-4);margin-left:10px;transition:transform .2s;flex-shrink:0"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+        </div>
+        <div class="emar-expand" style="display:none">
+          <div class="emar-drug-list">
+            <div class="emar-drug-item">
+              <div class="emar-drug-ic"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/></svg></div>
+              <div style="flex:1"><div class="emar-drug-nm">알렌드로네이트 70mg</div><div class="emar-drug-dose">주 1회 · 아침 공복 · 골다공증</div></div>
+              <span class="emar-drug-st done">완료</span>
+            </div>
+            <div class="emar-drug-item">
+              <div class="emar-drug-ic"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/></svg></div>
+              <div style="flex:1"><div class="emar-drug-nm">타이레놀 325mg</div><div class="emar-drug-dose">1일 3회 · 통증 시 · PRN</div></div>
+              <span class="emar-drug-st pending">저녁 예정</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 306~309 compact rows -->
+      <div class="lq emar-pt-card">
+        <div class="emar-pt-header" onclick="toggleExpand(this)">
+          <div class="emar-pt-av stable">홍</div>
+          <div style="flex:1;min-width:0">
+            <div class="emar-pt-nm">홍말순</div>
+            <div class="emar-pt-info">306호 · 여/88세 · 혈압약, 수면제</div>
+          </div>
+          <div class="emar-slots">
+            <div class="emar-slot"><div class="emar-slot-lbl">06:00</div><div class="emar-slot-btn done">✓</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">12:00</div><div class="emar-slot-btn na">—</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">18:00</div><div class="emar-slot-btn sched">·</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">21:00</div><div class="emar-slot-btn sched">·</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">PRN</div><div class="emar-slot-btn na">—</div></div>
+          </div>
+          <svg viewBox="0 0 20 20" fill="currentColor" style="width:16px;height:16px;color:var(--ink-4);margin-left:10px;transition:transform .2s;flex-shrink:0"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+        </div>
+        <div class="emar-expand" style="display:none">
+          <div class="emar-drug-list">
+            <div class="emar-drug-item">
+              <div class="emar-drug-ic"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/></svg></div>
+              <div style="flex:1"><div class="emar-drug-nm">암로디핀 5mg</div><div class="emar-drug-dose">1일 1회 · 아침 식후</div></div>
+              <span class="emar-drug-st done">완료</span>
+            </div>
+            <div class="emar-drug-item">
+              <div class="emar-drug-ic" style="background:rgba(124,58,237,.10);color:#7C3AED"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/></svg></div>
+              <div style="flex:1"><div class="emar-drug-nm">졸피뎀 5mg</div><div class="emar-drug-dose">1일 1회 · 취침 전</div></div>
+              <span class="emar-drug-st pending">취침 예정</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lq emar-pt-card">
+        <div class="emar-pt-header" onclick="toggleExpand(this)">
+          <div class="emar-pt-av stable">이</div>
+          <div style="flex:1;min-width:0">
+            <div class="emar-pt-nm">이영자</div>
+            <div class="emar-pt-info">307호 · 여/76세 · 비타민 복합제</div>
+          </div>
+          <div class="emar-slots">
+            <div class="emar-slot"><div class="emar-slot-lbl">06:00</div><div class="emar-slot-btn done">✓</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">12:00</div><div class="emar-slot-btn sched">·</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">18:00</div><div class="emar-slot-btn na">—</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">21:00</div><div class="emar-slot-btn na">—</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">PRN</div><div class="emar-slot-btn na">—</div></div>
+          </div>
+          <svg viewBox="0 0 20 20" fill="currentColor" style="width:16px;height:16px;color:var(--ink-4);margin-left:10px;transition:transform .2s;flex-shrink:0"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+        </div>
+        <div class="emar-expand" style="display:none">
+          <div class="emar-drug-list">
+            <div class="emar-drug-item">
+              <div class="emar-drug-ic"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/></svg></div>
+              <div style="flex:1"><div class="emar-drug-nm">종합비타민</div><div class="emar-drug-dose">1일 2회 · 아침·점심 식후</div></div>
+              <span class="emar-drug-st done">아침 완료</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lq emar-pt-card">
+        <div class="emar-pt-header" onclick="toggleExpand(this)">
+          <div class="emar-pt-av stable">강</div>
+          <div style="flex:1;min-width:0">
+            <div class="emar-pt-nm">강민수</div>
+            <div class="emar-pt-info">308호 · 남/71세 · 메트포르민, 인슐린 글라진</div>
+          </div>
+          <div class="emar-slots">
+            <div class="emar-slot"><div class="emar-slot-lbl">06:00</div><div class="emar-slot-btn done">✓</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">12:00</div><div class="emar-slot-btn sched">·</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">18:00</div><div class="emar-slot-btn sched">·</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">21:00</div><div class="emar-slot-btn na">—</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">PRN</div><div class="emar-slot-btn sched">·</div></div>
+          </div>
+          <svg viewBox="0 0 20 20" fill="currentColor" style="width:16px;height:16px;color:var(--ink-4);margin-left:10px;transition:transform .2s;flex-shrink:0"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+        </div>
+        <div class="emar-expand" style="display:none">
+          <div class="emar-drug-list">
+            <div class="emar-drug-item">
+              <div class="emar-drug-ic"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/></svg></div>
+              <div style="flex:1"><div class="emar-drug-nm">메트포르민 500mg</div><div class="emar-drug-dose">1일 3회 · 식후</div></div>
+              <span class="emar-drug-st done">아침 완료</span>
+            </div>
+            <div class="emar-drug-item">
+              <div class="emar-drug-ic" style="background:rgba(234,179,8,.12);color:#92400E"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/></svg></div>
+              <div style="flex:1"><div class="emar-drug-nm">인슐린 글라진 10U</div><div class="emar-drug-dose">1일 1회 · 취침 전 피하주사</div></div>
+              <span class="emar-drug-st pending">저녁 예정</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lq emar-pt-card">
+        <div class="emar-pt-header" onclick="toggleExpand(this)">
+          <div class="emar-pt-av stable">윤</div>
+          <div style="flex:1;min-width:0">
+            <div class="emar-pt-nm">윤복순</div>
+            <div class="emar-pt-info">309호 · 여/81세 · 혈압약, 소화제</div>
+          </div>
+          <div class="emar-slots">
+            <div class="emar-slot"><div class="emar-slot-lbl">06:00</div><div class="emar-slot-btn done">✓</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">12:00</div><div class="emar-slot-btn sched">·</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">18:00</div><div class="emar-slot-btn sched">·</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">21:00</div><div class="emar-slot-btn na">—</div></div>
+            <div class="emar-slot"><div class="emar-slot-lbl">PRN</div><div class="emar-slot-btn na">—</div></div>
+          </div>
+          <svg viewBox="0 0 20 20" fill="currentColor" style="width:16px;height:16px;color:var(--ink-4);margin-left:10px;transition:transform .2s;flex-shrink:0"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+        </div>
+        <div class="emar-expand" style="display:none">
+          <div class="emar-drug-list">
+            <div class="emar-drug-item">
+              <div class="emar-drug-ic"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/></svg></div>
+              <div style="flex:1"><div class="emar-drug-nm">텔미사르탄 40mg</div><div class="emar-drug-dose">1일 1회 · 아침 식후 · 고혈압</div></div>
+              <span class="emar-drug-st done">완료</span>
+            </div>
+            <div class="emar-drug-item">
+              <div class="emar-drug-ic"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/></svg></div>
+              <div style="flex:1"><div class="emar-drug-nm">모사프리드 5mg</div><div class="emar-drug-dose">1일 3회 · 식전 · 소화관운동</div></div>
+              <span class="emar-drug-st pending">점심 예정</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 범례 -->
+      <div class="lq" style="margin-top:4px">
+        <div class="emar-legend">
+          <div class="leg-item"><span class="emar-slot-btn done" style="width:28px;height:28px;display:inline-flex">✓</span> 투여 완료</div>
+          <div class="leg-item"><span class="emar-slot-btn sched" style="width:28px;height:28px;display:inline-flex;font-size:18px">·</span> 예정</div>
+          <div class="leg-item"><span class="emar-slot-btn refused" style="width:28px;height:28px;display:inline-flex">✕</span> 거부·미투여</div>
+          <div class="leg-item"><span class="emar-slot-btn na" style="width:28px;height:28px;display:inline-flex">—</span> 해당없음</div>
+        </div>
+      </div>
+
+    </div><!-- /emar-card-grid -->
+  </main>
+  </div><!-- /page-emar -->
+
+
+  <!-- ═══ Page: 케어 체크리스트 ═══ -->
+  <div class="page" id="page-checklist">
+  <main class="content">
+    <div class="pg-head" style="margin-bottom:14px">
+      <h1>케어 체크리스트</h1>
+      <p>2026.04.18 오전 2교대 · 담당 환자 전체</p>
+    </div>
+
+    <!-- 요약 통계 -->
+    <div class="ck-summary" style="margin-bottom:16px">
+      <div class="lq ck-scard">
+        <div class="ck-slabel">전체 항목</div>
+        <div class="ck-sval">48</div>
+        <div class="ck-ssub">오늘 교대 전체</div>
+      </div>
+      <div class="lq ck-scard">
+        <div class="ck-slabel">완료</div>
+        <div class="ck-sval" style="color:var(--teal)">31</div>
+        <div class="ck-ssub">완료율 64%</div>
+        <div class="s-bar" style="margin-top:8px"><div class="s-fill" style="width:64%"></div></div>
+      </div>
+      <div class="lq ck-scard">
+        <div class="ck-slabel">미완료</div>
+        <div class="ck-sval">17</div>
+        <div class="ck-ssub">잔여 항목</div>
+      </div>
+      <div class="lq ck-scard">
+        <div class="ck-slabel">긴급 처리</div>
+        <div class="ck-sval" style="color:var(--red-d)">3</div>
+        <div class="ck-ssub">즉시 조치 필요</div>
+      </div>
+    </div>
+
+    <!-- 카테고리 탭 -->
+    <div class="ck-cat-bar">
+      <button class="ck-cat-btn active" onclick="ckCat(this)">전체 <span class="ck-cat-count">48</span></button>
+      <button class="ck-cat-btn" onclick="ckCat(this)">🍽️ 식사 <span class="ck-cat-count">12</span></button>
+      <button class="ck-cat-btn" onclick="ckCat(this)">🪥 위생 <span class="ck-cat-count">9</span></button>
+      <button class="ck-cat-btn" onclick="ckCat(this)">💊 투약 <span class="ck-cat-count">8</span></button>
+      <button class="ck-cat-btn" onclick="ckCat(this)">🏃 활동 <span class="ck-cat-count">7</span></button>
+      <button class="ck-cat-btn" onclick="ckCat(this)">🩺 바이탈 <span class="ck-cat-count">6</span></button>
+      <button class="ck-cat-btn" onclick="ckCat(this)">🩹 특수처치 <span class="ck-cat-count">6</span></button>
+    </div>
+
+    <!-- 환자별 그룹 아코디언 -->
+
+    <!-- 301호 박영수 — 주의 -->
+    <div class="lq ck-pg">
+      <div class="ck-pg-header open" onclick="ckToggle(this)">
+        <div class="ck-pg-av critical">박</div>
+        <div>
+          <div class="ck-pg-name">박영수</div>
+          <div class="ck-pg-room">301호 · 남/82세 · <span style="color:var(--red-d);font-weight:700">주의</span></div>
+        </div>
+        <div class="ck-pg-prog">
+          <div class="ck-pg-bar"><div class="ck-pg-fill" style="width:50%"></div></div>
+          <span class="ck-pg-cnt">3 / 6</span>
+        </div>
+        <svg class="ck-pg-chev" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+      </div>
+      <div class="ck-pg-body open">
+        <div class="ck2 done" onclick="ck2Toggle(this)">
+          <div class="ck2-chk"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>
+          <div class="ck2-cat" style="background:#DBEAFE">🩺</div>
+          <div style="flex:1;min-width:0">
+            <div class="ck2-task">아침 바이탈 측정</div>
+            <div class="ck2-sub">혈압·체온·맥박 측정 완료</div>
+          </div>
+          <div class="ck2-right">
+            <span class="ck2-time">08:30 완료</span>
+            <span class="ck2-pri mid">중간</span>
+          </div>
+        </div>
+        <div class="ck2 done" onclick="ck2Toggle(this)">
+          <div class="ck2-chk"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>
+          <div class="ck2-cat" style="background:#D1FAE5">💊</div>
+          <div style="flex:1;min-width:0">
+            <div class="ck2-task">아침 투약 — 암로디핀 5mg</div>
+            <div class="ck2-sub">혈압약 투여 완료</div>
+          </div>
+          <div class="ck2-right">
+            <span class="ck2-time">06:42 완료</span>
+            <span class="ck2-pri low">낮음</span>
+          </div>
+        </div>
+        <div class="ck2 done" onclick="ck2Toggle(this)">
+          <div class="ck2-chk"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>
+          <div class="ck2-cat" style="background:#FEF3C7">🪥</div>
+          <div style="flex:1;min-width:0">
+            <div class="ck2-task">구강 위생 · 세면</div>
+            <div class="ck2-sub">틀니 세척 포함 완료</div>
+          </div>
+          <div class="ck2-right">
+            <span class="ck2-time">08:00 완료</span>
+            <span class="ck2-pri low">낮음</span>
+          </div>
+        </div>
+        <div class="ck2" onclick="ck2Toggle(this)">
+          <div class="ck2-chk"></div>
+          <div class="ck2-cat" style="background:#FEE2E2">🩹</div>
+          <div style="flex:1;min-width:0">
+            <div class="ck2-task">상처 드레싱 교체</div>
+            <div class="ck2-sub">우측 발목 욕창 · 드레싱 교체 필요</div>
+          </div>
+          <div class="ck2-right">
+            <span class="ck2-time">10:00 예정</span>
+            <span class="ck2-pri high">긴급</span>
+          </div>
+        </div>
+        <div class="ck2" onclick="ck2Toggle(this)">
+          <div class="ck2-chk"></div>
+          <div class="ck2-cat" style="background:#DBEAFE">🩺</div>
+          <div style="flex:1;min-width:0">
+            <div class="ck2-task">혈압 재측정</div>
+            <div class="ck2-sub">180/110 이상 수치 추적 — 2시간 후 재측정</div>
+          </div>
+          <div class="ck2-right">
+            <span class="ck2-time">12:00 예정</span>
+            <span class="ck2-pri high">긴급</span>
+          </div>
+        </div>
+        <div class="ck2" onclick="ck2Toggle(this)">
+          <div class="ck2-chk"></div>
+          <div class="ck2-cat" style="background:#F0FDF4">🔄</div>
+          <div style="flex:1;min-width:0">
+            <div class="ck2-task">체위 변경 기록</div>
+            <div class="ck2-sub">욕창 예방 · 2시간마다 변경</div>
+          </div>
+          <div class="ck2-right">
+            <span class="ck2-time">12:00 예정</span>
+            <span class="ck2-pri mid">중간</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 302호 김순자 — 요주의 -->
+    <div class="lq ck-pg">
+      <div class="ck-pg-header open" onclick="ckToggle(this)">
+        <div class="ck-pg-av caution">김</div>
+        <div>
+          <div class="ck-pg-name">김순자</div>
+          <div class="ck-pg-room">302호 · 여/78세 · <span style="color:#92400E;font-weight:700">요주의</span></div>
+        </div>
+        <div class="ck-pg-prog">
+          <div class="ck-pg-bar"><div class="ck-pg-fill" style="width:40%"></div></div>
+          <span class="ck-pg-cnt">2 / 5</span>
+        </div>
+        <svg class="ck-pg-chev" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+      </div>
+      <div class="ck-pg-body open">
+        <div class="ck2 done" onclick="ck2Toggle(this)">
+          <div class="ck2-chk"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>
+          <div class="ck2-cat" style="background:#DBEAFE">🩺</div>
+          <div style="flex:1;min-width:0"><div class="ck2-task">아침 바이탈 측정</div><div class="ck2-sub">혈압 128/82 · 정상 범위</div></div>
+          <div class="ck2-right"><span class="ck2-time">08:30 완료</span><span class="ck2-pri low">낮음</span></div>
+        </div>
+        <div class="ck2 done" onclick="ck2Toggle(this)">
+          <div class="ck2-chk"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>
+          <div class="ck2-cat" style="background:#FEF3C7">🍽️</div>
+          <div style="flex:1;min-width:0"><div class="ck2-task">아침 식사 섭취율 기록</div><div class="ck2-sub">28% 섭취 — 3일 연속 저조</div></div>
+          <div class="ck2-right"><span class="ck2-time">07:30 완료</span><span class="ck2-pri mid">중간</span></div>
+        </div>
+        <div class="ck2" onclick="ck2Toggle(this)">
+          <div class="ck2-chk"></div>
+          <div class="ck2-cat" style="background:#FEE2E2">📋</div>
+          <div style="flex:1;min-width:0"><div class="ck2-task">식욕 부진 원인 파악</div><div class="ck2-sub">3일 연속 30% 미만 — 영양사 상담 예약 필요</div></div>
+          <div class="ck2-right"><span class="ck2-time">오늘 중</span><span class="ck2-pri high">긴급</span></div>
+        </div>
+        <div class="ck2" onclick="ck2Toggle(this)">
+          <div class="ck2-chk"></div>
+          <div class="ck2-cat" style="background:#D1FAE5">💊</div>
+          <div style="flex:1;min-width:0"><div class="ck2-task">점심 투약 — 비타민D · 칼슘</div><div class="ck2-sub">점심 식후 투여</div></div>
+          <div class="ck2-right"><span class="ck2-time">12:00 예정</span><span class="ck2-pri low">낮음</span></div>
+        </div>
+        <div class="ck2" onclick="ck2Toggle(this)">
+          <div class="ck2-chk"></div>
+          <div class="ck2-cat" style="background:#EDE9FE">💬</div>
+          <div style="flex:1;min-width:0"><div class="ck2-task">보호자 식사 상태 알림</div><div class="ck2-sub">김민준 보호자 — 식사량 저조 3일차 공유</div></div>
+          <div class="ck2-right"><span class="ck2-time">오늘 중</span><span class="ck2-pri mid">중간</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 303호 이철수 — 요주의 -->
+    <div class="lq ck-pg">
+      <div class="ck-pg-header open" onclick="ckToggle(this)">
+        <div class="ck-pg-av caution">이</div>
+        <div>
+          <div class="ck-pg-name">이철수</div>
+          <div class="ck-pg-room">303호 · 남/75세 · <span style="color:#92400E;font-weight:700">요주의</span></div>
+        </div>
+        <div class="ck-pg-prog">
+          <div class="ck-pg-bar"><div class="ck-pg-fill" style="width:33%"></div></div>
+          <span class="ck-pg-cnt">1 / 3</span>
+        </div>
+        <svg class="ck-pg-chev" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+      </div>
+      <div class="ck-pg-body open">
+        <div class="ck2 done" onclick="ck2Toggle(this)">
+          <div class="ck2-chk"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>
+          <div class="ck2-cat" style="background:#DBEAFE">🩺</div>
+          <div style="flex:1;min-width:0"><div class="ck2-task">아침 바이탈 측정</div><div class="ck2-sub">혈압 142/88 · 약간 높음</div></div>
+          <div class="ck2-right"><span class="ck2-time">08:30 완료</span><span class="ck2-pri mid">중간</span></div>
+        </div>
+        <div class="ck2" onclick="ck2Toggle(this)">
+          <div class="ck2-chk"></div>
+          <div class="ck2-cat" style="background:#FEE2E2">💊</div>
+          <div style="flex:1;min-width:0"><div class="ck2-task">투약 거부 재시도 — 아스피린·리피토</div><div class="ck2-sub">09:00 거부 → 11:00 재시도 예정</div></div>
+          <div class="ck2-right"><span class="ck2-time">11:00 예정</span><span class="ck2-pri high">긴급</span></div>
+        </div>
+        <div class="ck2" onclick="ck2Toggle(this)">
+          <div class="ck2-chk"></div>
+          <div class="ck2-cat" style="background:#F0FDF4">🍽️</div>
+          <div style="flex:1;min-width:0"><div class="ck2-task">점심 식사 섭취율 기록</div><div class="ck2-sub">전체 환자 포함</div></div>
+          <div class="ck2-right"><span class="ck2-time">12:00 예정</span><span class="ck2-pri low">낮음</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 304~309호 — 안정 (collapsed) -->
+    <div class="lq ck-pg">
+      <div class="ck-pg-header" onclick="ckToggle(this)">
+        <div class="ck-pg-av stable">오</div>
+        <div>
+          <div class="ck-pg-name">오병석</div>
+          <div class="ck-pg-room">304호 · 남/79세 · 안정</div>
+        </div>
+        <div class="ck-pg-prog">
+          <div class="ck-pg-bar"><div class="ck-pg-fill" style="width:75%"></div></div>
+          <span class="ck-pg-cnt">3 / 4</span>
+        </div>
+        <svg class="ck-pg-chev" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+      </div>
+      <div class="ck-pg-body">
+        <div class="ck2 done" onclick="ck2Toggle(this)">
+          <div class="ck2-chk"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>
+          <div class="ck2-cat" style="background:#DBEAFE">🩺</div>
+          <div style="flex:1;min-width:0"><div class="ck2-task">아침 바이탈 측정</div><div class="ck2-sub">혈압 122/76 정상</div></div>
+          <div class="ck2-right"><span class="ck2-time">08:30 완료</span><span class="ck2-pri low">낮음</span></div>
+        </div>
+        <div class="ck2 done" onclick="ck2Toggle(this)">
+          <div class="ck2-chk"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>
+          <div class="ck2-cat" style="background:#D1FAE5">💊</div>
+          <div style="flex:1;min-width:0"><div class="ck2-task">아침 투약 — 메트포르민</div><div class="ck2-sub">당뇨 약제 투여 완료</div></div>
+          <div class="ck2-right"><span class="ck2-time">06:45 완료</span><span class="ck2-pri low">낮음</span></div>
+        </div>
+        <div class="ck2 done" onclick="ck2Toggle(this)">
+          <div class="ck2-chk"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>
+          <div class="ck2-cat" style="background:#FEF3C7">🍽️</div>
+          <div style="flex:1;min-width:0"><div class="ck2-task">아침 식사 기록</div><div class="ck2-sub">80% 섭취 · 당뇨식 확인</div></div>
+          <div class="ck2-right"><span class="ck2-time">07:30 완료</span><span class="ck2-pri low">낮음</span></div>
+        </div>
+        <div class="ck2" onclick="ck2Toggle(this)">
+          <div class="ck2-chk"></div>
+          <div class="ck2-cat" style="background:#D1FAE5">💊</div>
+          <div style="flex:1;min-width:0"><div class="ck2-task">점심 투약 — 메트포르민</div><div class="ck2-sub">점심 식후 투여</div></div>
+          <div class="ck2-right"><span class="ck2-time">12:00 예정</span><span class="ck2-pri low">낮음</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lq ck-pg">
+      <div class="ck-pg-header" onclick="ckToggle(this)">
+        <div class="ck-pg-av stable">최</div>
+        <div>
+          <div class="ck-pg-name">최미경</div>
+          <div class="ck-pg-room">305호 · 여/84세 · 안정</div>
+        </div>
+        <div class="ck-pg-prog">
+          <div class="ck-pg-bar"><div class="ck-pg-fill" style="width:60%"></div></div>
+          <span class="ck-pg-cnt">3 / 5</span>
+        </div>
+        <svg class="ck-pg-chev" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+      </div>
+      <div class="ck-pg-body">
+        <div class="ck2 done" onclick="ck2Toggle(this)">
+          <div class="ck2-chk"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>
+          <div class="ck2-cat" style="background:#DBEAFE">🩺</div>
+          <div style="flex:1;min-width:0"><div class="ck2-task">아침 바이탈 측정</div><div class="ck2-sub">혈압 118/74 정상</div></div>
+          <div class="ck2-right"><span class="ck2-time">08:30 완료</span><span class="ck2-pri low">낮음</span></div>
+        </div>
+        <div class="ck2 done" onclick="ck2Toggle(this)">
+          <div class="ck2-chk"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>
+          <div class="ck2-cat" style="background:#D1FAE5">💊</div>
+          <div style="flex:1;min-width:0"><div class="ck2-task">아침 투약 — 알렌드로네이트</div><div class="ck2-sub">골다공증약 · 공복 투여 완료</div></div>
+          <div class="ck2-right"><span class="ck2-time">06:30 완료</span><span class="ck2-pri low">낮음</span></div>
+        </div>
+        <div class="ck2 done" onclick="ck2Toggle(this)">
+          <div class="ck2-chk"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>
+          <div class="ck2-cat" style="background:#FEF3C7">🪥</div>
+          <div style="flex:1;min-width:0"><div class="ck2-task">구강 위생 · 세면</div><div class="ck2-sub">완료</div></div>
+          <div class="ck2-right"><span class="ck2-time">08:00 완료</span><span class="ck2-pri low">낮음</span></div>
+        </div>
+        <div class="ck2" onclick="ck2Toggle(this)">
+          <div class="ck2-chk"></div>
+          <div class="ck2-cat" style="background:#EDE9FE">🏃</div>
+          <div style="flex:1;min-width:0"><div class="ck2-task">재활 치료 동행</div><div class="ck2-sub">물리치료실 이동 · 보행 보조</div></div>
+          <div class="ck2-right"><span class="ck2-time">14:00 예정</span><span class="ck2-pri mid">중간</span></div>
+        </div>
+        <div class="ck2" onclick="ck2Toggle(this)">
+          <div class="ck2-chk"></div>
+          <div class="ck2-cat" style="background:#D1FAE5">💊</div>
+          <div style="flex:1;min-width:0"><div class="ck2-task">저녁 투약 — 타이레놀</div><div class="ck2-sub">재활 후 통증 관리</div></div>
+          <div class="ck2-right"><span class="ck2-time">18:00 예정</span><span class="ck2-pri low">낮음</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 306~309 접힌 상태 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div class="lq ck-pg" style="margin-bottom:0">
+        <div class="ck-pg-header" onclick="ckToggle(this)">
+          <div class="ck-pg-av stable">홍</div>
+          <div><div class="ck-pg-name">홍말순</div><div class="ck-pg-room">306호 · 여/88세 · 안정</div></div>
+          <div class="ck-pg-prog">
+            <div class="ck-pg-bar"><div class="ck-pg-fill" style="width:67%"></div></div>
+            <span class="ck-pg-cnt">2 / 3</span>
+          </div>
+          <svg class="ck-pg-chev" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+        </div>
+        <div class="ck-pg-body">
+          <div class="ck2 done" onclick="ck2Toggle(this)">
+            <div class="ck2-chk"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>
+            <div class="ck2-cat" style="background:#DBEAFE">🩺</div>
+            <div style="flex:1"><div class="ck2-task">아침 바이탈</div><div class="ck2-sub">130/80 완료</div></div>
+            <div class="ck2-right"><span class="ck2-time">08:30</span></div>
+          </div>
+          <div class="ck2 done" onclick="ck2Toggle(this)">
+            <div class="ck2-chk"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>
+            <div class="ck2-cat" style="background:#D1FAE5">💊</div>
+            <div style="flex:1"><div class="ck2-task">아침 투약 완료</div><div class="ck2-sub">암로디핀 투여</div></div>
+            <div class="ck2-right"><span class="ck2-time">06:50</span></div>
+          </div>
+          <div class="ck2" onclick="ck2Toggle(this)">
+            <div class="ck2-chk"></div>
+            <div class="ck2-cat" style="background:#EDE9FE">💊</div>
+            <div style="flex:1"><div class="ck2-task">취침 투약 — 졸피뎀</div><div class="ck2-sub">취침 전 투여</div></div>
+            <div class="ck2-right"><span class="ck2-time">21:00</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lq ck-pg" style="margin-bottom:0">
+        <div class="ck-pg-header" onclick="ckToggle(this)">
+          <div class="ck-pg-av stable">강</div>
+          <div><div class="ck-pg-name">강민수</div><div class="ck-pg-room">308호 · 남/71세 · 안정</div></div>
+          <div class="ck-pg-prog">
+            <div class="ck-pg-bar"><div class="ck-pg-fill" style="width:50%"></div></div>
+            <span class="ck-pg-cnt">2 / 4</span>
+          </div>
+          <svg class="ck-pg-chev" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+        </div>
+        <div class="ck-pg-body">
+          <div class="ck2 done" onclick="ck2Toggle(this)">
+            <div class="ck2-chk"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>
+            <div class="ck2-cat" style="background:#DBEAFE">🩺</div>
+            <div style="flex:1"><div class="ck2-task">아침 바이탈 + 혈당</div><div class="ck2-sub">혈당 118mg/dL</div></div>
+            <div class="ck2-right"><span class="ck2-time">08:30</span></div>
+          </div>
+          <div class="ck2 done" onclick="ck2Toggle(this)">
+            <div class="ck2-chk"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>
+            <div class="ck2-cat" style="background:#D1FAE5">💊</div>
+            <div style="flex:1"><div class="ck2-task">아침 투약</div><div class="ck2-sub">메트포르민 완료</div></div>
+            <div class="ck2-right"><span class="ck2-time">06:45</span></div>
+          </div>
+          <div class="ck2" onclick="ck2Toggle(this)">
+            <div class="ck2-chk"></div>
+            <div class="ck2-cat" style="background:#D1FAE5">💊</div>
+            <div style="flex:1"><div class="ck2-task">점심 투약</div><div class="ck2-sub">메트포르민 점심</div></div>
+            <div class="ck2-right"><span class="ck2-time">12:00</span></div>
+          </div>
+          <div class="ck2" onclick="ck2Toggle(this)">
+            <div class="ck2-chk"></div>
+            <div class="ck2-cat" style="background:#FEF9C3">💉</div>
+            <div style="flex:1"><div class="ck2-task">취침 인슐린 주사</div><div class="ck2-sub">글라진 10U 피하주사</div></div>
+            <div class="ck2-right"><span class="ck2-time">21:00</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+  </div><!-- /page-checklist -->
+
+
+  <!-- ═══ Page: 인수인계 ═══ -->
+  <div class="page" id="page-handover">
+  <main class="content">
+    <div class="pg-head">
+      <h1>인수인계</h1>
+      <p>오전 2교대 → 오후 교대 · 2026.04.17 22:00 예정</p>
+    </div>
+    <div class="ho-grid">
+
+      <!-- 환자 목록 -->
+      <div class="lq">
+        <div class="card-head">
+          <div class="card-title"><span class="title-dot"></span>환자 목록</div>
+        </div>
+        <div class="ho-pt-list">
+          <div class="ho-pt-item sel" onclick="hoSelect(this)">
+            <div class="ho-pt-name">301호 박영수 (남/82세)</div>
+            <div class="ho-pt-note">혈압 이상 감지 · 재측정 필요</div>
+          </div>
+          <div class="ho-pt-item" onclick="hoSelect(this)">
+            <div class="ho-pt-name">302호 김순자 (여/78세)</div>
+            <div class="ho-pt-note">식사량 저조 3일 연속</div>
+          </div>
+          <div class="ho-pt-item" onclick="hoSelect(this)">
+            <div class="ho-pt-name">303호 이철수 (남/75세)</div>
+            <div class="ho-pt-note">투약 거부 · 11:00 재시도 예정</div>
+          </div>
+          <div class="ho-pt-item" onclick="hoSelect(this)">
+            <div class="ho-pt-name">304호 오병석 (남/79세)</div>
+            <div class="ho-pt-note">특이사항 없음</div>
+          </div>
+          <div class="ho-pt-item" onclick="hoSelect(this)">
+            <div class="ho-pt-name">305호 최미경 (여/84세)</div>
+            <div class="ho-pt-note">14:00 재활 치료 예정</div>
+          </div>
+          <div class="ho-pt-item" onclick="hoSelect(this)">
+            <div class="ho-pt-name">306호 홍말순 (여/88세)</div>
+            <div class="ho-pt-note">특이사항 없음</div>
+          </div>
+          <div class="ho-pt-item" onclick="hoSelect(this)">
+            <div class="ho-pt-name">307호 이영자 (여/76세)</div>
+            <div class="ho-pt-note">특이사항 없음</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SBAR + 작성 -->
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="lq">
+          <div class="card-head">
+            <div class="card-title"><span class="title-dot"></span>AI SBAR 리포트 <span class="ai-gen">✦ AI 생성</span></div>
+            <span class="card-more">전체 리포트</span>
+          </div>
+          <div class="sbar-inner">
+            <div class="sbar-sec">
+              <div class="sbar-lbl"><span class="sbar-ldot"></span>S — Situation (현황)</div>
+              <div class="sbar-box">301호 <strong>박영수</strong>님, 오전 08:30 바이탈 측정 결과 <strong>혈압 180/110 mmHg</strong>로 고혈압 위기 범위 진입. 현재 10:00 상처 관리(드레싱 교체) 진행 중이며, 혈압약은 아침 투약 완료됨.</div>
+            </div>
+            <div class="sbar-sec">
+              <div class="sbar-lbl"><span class="sbar-ldot"></span>B — Background (배경)</div>
+              <div class="sbar-box">지난 주 <strong>2026.04.11</strong> 유사한 혈압 상승 이후 응급실 내원 이력 있음. 평소 혈압 조절제(암로디핀 5mg) 복용 중. 담당 촉탁의 <strong>김태호 원장</strong>이 혈압약 용량 조정 지시사항 전달 예정.</div>
+            </div>
+            <div class="sbar-sec">
+              <div class="sbar-lbl"><span class="sbar-ldot"></span>A — Assessment (평가)</div>
+              <div class="sbar-box">현재 혈압 수치가 지속될 경우 뇌졸중 또는 심근경색 위험 증가. <strong>12:00 재측정</strong> 시 160/100 이상 유지될 경우 이송 검토 필요. 보호자(박지영) 사전 연락 필요.</div>
+            </div>
+            <div class="sbar-sec">
+              <div class="sbar-lbl"><span class="sbar-ldot"></span>R — Recommendation (권고)</div>
+              <div class="sbar-box">① <strong>12:00 혈압 재측정</strong> 후 결과에 따라 즉시 촉탁의 보고<br>② 보호자 <strong>박지영</strong>님께 현 상태 공유 (전화 또는 앱)<br>③ 다음 교대 간호사에게 최우선 모니터링 환자로 인수인계</div>
+            </div>
+          </div>
+        </div>
+        <div class="lq">
+          <div class="card-head">
+            <div class="card-title"><span class="title-dot"></span>인계 메모 직접 작성</div>
+          </div>
+          <div class="ho-write">
+            <textarea class="ho-textarea" rows="4" placeholder="추가 인계 사항을 자유롭게 입력하세요..."></textarea>
+            <div class="ho-actions">
+              <button class="btn-g" style="flex:1">인수인계 완료 처리</button>
+              <button class="btn-n">임시 저장</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+  </div><!-- /page-handover -->
+
+
+  <!-- ═══ Page: 스케줄 ═══ -->
+  <div class="page" id="page-schedule">
+  <main class="content">
+    <div class="sch-hdr">
+      <div>
+        <div class="pg-head" style="margin-bottom:0"><h1>스케줄</h1></div>
+      </div>
+      <div class="sch-nav">
+        <button class="sch-nav-btn"><svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></button>
+        <span class="sch-period">2026년 4월 13일 — 19일</span>
+        <button class="sch-nav-btn"><svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg></button>
+        <button class="btn-g" style="margin-left:8px">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+          일정 추가
+        </button>
+      </div>
+    </div>
+    <div class="sch-week">
+      <!-- 월 -->
+      <div class="lq sch-day">
+        <div class="sch-day-head"><div class="sch-dow">월</div><div class="sch-date">13</div></div>
+        <div class="sch-events">
+          <div class="sch-ev gray"><div class="sch-ev-t">휴무</div>오전 2교대 OFF</div>
+        </div>
+      </div>
+      <!-- 화 -->
+      <div class="lq sch-day">
+        <div class="sch-day-head"><div class="sch-dow">화</div><div class="sch-date">14</div></div>
+        <div class="sch-events">
+          <div class="sch-ev gray"><div class="sch-ev-t">휴무</div>오전 2교대 OFF</div>
+        </div>
+      </div>
+      <!-- 수 -->
+      <div class="lq sch-day">
+        <div class="sch-day-head"><div class="sch-dow">수</div><div class="sch-date">15</div></div>
+        <div class="sch-events">
+          <div class="sch-ev green"><div class="sch-ev-t">06:00</div>아침 투약</div>
+          <div class="sch-ev green"><div class="sch-ev-t">08:30</div>바이탈 측정</div>
+          <div class="sch-ev blue"><div class="sch-ev-t">14:00</div>재활 동행</div>
+          <div class="sch-ev green"><div class="sch-ev-t">22:00</div>인수인계</div>
+        </div>
+      </div>
+      <!-- 목 (오늘) -->
+      <div class="lq sch-day today">
+        <div class="sch-day-head"><div class="sch-dow">목 · 오늘</div><div class="sch-date">17</div></div>
+        <div class="sch-events">
+          <div class="sch-ev green"><div class="sch-ev-t">06:00</div>아침 투약</div>
+          <div class="sch-ev green"><div class="sch-ev-t">08:30</div>바이탈 측정</div>
+          <div class="sch-ev red"><div class="sch-ev-t">10:00</div>상처 관리 301호</div>
+          <div class="sch-ev green"><div class="sch-ev-t">12:00</div>점심 식사 체크</div>
+          <div class="sch-ev blue"><div class="sch-ev-t">14:00</div>재활 동행 305호</div>
+          <div class="sch-ev green"><div class="sch-ev-t">17:00</div>저녁 투약</div>
+          <div class="sch-ev gray"><div class="sch-ev-t">22:00</div>인수인계</div>
+        </div>
+      </div>
+      <!-- 금 -->
+      <div class="lq sch-day">
+        <div class="sch-day-head"><div class="sch-dow">금</div><div class="sch-date">18</div></div>
+        <div class="sch-events">
+          <div class="sch-ev green"><div class="sch-ev-t">06:00</div>아침 투약</div>
+          <div class="sch-ev green"><div class="sch-ev-t">08:30</div>바이탈 측정</div>
+          <div class="sch-ev blue"><div class="sch-ev-t">10:00</div>보호자 상담</div>
+          <div class="sch-ev green"><div class="sch-ev-t">22:00</div>인수인계</div>
+        </div>
+      </div>
+      <!-- 토 -->
+      <div class="lq sch-day">
+        <div class="sch-day-head"><div class="sch-dow">토</div><div class="sch-date">19</div></div>
+        <div class="sch-events">
+          <div class="sch-ev gray"><div class="sch-ev-t">휴무</div>오전 2교대 OFF</div>
+        </div>
+      </div>
+      <!-- 일 -->
+      <div class="lq sch-day">
+        <div class="sch-day-head"><div class="sch-dow">일</div><div class="sch-date">20</div></div>
+        <div class="sch-events">
+          <div class="sch-empty">일정 없음</div>
+        </div>
+      </div>
+    </div>
+  </main>
+  </div><!-- /page-schedule -->
+
+
+  <!-- ═══ Page: 기록·보고서 ═══ -->
+  <div class="page" id="page-records">
+  <main class="content">
+    <div class="pg-head">
+      <h1>기록·보고서</h1>
+      <p>2026.04.17 · 오전 2교대 작성 기록</p>
+    </div>
+    <div class="rec-stats">
+      <div class="lq s-card">
+        <div class="s-card-head"><span class="s-label">오늘 작성</span><div class="s-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5z" clip-rule="evenodd"/></svg></div></div>
+        <div class="s-value">12</div>
+        <div class="s-sub"><span class="s-dot"></span>건 기록 완료</div>
+      </div>
+      <div class="lq s-card">
+        <div class="s-card-head"><span class="s-label">미작성</span><div class="s-icon alert"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg></div></div>
+        <div class="s-value danger">3</div>
+        <div class="s-sub"><span class="s-dot red"></span>작성 필요</div>
+      </div>
+      <div class="lq s-card">
+        <div class="s-card-head"><span class="s-label">이번 달</span><div class="s-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg></div></div>
+        <div class="s-value">142</div>
+        <div class="s-sub"><span class="s-dot"></span>4월 누적</div>
+      </div>
+      <div class="lq s-card">
+        <div class="s-card-head"><span class="s-label">AI 자동생성</span><div class="s-icon"><svg viewBox="0 0 2526 2526" fill="currentColor"><path d="M2521.32 2506.66C1239.65 2657.48 1239.65 1895.6 1239.65 1279.34L2497.69 0C2518.68 494.198 2522.27 1157.92 1658.86 1262.48C2641.88 1314.25 2521.32 2101.84 2521.32 2506.66Z"/><path d="M4.677 19.335C1286.35-131.481 1286.35 630.399 1286.35 1246.66L28.315 2526C7.322 2031.8 3.73 1368.08 867.143 1263.52C-115.881 1211.75 4.677 424.157 4.677 19.335Z"/></svg></div></div>
+        <div class="s-value">5</div>
+        <div class="s-sub"><span class="s-dot"></span>SBAR 자동 생성</div>
+      </div>
+    </div>
+    <div class="filter-bar">
+      <div class="seg">
+        <button class="seg-btn active" onclick="segClick(this)">전체</button>
+        <button class="seg-btn" onclick="segClick(this)">바이탈</button>
+        <button class="seg-btn" onclick="segClick(this)">투약</button>
+        <button class="seg-btn" onclick="segClick(this)">케어</button>
+        <button class="seg-btn" onclick="segClick(this)">사고보고</button>
+        <button class="seg-btn" onclick="segClick(this)">SBAR</button>
+      </div>
+      <div style="flex:1"></div>
+      <button class="btn-g">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+        새 기록 작성
+      </button>
+    </div>
+    <div class="rec-list">
+      <div class="rec-item">
+        <div class="rec-ic red"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg></div>
+        <div class="rec-body"><div class="rec-title">바이탈 이상 보고 — 301호 박영수</div><div class="rec-desc">혈압 180/110 측정 · 고혈압 위기 기준 초과, 촉탁의 보고 및 12시 재측정 예약</div></div>
+        <div class="rec-right"><div class="rec-time">오늘 08:35</div><span class="rec-badge rb-vital">바이탈</span></div>
+      </div>
+      <div class="rec-item">
+        <div class="rec-ic blue"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/></svg></div>
+        <div class="rec-body"><div class="rec-title">투약 거부 기록 — 303호 이철수</div><div class="rec-desc">09:00 아스피린·리피토 복용 거부, 11:00 재투약 시도 예정, 사유: 본인 거부 의사</div></div>
+        <div class="rec-right"><div class="rec-time">오늘 09:05</div><span class="rec-badge rb-med">투약</span></div>
+      </div>
+      <div class="rec-item">
+        <div class="rec-ic green"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg></div>
+        <div class="rec-body"><div class="rec-title">아침 투약 완료 기록</div><div class="rec-desc">전체 25명 중 23명 완료 · 미투여 2건(이철수·김순자 일부) 사유 기재</div></div>
+        <div class="rec-right"><div class="rec-time">오늘 06:45</div><span class="rec-badge rb-med">투약</span></div>
+      </div>
+      <div class="rec-item">
+        <div class="rec-ic green"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/></svg></div>
+        <div class="rec-body"><div class="rec-title">케어 기록 — 아침 위생 서비스</div><div class="rec-desc">구강 위생, 세면, 기저귀 교환 전체 완료 · 욕창 부위 이상 없음</div></div>
+        <div class="rec-right"><div class="rec-time">오늘 08:00</div><span class="rec-badge rb-care">케어</span></div>
+      </div>
+      <div class="rec-item">
+        <div class="rec-ic purple"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg></div>
+        <div class="rec-body"><div class="rec-title">AI SBAR — 301호 박영수 혈압 이상</div><div class="rec-desc">AI 자동 생성 · S/B/A/R 4단계 인수인계 보고서 작성 완료</div></div>
+        <div class="rec-right"><div class="rec-time">오늘 08:40</div><span class="rec-badge rb-report">SBAR</span></div>
+      </div>
+      <div class="rec-item">
+        <div class="rec-ic"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/></svg></div>
+        <div class="rec-body"><div class="rec-title">바이탈 측정 전체 기록 — 2병동</div><div class="rec-desc">25명 전체 혈압·체온·맥박 측정 완료 · 이상 2건 별도 보고</div></div>
+        <div class="rec-right"><div class="rec-time">오늘 08:30</div><span class="rec-badge rb-vital">바이탈</span></div>
+      </div>
+    </div>
+  </main>
+  </div><!-- /page-records -->
+
+
+  <!-- ═══ Page: 마이페이지 ═══ -->
+  <div class="page" id="page-mypage">
+  <main class="content">
+    <div class="pg-head">
+      <h1>마이페이지</h1>
+      <p>계정 및 알림 설정</p>
+    </div>
+    <div class="mp-grid">
+
+      <!-- 프로필 카드 -->
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="lq">
+          <div class="mp-profile">
+            <div class="mp-av">김</div>
+            <div class="mp-name">김코디</div>
+            <div class="mp-role">간호사 · 햇살요양원 2병동</div>
+            <div class="mp-tags">
+              <span class="mp-tag green">오전 2교대</span>
+              <span class="mp-tag">경력 7년</span>
+              <span class="mp-tag">수간호사</span>
+            </div>
+            <div class="mp-split"></div>
+            <div class="mp-stat-row">
+              <div class="mp-stat"><div class="mp-stat-val">25</div><div class="mp-stat-lbl">담당 환자</div></div>
+              <div class="mp-stat"><div class="mp-stat-val">142</div><div class="mp-stat-lbl">이번 달 기록</div></div>
+              <div class="mp-stat"><div class="mp-stat-val">98%</div><div class="mp-stat-lbl">케어 달성률</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 이번 주 근무 -->
+        <div class="lq">
+          <div class="mp-sec-head"><div class="mp-sec-title">이번 주 근무 스케줄</div></div>
+          <div class="mp-week">
+            <div class="mp-wrow"><span class="mp-wday">월</span><div class="mp-wshift off">휴무</div></div>
+            <div class="mp-wrow"><span class="mp-wday">화</span><div class="mp-wshift off">휴무</div></div>
+            <div class="mp-wrow"><span class="mp-wday">수</span><div class="mp-wshift am">오전 2교대 06:00 — 22:00</div></div>
+            <div class="mp-wrow"><span class="mp-wday today">목</span><div class="mp-wshift am">오전 2교대 06:00 — 22:00 · 오늘</div></div>
+            <div class="mp-wrow"><span class="mp-wday">금</span><div class="mp-wshift am">오전 2교대 06:00 — 22:00</div></div>
+            <div class="mp-wrow"><span class="mp-wday">토</span><div class="mp-wshift off">휴무</div></div>
+            <div class="mp-wrow"><span class="mp-wday">일</span><div class="mp-wshift off">휴무</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 설정 -->
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="lq">
+          <div class="mp-sec-head"><div class="mp-sec-title">기본 정보</div></div>
+          <div class="mp-rows">
+            <div class="mp-row"><div class="mp-row-label"><div class="mp-row-key">이름</div></div><div class="mp-row-val">김코디</div></div>
+            <div class="mp-row"><div class="mp-row-label"><div class="mp-row-key">직종</div></div><div class="mp-row-val">간호사 (RN)</div></div>
+            <div class="mp-row"><div class="mp-row-label"><div class="mp-row-key">소속 기관</div></div><div class="mp-row-val">햇살요양원</div></div>
+            <div class="mp-row"><div class="mp-row-label"><div class="mp-row-key">담당 병동</div></div><div class="mp-row-val">2병동</div></div>
+            <div class="mp-row"><div class="mp-row-label"><div class="mp-row-key">근무 유형</div></div><div class="mp-row-val">오전 2교대</div></div>
+            <div class="mp-row"><div class="mp-row-label"><div class="mp-row-key">이메일</div></div><div class="mp-row-val">kim.codi@haruanbu.kr</div></div>
+          </div>
+        </div>
+
+        <div class="lq">
+          <div class="mp-sec-head"><div class="mp-sec-title">알림 설정</div></div>
+          <div class="mp-rows">
+            <div class="mp-row">
+              <div class="mp-row-label"><div class="mp-row-key">SOS 알림</div><div class="mp-row-sub">환자 긴급 호출 즉시 알림</div></div>
+              <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+            </div>
+            <div class="mp-row">
+              <div class="mp-row-label"><div class="mp-row-key">바이탈 이상 알림</div><div class="mp-row-sub">정상 범위 초과 시 알림</div></div>
+              <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+            </div>
+            <div class="mp-row">
+              <div class="mp-row-label"><div class="mp-row-key">투약 시간 알림</div><div class="mp-row-sub">투약 예정 15분 전 알림</div></div>
+              <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+            </div>
+            <div class="mp-row">
+              <div class="mp-row-label"><div class="mp-row-key">보호자 메시지 알림</div><div class="mp-row-sub">새 메시지 수신 시 알림</div></div>
+              <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+            </div>
+            <div class="mp-row">
+              <div class="mp-row-label"><div class="mp-row-key">AI 요약 알림</div><div class="mp-row-sub">교대 2시간 전 AI SBAR 생성 알림</div></div>
+              <button class="toggle" onclick="this.classList.toggle('on')"></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="lq">
+          <div class="mp-sec-head"><div class="mp-sec-title">앱 설정</div></div>
+          <div class="mp-rows">
+            <div class="mp-row">
+              <div class="mp-row-label"><div class="mp-row-key">집중 모드 자동 활성</div><div class="mp-row-sub">투약·처치 시 자동으로 집중 모드</div></div>
+              <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+            </div>
+            <div class="mp-row">
+              <div class="mp-row-label"><div class="mp-row-key">다크 모드</div><div class="mp-row-sub">야간 화면 설정</div></div>
+              <button class="toggle" onclick="this.classList.toggle('on')"></button>
+            </div>
+            <div class="mp-row">
+              <div class="mp-row-label"><div class="mp-row-key">언어</div></div>
+              <div class="mp-row-val">한국어</div>
+            </div>
+            <div class="mp-row">
+              <div class="mp-row-label"><div class="mp-row-key">앱 버전</div></div>
+              <div class="mp-row-val">v2.4.1</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+  </div><!-- /page-mypage -->
+
+</div><!-- /main-wrapper -->
+
+
+<!-- ════════ COMM PANEL ════════ -->
+<aside class="comm-panel">
+  <div class="cp-header">
+    <div class="cp-header-top">
+      <span class="cp-title">소통 패널</span>
+      <button class="focus-btn" onclick="toggleFocus(this)">집중 모드</button>
+    </div>
+    <div class="cp-tabs">
+      <div class="cp-tab active" onclick="setTab(this)">전체</div>
+      <div class="cp-tab" onclick="setTab(this)">현재 환자</div>
+      <div class="cp-tab" onclick="setTab(this)">AI 요약</div>
+    </div>
+  </div>
+
+  <div class="cp-body">
+
+    <div class="ch-label">보호자 채팅</div>
+
+    <div class="chat-row">
+      <div class="chat-av">김<div class="st-dot online"></div></div>
+      <div class="chat-info">
+        <div class="name-row">
+          <span class="chat-name">김민준 보호자</span>
+          <span class="chat-time">10분 전</span>
+        </div>
+        <div class="chat-pt">302호 김순자님</div>
+        <div class="chat-prev-row">
+          <div class="chat-prev unread">어머니 오늘 식사는 잘 하셨나요?</div>
+          <span class="unread-pill">2</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-row">
+      <div class="chat-av">최<div class="st-dot online"></div></div>
+      <div class="chat-info">
+        <div class="name-row">
+          <span class="chat-name">최영수 보호자</span>
+          <span class="chat-time">30분 전</span>
+        </div>
+        <div class="chat-pt">305호 최미경님</div>
+        <div class="chat-prev-row">
+          <div class="chat-prev unread">재활 치료 결과 어떻게 됐나요?</div>
+          <span class="unread-pill">1</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-row">
+      <div class="chat-av">박<div class="st-dot away"></div></div>
+      <div class="chat-info">
+        <div class="name-row">
+          <span class="chat-name">박지영 보호자</span>
+          <span class="chat-time">2시간 전</span>
+        </div>
+        <div class="chat-pt">301호 박영수님</div>
+        <div class="chat-prev">감사합니다, 확인했어요</div>
+      </div>
+    </div>
+
+    <div class="ch-label">요양보호사 보고</div>
+
+    <div class="chat-row">
+      <div class="chat-av">이<div class="st-dot online"></div></div>
+      <div class="chat-info">
+        <div class="name-row">
+          <span class="chat-name">이수진 요양보호사</span>
+          <span class="chat-time">1시간 전</span>
+        </div>
+        <div class="chat-pt">303호 이철수님</div>
+        <div class="chat-prev-row">
+          <div class="chat-prev unread">환자분이 약 복용을 거부하십니다</div>
+          <span class="unread-pill">1</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-row">
+      <div class="chat-av">정<div class="st-dot online"></div></div>
+      <div class="chat-info">
+        <div class="name-row">
+          <span class="chat-name">정하늘 요양보호사</span>
+          <span class="chat-time">3시간 전</span>
+        </div>
+        <div class="chat-pt">304호 오병석님</div>
+        <div class="chat-prev">아침 식사 80% 섭취 완료했습니다</div>
+      </div>
+    </div>
+
+    <div class="ch-label">촉탁의 채널</div>
+
+    <div class="chat-row">
+      <div class="chat-av">김<div class="st-dot away"></div></div>
+      <div class="chat-info">
+        <div class="name-row">
+          <span class="chat-name">김태호 촉탁의</span>
+          <span class="chat-time">어제</span>
+        </div>
+        <div class="chat-pt">301호 박영수님</div>
+        <div class="chat-prev-row">
+          <div class="chat-prev unread">혈압약 용량 조정 지시사항 확인</div>
+          <span class="unread-pill">1</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Feed -->
+    <div class="ai-feed">
+      <div class="ai-feed-title">
+        <svg width="10" height="10" viewBox="0 0 2526 2526" fill="currentColor">
+          <path d="M2521.32 2506.66C1239.65 2657.48 1239.65 1895.6 1239.65 1279.34L2497.69 0C2518.68 494.198 2522.27 1157.92 1658.86 1262.48C2641.88 1314.25 2521.32 2101.84 2521.32 2506.66Z"/>
+          <path d="M4.677 19.335C1286.35-131.481 1286.35 630.399 1286.35 1246.66L28.315 2526C7.322 2031.8 3.73 1368.08 867.143 1263.52C-115.881 1211.75 4.677 424.157 4.677 19.335Z"/>
+        </svg>
+        AI 요약 피드
+      </div>
+
+      <div class="af-card urgent">
+        <div class="af-text"><strong>박영수님</strong> 혈압 이상 감지 — 즉시 재측정 권장</div>
+      </div>
+
+      <div class="af-card caution">
+        <div class="af-text"><strong>김순자님</strong> 식사량 추이 악화 3일차 — 영양사 상담 필요</div>
+      </div>
+
+      <div class="af-card normal">
+        <div class="af-text">급여제공기록지 <strong>3건</strong> 미작성 — 자동생성 가능</div>
+      </div>
+    </div>
+
+  </div><!-- /cp-body -->
+
+  <div class="cp-input-wrap">
+    <div class="cp-input-box">
+      <input class="cp-input" type="text" placeholder="메시지 입력...">
+      <button class="send-btn">
+        <svg viewBox="0 0 20 20" fill="currentColor">
+          <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</aside>
+
+<script>
+  const PAGE_TITLES = {
+    dashboard: '대시보드',
+    patients:  '환자 관리',
+    emar:      '투약 관리 (eMAR)',
+    checklist: '케어 체크리스트',
+    handover:  '인수인계',
+    schedule:  '스케줄',
+    records:   '기록·보고서',
+    mypage:    '마이페이지',
+  };
+
+  function setActive(el) {
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    el.classList.add('active');
+    const pageId = el.dataset.page;
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + pageId).classList.add('active');
+    document.querySelector('.page-title').textContent = PAGE_TITLES[pageId] || pageId;
+  }
+
+  function toggleFocus(btn) {
+    btn.classList.toggle('on');
+    btn.textContent = btn.classList.contains('on') ? '집중 모드 ON' : '집중 모드';
+  }
+
+  function setTab(el) {
+    document.querySelectorAll('.cp-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function segClick(el) {
+    const group = el.closest('.seg');
+    group.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function hoSelect(el) {
+    el.closest('.ho-pt-list').querySelectorAll('.ho-pt-item').forEach(i => i.classList.remove('sel'));
+    el.classList.add('sel');
+  }
+
+  /* ── 환자 관리: 목록 선택 ── */
+  function ptSelect(el) {
+    el.closest('.pt-list-panel').querySelectorAll('.pt-list-item').forEach(i => i.classList.remove('sel'));
+    el.classList.add('sel');
+  }
+
+  /* ── eMAR: 카드 펼치기 ── */
+  function toggleExpand(header) {
+    const expand = header.nextElementSibling;
+    const arrow = header.querySelector('svg:last-child');
+    if (!expand) return;
+    const open = expand.style.display !== 'none';
+    expand.style.display = open ? 'none' : 'flex';
+    expand.style.flexDirection = 'column';
+    if (arrow) arrow.style.transform = open ? '' : 'rotate(180deg)';
+  }
+
+  /* ── 케어 체크리스트: 그룹 토글 ── */
+  function ckToggle(header) {
+    header.classList.toggle('open');
+    const body = header.nextElementSibling;
+    if (body) body.classList.toggle('open');
+  }
+
+  /* ── 케어 체크리스트: 아이템 체크 ── */
+  function ck2Toggle(el) {
+    el.classList.toggle('done');
+  }
+
+  /* ── 케어 체크리스트: 카테고리 탭 ── */
+  function ckCat(btn) {
+    btn.closest('.ck-cat-bar').querySelectorAll('.ck-cat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+</script>
+</body>
+</html>

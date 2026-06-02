@@ -1,0 +1,689 @@
+<!doctype html>
+<html lang="ko" data-role="patient" data-platform="mobile">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#FFF5E8">
+  <title>하루안부 · 가족 페이지 베리어블 3종</title>
+
+  <link rel="icon" type="image/svg+xml" href="../07_디자인/logo/brand-system/01_심볼단독.svg">
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css">
+
+  <script src="../07_디자인/_app-theme.js"></script>
+  <link rel="stylesheet" href="patient.css">
+  <script src="../07_디자인/_iconify-icon.min.js"></script>
+
+  <style>
+    body { overflow-y: auto; }
+    .compare-wrap {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 32px 28px 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 56px;
+    }
+    .compare-head h1 {
+      font: 700 32px/1.2 var(--font-family-base);
+      letter-spacing: -0.5px;
+    }
+    .compare-head p {
+      font: 500 17px/1.5 var(--font-family-base);
+      color: var(--color-text-secondary);
+      margin-top: 6px;
+    }
+    .variant-block { display: flex; flex-direction: column; gap: 18px; }
+    .variant-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: var(--brand-orange-100);
+      color: var(--brand-orange-700);
+      font: 700 13px/1 var(--font-family-base);
+      width: fit-content;
+      letter-spacing: 0.3px;
+    }
+    .variant-block h2 {
+      font: 700 24px/1.2 var(--font-family-base);
+      letter-spacing: -0.3px;
+    }
+    .variant-desc {
+      font: 500 15px/1.55 var(--font-family-base);
+      color: var(--color-text-secondary);
+      max-width: 880px;
+      letter-spacing: -0.1px;
+    }
+    .mockup {
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      max-height: 760px;
+      background: #FFF5E8;
+      border-radius: 24px;
+      border: 1px solid rgba(0,0,0,.06);
+      overflow: hidden;
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .pseudo-nav {
+      display: flex; justify-content: center; align-items: center;
+      flex-shrink: 0;
+    }
+    .pseudo-nav .top-nav {
+      background: rgba(255,255,255,0.95);
+      border: 1px solid rgba(255,255,255,0.8);
+      box-shadow: 0 6px 20px rgba(194,98,28,.1);
+      backdrop-filter: blur(12px);
+      padding: 5px;
+      border-radius: 999px;
+      display: inline-flex; gap: 4px;
+    }
+    .pseudo-nav .nav-tab {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 16px; border-radius: 999px;
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      font-size: 16px; font-weight: 700;
+    }
+    .pseudo-nav .nav-tab--active {
+      background: linear-gradient(135deg, var(--brand-orange-400), var(--brand-orange-500));
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(251,146,60,.35);
+    }
+    .notes {
+      padding: 14px 18px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px dashed rgba(0,0,0,.1);
+      font: 500 14px/1.6 var(--font-family-base);
+      color: var(--color-text-secondary);
+      max-width: 880px;
+    }
+    .notes b { color: var(--color-text-primary); font-weight: 700; }
+
+    /* 공통 아바타 */
+    .av {
+      border-radius: 50%;
+      position: relative; flex-shrink: 0;
+      box-shadow: 0 4px 14px rgba(0,0,0,.12);
+      overflow: hidden;
+      background: #FED7AA;
+    }
+    .av img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .av-dot {
+      position: absolute; right: 2px; bottom: 2px; z-index: 1;
+      width: 14px; height: 14px; border-radius: 50%;
+      border: 2.5px solid #fff; background: #CBD5E1;
+    }
+    .av-dot--on { background: #22C55E; }
+    .pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border-radius: 999px;
+      background: var(--brand-green-100); color: var(--brand-green-700);
+      font: 700 13px/1 var(--font-family-base);
+    }
+    .pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--brand-green-500); }
+    .pill--off { background: rgba(0,0,0,.06); color: var(--color-text-secondary); }
+    .pill--off .dot { background: var(--color-text-secondary); }
+    .glass {
+      background: rgba(255, 255, 255, 0.82);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      border-radius: 24px;
+      box-shadow: 0 6px 28px rgba(0,0,0,0.07);
+      backdrop-filter: blur(20px);
+    }
+
+    /* ════════════════════════════════════════════════════
+       VARIANT A — 3카드 그리드 + 하단 "오늘 받은 안부" 피드
+       ════════════════════════════════════════════════════ */
+    .va-main { flex: 1; display: grid; grid-template-rows: auto 1fr auto; gap: 20px; min-height: 0; }
+    .va-heading { text-align: center; }
+    .va-heading h1 { font: 700 28px/1.15 var(--font-family-base); letter-spacing: -0.5px; }
+    .va-heading p { font: 500 16px/1.4 var(--font-family-base); color: var(--color-text-secondary); margin-top: 4px; }
+
+    .va-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .va-tile {
+      padding: 16px 14px 14px;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      text-align: center;
+    }
+    .va-tile .av { width: 72px; height: 72px; }
+    .va-tile .name { font: 700 22px/1 var(--font-family-base); letter-spacing: -0.3px; }
+    .va-tile .rel { font: 600 14px/1 var(--font-family-base); color: var(--color-text-secondary); }
+    .va-cta-row { display: flex; gap: 6px; width: 100%; margin-top: 6px; }
+    .va-cta {
+      flex: 1;
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      height: 44px; border-radius: 12px;
+      background: linear-gradient(135deg, var(--brand-orange-400), var(--brand-orange-500));
+      color: #fff;
+      font: 700 14px/1 var(--font-family-base);
+      box-shadow: 0 3px 10px rgba(251,146,60,.3);
+    }
+    .va-cta--ghost {
+      background: rgba(255,255,255,.7); color: var(--color-text-primary);
+      border: 1.5px solid rgba(0,0,0,.06); box-shadow: none;
+    }
+    .va-cta--ghost iconify-icon { color: var(--brand-orange-600); }
+    .va-tile--off .va-cta {
+      background: rgba(0,0,0,.06); color: var(--color-text-secondary); box-shadow: none;
+    }
+
+    .va-feed { padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+    .va-feed-head {
+      display: flex; align-items: center; justify-content: space-between;
+      font: 700 16px/1 var(--font-family-base);
+    }
+    .va-feed-head iconify-icon { color: var(--brand-orange-500); margin-right: 6px; }
+    .va-feed-more { font-size: 13px; font-weight: 700; color: var(--brand-orange-700); }
+    .va-feed-list { display: flex; gap: 12px; overflow: hidden; }
+    .va-feed-item {
+      flex: 1;
+      display: flex; gap: 10px; align-items: center;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.6);
+      border: 1px solid rgba(0,0,0,.05);
+    }
+    .va-feed-item .av { width: 36px; height: 36px; }
+    .va-feed-text {
+      flex: 1; min-width: 0;
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .va-feed-line { font: 700 13.5px/1.2 var(--font-family-base); }
+    .va-feed-time { font: 500 11.5px/1 var(--font-family-base); color: var(--color-text-secondary); }
+    .va-feed-icon iconify-icon {
+      font-size: 18px; color: var(--brand-orange-500);
+    }
+
+
+    /* ════════════════════════════════════════════════════
+       VARIANT B — 2열 (가족 리스트 좌 / 받은 안부 타임라인 우)
+       ════════════════════════════════════════════════════ */
+    .vb-main { flex: 1; display: grid; grid-template-rows: auto 1fr; gap: 16px; min-height: 0; }
+    .vb-heading h1 { font: 700 26px/1.15 var(--font-family-base); letter-spacing: -0.5px; }
+    .vb-heading p { font: 500 15px/1.4 var(--font-family-base); color: var(--color-text-secondary); margin-top: 3px; }
+
+    .vb-cols { display: grid; grid-template-columns: 5fr 4fr; gap: 16px; min-height: 0; }
+    .vb-side { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; min-height: 0; overflow: hidden; }
+    .vb-section-title {
+      font: 700 14px/1 var(--font-family-base);
+      color: var(--color-text-secondary);
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      padding: 4px 6px 8px;
+    }
+
+    .vb-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px; border-radius: 16px;
+      background: rgba(255,255,255,.7);
+      border: 1.5px solid rgba(0,0,0,.06);
+    }
+    .vb-row .av { width: 56px; height: 56px; }
+    .vb-row-meta { flex: 1; min-width: 0; }
+    .vb-row-name { font: 700 18px/1.1 var(--font-family-base); letter-spacing: -0.3px; }
+    .vb-row-name .rel {
+      font: 600 13px/1 var(--font-family-base); color: var(--color-text-secondary);
+      margin-left: 8px;
+      padding: 2px 8px; border-radius: 999px; background: rgba(0,0,0,.04);
+    }
+    .vb-row-status { margin-top: 4px; font: 600 13px/1.2 var(--font-family-base); color: var(--brand-green-600); }
+    .vb-row--off .vb-row-status { color: var(--color-text-secondary); }
+    .vb-row-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .vb-icon-btn {
+      width: 48px; height: 48px; border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: var(--brand-orange-50, #FFF7ED);
+      border: 1.5px solid rgba(251,146,60,.22);
+      color: var(--brand-orange-600);
+    }
+    .vb-icon-btn--primary {
+      background: linear-gradient(135deg, var(--brand-orange-400), var(--brand-orange-500));
+      color: #fff; border-color: transparent;
+      box-shadow: 0 4px 12px rgba(251,146,60,.32);
+    }
+    .vb-icon-btn iconify-icon { font-size: 22px; }
+    .vb-row--off .vb-icon-btn--primary { background: #E5E7EB; color: var(--color-text-secondary); box-shadow: none; }
+
+    .vb-timeline { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; min-height: 0; padding-right: 4px; }
+    .vb-tl-item {
+      display: grid; grid-template-columns: 40px 1fr; gap: 10px; align-items: start;
+      padding: 10px 8px; border-radius: 12px;
+    }
+    .vb-tl-item:hover { background: rgba(255,255,255,.5); }
+    .vb-tl-item .av { width: 40px; height: 40px; }
+    .vb-tl-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+    .vb-tl-line { font: 700 14px/1.3 var(--font-family-base); }
+    .vb-tl-line iconify-icon { font-size: 14px; color: var(--brand-orange-500); vertical-align: -1px; margin-right: 4px; }
+    .vb-tl-preview { font: 500 13px/1.4 var(--font-family-base); color: var(--color-text-secondary); }
+    .vb-tl-time { font: 600 12px/1 var(--font-family-base); color: var(--color-text-secondary); }
+
+
+    /* ════════════════════════════════════════════════════
+       VARIANT C — Hero 가족 1명 (가장 최근/즐겨찾기) + 나머지 2명 컴팩트
+       ════════════════════════════════════════════════════ */
+    .vc-main { flex: 1; display: grid; grid-template-rows: auto auto 1fr; gap: 16px; min-height: 0; }
+    .vc-heading h1 { font: 700 26px/1.15 var(--font-family-base); letter-spacing: -0.5px; }
+    .vc-heading p { font: 500 15px/1.4 var(--font-family-base); color: var(--color-text-secondary); margin-top: 3px; }
+
+    /* Hero — 큰 카드, 가로 레이아웃 */
+    .vc-hero {
+      display: grid; grid-template-columns: auto 1fr auto; gap: 22px;
+      align-items: center;
+      padding: 22px 26px;
+      border-radius: 28px;
+      background: linear-gradient(135deg, #FFFFFF, #FFF4E2);
+      border: 1.5px solid rgba(251,146,60,.18);
+      box-shadow: 0 10px 30px rgba(194,98,28,.1);
+    }
+    .vc-hero .av { width: 110px; height: 110px; }
+    .vc-hero-meta { display: flex; flex-direction: column; gap: 8px; }
+    .vc-hero-tag { font: 700 12px/1 var(--font-family-base); color: var(--brand-orange-700); letter-spacing: 0.4px; text-transform: uppercase; }
+    .vc-hero-name { font: 700 30px/1 var(--font-family-base); letter-spacing: -0.5px; display: inline-flex; align-items: baseline; gap: 10px; }
+    .vc-hero-name .rel { font-size: 17px; font-weight: 600; color: var(--color-text-secondary); }
+    .vc-hero-recent { font: 600 15px/1.3 var(--font-family-base); color: var(--color-text-primary); margin-top: 2px; }
+    .vc-hero-recent iconify-icon { color: var(--brand-orange-500); vertical-align: -2px; margin-right: 5px; font-size: 16px; }
+    .vc-hero-recent .time { color: var(--color-text-secondary); font-weight: 500; margin-left: 6px; }
+    .vc-hero-actions { display: flex; flex-direction: column; gap: 8px; }
+    .vc-hero-primary {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 14px 24px;
+      height: 56px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, var(--brand-orange-400), var(--brand-orange-600));
+      color: #fff;
+      font: 700 18px/1 var(--font-family-base);
+      box-shadow: 0 6px 18px rgba(251,146,60,.4);
+      letter-spacing: -0.2px;
+    }
+    .vc-hero-primary iconify-icon { font-size: 22px; }
+    .vc-hero-ghost {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 10px 20px;
+      height: 44px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.7);
+      color: var(--color-text-primary);
+      border: 1.5px solid rgba(0,0,0,.08);
+      font: 700 15px/1 var(--font-family-base);
+    }
+    .vc-hero-ghost iconify-icon { color: var(--brand-orange-600); font-size: 18px; }
+
+    /* 보조 — 나머지 가족 2명을 컴팩트 row */
+    .vc-others {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
+    }
+    .vc-other {
+      display: grid; grid-template-columns: auto 1fr auto; gap: 14px;
+      align-items: center;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.7);
+      border: 1.5px solid rgba(0,0,0,.06);
+    }
+    .vc-other .av { width: 56px; height: 56px; }
+    .vc-other-name { font: 700 19px/1 var(--font-family-base); display: inline-flex; align-items: baseline; gap: 8px; }
+    .vc-other-name .rel { font-size: 13px; font-weight: 600; color: var(--color-text-secondary); }
+    .vc-other-recent { font: 500 13px/1.3 var(--font-family-base); color: var(--color-text-secondary); margin-top: 3px; }
+    .vc-other-cta {
+      width: 52px; height: 52px; border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, var(--brand-orange-400), var(--brand-orange-500));
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(251,146,60,.32);
+    }
+    .vc-other-cta iconify-icon { font-size: 22px; }
+    .vc-other--off .vc-other-cta { background: #E5E7EB; color: var(--color-text-secondary); box-shadow: none; }
+
+    /* 받은 안부 작은 카드 */
+    .vc-recent-card { padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; }
+    .vc-recent-head { display: flex; align-items: center; justify-content: space-between; }
+    .vc-recent-title { font: 700 15px/1 var(--font-family-base); }
+    .vc-recent-title iconify-icon { color: var(--brand-orange-500); margin-right: 6px; }
+    .vc-recent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .vc-recent-item {
+      padding: 10px 12px; border-radius: 12px;
+      background: rgba(255,255,255,.6);
+      border: 1px solid rgba(0,0,0,.05);
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .vc-recent-item-who { font: 700 13px/1 var(--font-family-base); display: inline-flex; align-items: center; gap: 6px; }
+    .vc-recent-item-who iconify-icon { color: var(--brand-orange-500); font-size: 14px; }
+    .vc-recent-item-line { font: 500 12.5px/1.2 var(--font-family-base); color: var(--color-text-secondary); }
+
+
+    @media (max-width: 1100px) {
+      .mockup { aspect-ratio: auto; max-height: none; padding: 16px 18px; }
+      .vb-cols { grid-template-columns: 1fr; }
+      .vc-others { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="compare-wrap">
+
+    <header class="compare-head">
+      <h1>가족 페이지 — 후보 3종</h1>
+      <p>뒤로 버튼 제거 · 빈 공간 의미있게 채우기 · 어르신 친화 (1탭 = 1통화 유지)</p>
+    </header>
+
+    <!-- ═══════════════════════════════ VARIANT A ═══════════════════════════════ -->
+    <section class="variant-block">
+      <span class="variant-tag">VARIANT A</span>
+      <h2>3 카드 그리드 + 하단 "오늘 받은 안부" 피드</h2>
+      <p class="variant-desc">현재 구조 유지하되 카드 콤팩트, 하단 빈 공간을 가족이 보낸 사진·메시지·통화 기록으로 채움. 익숙한 레이아웃 + 정보 풍부.</p>
+
+      <div class="mockup">
+        <nav class="pseudo-nav">
+          <div class="top-nav">
+            <a class="nav-tab" href="#"><iconify-icon icon="fluent:home-24-filled" width="22"></iconify-icon>홈</a>
+            <a class="nav-tab" href="#"><iconify-icon icon="fluent:clipboard-bullet-list-ltr-24-filled" width="22"></iconify-icon>할일</a>
+            <a class="nav-tab nav-tab--active" href="#"><iconify-icon icon="fluent:people-24-filled" width="22"></iconify-icon>가족</a>
+            <a class="nav-tab" href="#"><iconify-icon icon="fluent:hand-wave-24-filled" width="22"></iconify-icon>도움</a>
+          </div>
+        </nav>
+
+        <div class="va-main">
+
+          <div class="va-heading">
+            <h1>누구와 통화하시겠어요?</h1>
+            <p>얼굴 한 번 누르시면 바로 걸립니다.</p>
+          </div>
+
+          <div class="va-grid">
+            <div class="va-tile glass">
+              <div class="av"><img src="https://randomuser.me/api/portraits/women/44.jpg"><span class="av-dot av-dot--on"></span></div>
+              <div class="name">민지</div>
+              <div class="rel">딸</div>
+              <span class="pill"><span class="dot"></span>지금 접속 중</span>
+              <div class="va-cta-row">
+                <a class="va-cta"><iconify-icon icon="fluent:video-24-filled" width="18"></iconify-icon>영상</a>
+                <a class="va-cta va-cta--ghost"><iconify-icon icon="fluent:call-24-filled" width="18"></iconify-icon>음성</a>
+              </div>
+            </div>
+            <div class="va-tile glass">
+              <div class="av"><img src="https://randomuser.me/api/portraits/women/9.jpg"><span class="av-dot av-dot--on"></span></div>
+              <div class="name">서연</div>
+              <div class="rel">손녀</div>
+              <span class="pill"><span class="dot"></span>지금 접속 중</span>
+              <div class="va-cta-row">
+                <a class="va-cta"><iconify-icon icon="fluent:video-24-filled" width="18"></iconify-icon>영상</a>
+                <a class="va-cta va-cta--ghost"><iconify-icon icon="fluent:chat-24-filled" width="18"></iconify-icon>문자</a>
+              </div>
+            </div>
+            <div class="va-tile va-tile--off glass">
+              <div class="av"><img src="https://randomuser.me/api/portraits/men/32.jpg"><span class="av-dot"></span></div>
+              <div class="name">태우</div>
+              <div class="rel">아들</div>
+              <span class="pill pill--off"><span class="dot"></span>자리 비움</span>
+              <div class="va-cta-row">
+                <a class="va-cta"><iconify-icon icon="fluent:mic-24-filled" width="18"></iconify-icon>녹음</a>
+                <a class="va-cta va-cta--ghost"><iconify-icon icon="fluent:chat-24-filled" width="18"></iconify-icon>문자</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="va-feed glass">
+            <div class="va-feed-head">
+              <span><iconify-icon icon="fluent:heart-pulse-24-filled" width="18"></iconify-icon>오늘 받은 안부</span>
+              <a class="va-feed-more">전체 보기 ›</a>
+            </div>
+            <div class="va-feed-list">
+              <div class="va-feed-item">
+                <div class="av"><img src="https://randomuser.me/api/portraits/women/44.jpg"></div>
+                <div class="va-feed-text">
+                  <div class="va-feed-line">민지 — 손녀 사진 1장</div>
+                  <div class="va-feed-time">오전 9:32</div>
+                </div>
+                <div class="va-feed-icon"><iconify-icon icon="fluent:image-24-filled"></iconify-icon></div>
+              </div>
+              <div class="va-feed-item">
+                <div class="av"><img src="https://randomuser.me/api/portraits/women/9.jpg"></div>
+                <div class="va-feed-text">
+                  <div class="va-feed-line">서연 — "할머니 사랑해요"</div>
+                  <div class="va-feed-time">오늘 아침 8:10</div>
+                </div>
+                <div class="va-feed-icon"><iconify-icon icon="fluent:chat-24-filled"></iconify-icon></div>
+              </div>
+              <div class="va-feed-item">
+                <div class="av"><img src="https://randomuser.me/api/portraits/men/32.jpg"></div>
+                <div class="va-feed-text">
+                  <div class="va-feed-line">태우 — 영상통화 18분</div>
+                  <div class="va-feed-time">3일 전</div>
+                </div>
+                <div class="va-feed-icon"><iconify-icon icon="fluent:video-24-filled"></iconify-icon></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="notes">
+        <b>장점</b> 익숙한 구조 유지 + 빈 공간을 의미있는 피드로 채움. 가족 활동을 한눈에. 영상·음성 둘 다 선택 가능.<br>
+        <b>단점</b> 정보량이 많아 살짝 복잡할 수 있음.<br>
+        <b>가장 적합</b> "가족 안부 + 통화" 통합 허브로 가족 페이지를 운영할 때.
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════ VARIANT B ═══════════════════════════════ -->
+    <section class="variant-block">
+      <span class="variant-tag">VARIANT B</span>
+      <h2>2열 — 가족 리스트 좌 / 받은 안부 타임라인 우</h2>
+      <p class="variant-desc">Skype Calls 패턴 응용. 좌측은 통화 가능한 가족 리스트(컴팩트), 우측은 시간순 활동 타임라인. 화면을 좌우로 의미있게 사용.</p>
+
+      <div class="mockup">
+        <nav class="pseudo-nav">
+          <div class="top-nav">
+            <a class="nav-tab" href="#"><iconify-icon icon="fluent:home-24-filled" width="22"></iconify-icon>홈</a>
+            <a class="nav-tab" href="#"><iconify-icon icon="fluent:clipboard-bullet-list-ltr-24-filled" width="22"></iconify-icon>할일</a>
+            <a class="nav-tab nav-tab--active" href="#"><iconify-icon icon="fluent:people-24-filled" width="22"></iconify-icon>가족</a>
+            <a class="nav-tab" href="#"><iconify-icon icon="fluent:hand-wave-24-filled" width="22"></iconify-icon>도움</a>
+          </div>
+        </nav>
+
+        <div class="vb-main">
+          <div class="vb-heading">
+            <h1>가족과 연결</h1>
+            <p>접속 중인 가족에게 바로 영상통화, 또는 받은 안부를 확인하세요.</p>
+          </div>
+
+          <div class="vb-cols">
+
+            <section class="glass vb-side">
+              <div class="vb-section-title">통화 · 메시지</div>
+              <div class="vb-row">
+                <div class="av"><img src="https://randomuser.me/api/portraits/women/44.jpg"><span class="av-dot av-dot--on"></span></div>
+                <div class="vb-row-meta">
+                  <div class="vb-row-name">민지<span class="rel">딸</span></div>
+                  <div class="vb-row-status">지금 접속 중</div>
+                </div>
+                <div class="vb-row-actions">
+                  <span class="vb-icon-btn vb-icon-btn--primary"><iconify-icon icon="fluent:video-24-filled"></iconify-icon></span>
+                  <span class="vb-icon-btn"><iconify-icon icon="fluent:call-24-filled"></iconify-icon></span>
+                </div>
+              </div>
+              <div class="vb-row">
+                <div class="av"><img src="https://randomuser.me/api/portraits/women/9.jpg"><span class="av-dot av-dot--on"></span></div>
+                <div class="vb-row-meta">
+                  <div class="vb-row-name">서연<span class="rel">손녀</span></div>
+                  <div class="vb-row-status">지금 접속 중</div>
+                </div>
+                <div class="vb-row-actions">
+                  <span class="vb-icon-btn vb-icon-btn--primary"><iconify-icon icon="fluent:video-24-filled"></iconify-icon></span>
+                  <span class="vb-icon-btn"><iconify-icon icon="fluent:chat-24-filled"></iconify-icon></span>
+                </div>
+              </div>
+              <div class="vb-row vb-row--off">
+                <div class="av"><img src="https://randomuser.me/api/portraits/men/32.jpg"><span class="av-dot"></span></div>
+                <div class="vb-row-meta">
+                  <div class="vb-row-name">태우<span class="rel">아들</span></div>
+                  <div class="vb-row-status">자리 비움</div>
+                </div>
+                <div class="vb-row-actions">
+                  <span class="vb-icon-btn vb-icon-btn--primary"><iconify-icon icon="fluent:mic-24-filled"></iconify-icon></span>
+                  <span class="vb-icon-btn"><iconify-icon icon="fluent:chat-24-filled"></iconify-icon></span>
+                </div>
+              </div>
+            </section>
+
+            <section class="glass vb-side">
+              <div class="vb-section-title">최근 받은 안부</div>
+              <div class="vb-timeline">
+                <div class="vb-tl-item">
+                  <div class="av"><img src="https://randomuser.me/api/portraits/women/44.jpg"></div>
+                  <div class="vb-tl-body">
+                    <div class="vb-tl-line"><iconify-icon icon="fluent:image-24-filled"></iconify-icon>민지가 사진 1장 보냄</div>
+                    <div class="vb-tl-preview">손녀 졸업식 사진</div>
+                    <div class="vb-tl-time">오전 9:32</div>
+                  </div>
+                </div>
+                <div class="vb-tl-item">
+                  <div class="av"><img src="https://randomuser.me/api/portraits/women/9.jpg"></div>
+                  <div class="vb-tl-body">
+                    <div class="vb-tl-line"><iconify-icon icon="fluent:chat-24-filled"></iconify-icon>서연 메시지</div>
+                    <div class="vb-tl-preview">"할머니 사랑해요"</div>
+                    <div class="vb-tl-time">오전 8:10</div>
+                  </div>
+                </div>
+                <div class="vb-tl-item">
+                  <div class="av"><img src="https://randomuser.me/api/portraits/men/32.jpg"></div>
+                  <div class="vb-tl-body">
+                    <div class="vb-tl-line"><iconify-icon icon="fluent:video-24-filled"></iconify-icon>태우와 영상통화</div>
+                    <div class="vb-tl-preview">18분 · 영상통화 종료</div>
+                    <div class="vb-tl-time">3일 전</div>
+                  </div>
+                </div>
+                <div class="vb-tl-item">
+                  <div class="av"><img src="https://randomuser.me/api/portraits/women/44.jpg"></div>
+                  <div class="vb-tl-body">
+                    <div class="vb-tl-line"><iconify-icon icon="fluent:mic-24-filled"></iconify-icon>민지 음성 메시지</div>
+                    <div class="vb-tl-preview">23초 · "엄마 잘 지내시죠?"</div>
+                    <div class="vb-tl-time">어제 저녁</div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="notes">
+        <b>장점</b> 화면을 좌우 의미있게 분할. 활동 타임라인은 자연스럽게 스크롤. 가족이 "보내준 것"을 비중있게 표시 → 외로움 완화.<br>
+        <b>단점</b> 카드(좌) vs 타임라인(우)의 시선 이동 부담. 어르신에겐 좌우 동시 정보가 살짝 부담될 수 있음.<br>
+        <b>가장 적합</b> 활동량 많은 가족, 정기적 안부 교환이 활발한 환자.
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════ VARIANT C ═══════════════════════════════ -->
+    <section class="variant-block">
+      <span class="variant-tag">VARIANT C</span>
+      <h2>Hero 1명 강조 + 나머지 컴팩트 (Skype "Start a call" 응용)</h2>
+      <p class="variant-desc">가장 최근 연결됐거나 즐겨찾기인 가족 1명을 화면 상단 hero로 크게 강조 (큰 CTA), 나머지는 작은 row로. "가장 부르고 싶은 사람"을 시각적으로 우선.</p>
+
+      <div class="mockup">
+        <nav class="pseudo-nav">
+          <div class="top-nav">
+            <a class="nav-tab" href="#"><iconify-icon icon="fluent:home-24-filled" width="22"></iconify-icon>홈</a>
+            <a class="nav-tab" href="#"><iconify-icon icon="fluent:clipboard-bullet-list-ltr-24-filled" width="22"></iconify-icon>할일</a>
+            <a class="nav-tab nav-tab--active" href="#"><iconify-icon icon="fluent:people-24-filled" width="22"></iconify-icon>가족</a>
+            <a class="nav-tab" href="#"><iconify-icon icon="fluent:hand-wave-24-filled" width="22"></iconify-icon>도움</a>
+          </div>
+        </nav>
+
+        <div class="vc-main">
+
+          <div class="vc-heading">
+            <h1>오늘 누구와 통화할까요?</h1>
+            <p>가장 가까이 있는 가족을 추천해드려요.</p>
+          </div>
+
+          <!-- Hero -->
+          <div class="vc-hero">
+            <div class="av" style="width:110px;height:110px;">
+              <img src="https://randomuser.me/api/portraits/women/44.jpg">
+              <span class="av-dot av-dot--on" style="width:18px;height:18px;border-width:3.5px;right:4px;bottom:4px;"></span>
+            </div>
+            <div class="vc-hero-meta">
+              <div class="vc-hero-tag">⭐ 오늘 추천</div>
+              <div class="vc-hero-name">민지 <span class="rel">딸 · 지금 접속 중</span></div>
+              <div class="vc-hero-recent">
+                <iconify-icon icon="fluent:image-24-filled"></iconify-icon>
+                오늘 아침 손녀 사진을 보냈어요
+                <span class="time">· 9:32</span>
+              </div>
+            </div>
+            <div class="vc-hero-actions">
+              <a class="vc-hero-primary">
+                <iconify-icon icon="fluent:video-24-filled"></iconify-icon>
+                영상통화
+              </a>
+              <a class="vc-hero-ghost">
+                <iconify-icon icon="fluent:call-24-filled"></iconify-icon>
+                목소리만
+              </a>
+            </div>
+          </div>
+
+          <!-- 나머지 2명 -->
+          <div class="vc-others">
+            <div class="vc-other">
+              <div class="av"><img src="https://randomuser.me/api/portraits/women/9.jpg"><span class="av-dot av-dot--on"></span></div>
+              <div>
+                <div class="vc-other-name">서연 <span class="rel">손녀</span></div>
+                <div class="vc-other-recent">"할머니 사랑해요" · 오전 8:10</div>
+              </div>
+              <div class="vc-other-cta"><iconify-icon icon="fluent:video-24-filled"></iconify-icon></div>
+            </div>
+            <div class="vc-other vc-other--off">
+              <div class="av"><img src="https://randomuser.me/api/portraits/men/32.jpg"><span class="av-dot"></span></div>
+              <div>
+                <div class="vc-other-name">태우 <span class="rel">아들</span></div>
+                <div class="vc-other-recent">영상통화 18분 · 3일 전</div>
+              </div>
+              <div class="vc-other-cta"><iconify-icon icon="fluent:mic-24-filled"></iconify-icon></div>
+            </div>
+          </div>
+
+          <!-- 작은 받은 안부 카드 -->
+          <div class="vc-recent-card glass">
+            <div class="vc-recent-head">
+              <span class="vc-recent-title"><iconify-icon icon="fluent:mail-24-filled" width="16"></iconify-icon>이번 주 받은 안부</span>
+              <a class="va-feed-more">모두 보기 ›</a>
+            </div>
+            <div class="vc-recent-grid">
+              <div class="vc-recent-item">
+                <span class="vc-recent-item-who"><iconify-icon icon="fluent:video-24-filled"></iconify-icon>민지</span>
+                <span class="vc-recent-item-line">월 · 음성 메시지 23초</span>
+              </div>
+              <div class="vc-recent-item">
+                <span class="vc-recent-item-who"><iconify-icon icon="fluent:image-24-filled"></iconify-icon>민지</span>
+                <span class="vc-recent-item-line">화 · 손녀 사진 3장</span>
+              </div>
+              <div class="vc-recent-item">
+                <span class="vc-recent-item-who"><iconify-icon icon="fluent:chat-24-filled"></iconify-icon>서연</span>
+                <span class="vc-recent-item-line">수 · 메시지 5개</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="notes">
+        <b>장점</b> "오늘 추천" 한 명을 hero로 강조 → 결정 부담 ↓. 그 사람의 최근 안부도 함께 보임. 시선 흐름 명확(위→아래).<br>
+        <b>단점</b> 추천 로직이 필요(가장 최근 연락? 즐겨찾기?). 가족이 모두 동등하다고 느끼는 환자에겐 어색.<br>
+        <b>가장 적합</b> 매일 한 명과 자주 통화하는 패턴이 명확한 환자. "엄마는 매일 딸에게 전화" 같은 시나리오.
+      </div>
+    </section>
+
+  </div>
+
+</body>
+</html>

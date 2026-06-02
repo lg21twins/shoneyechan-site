@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ko" data-role="medical" data-platform="mobile" class="has-c01-bg">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#DCFCE7">
+  <title>하루안부 · 의료진 · 마이</title>
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css">
+
+  <script src="../07_디자인/_app-theme.js"></script>
+  <link rel="stylesheet" href="./_shared.css?v=20260525p">
+  <!-- 의료진 모바일 ↔ 요양보호사 디자인 시스템 통합 (2026-05-21) -->
+  <link rel="stylesheet" href="../v11_요양보호사앱/caregiver.css">
+  <script src="../07_디자인/_iconify-icon.min.js"></script>
+  <style>
+    /* ============================================================
+       마이페이지 통일 기준 (d-base) — medical · guardian · caregiver 공통
+       구조: bg → app → header → profile-hero(아바타+KPI) → status(GPS/오늘 케어)
+              → sec×N (rows: switch / link / value) → logout → ver
+       ============================================================ */
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+    /* v3.2.11: 시스템 기본 캔버스 토큰(블루그레이) + 역할 그라디언트 */
+    html{height:100%;background:var(--clinical-canvas);font-size:16px;}
+    body{
+      height:100%;color:var(--t1);overflow-x:hidden;
+      font-family:var(--font-family-base);font-size:18px;letter-spacing:-.2px;-webkit-font-smoothing:antialiased;
+      background:transparent;
+    }
+    .bg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background: var(--clinical-bg-image);}
+    .app{
+      max-width:430px;margin:0 auto;min-height:100%;position:relative;
+      padding-bottom:calc(var(--safe-b) + var(--tab-h) + var(--tab-bot) + 40px);
+    }
+
+    /* HEADER (v15 통일 — grid 44·1fr·44 / h-eyebrow + h-name) */
+    .header{padding:calc(var(--safe-t) + 14px) var(--pad) 8px;position:relative;z-index:5;}
+    .top-nav .icon-btn{grid-column:3;justify-self:end;}
+    .top-nav .icon-btn:first-child{grid-column:1;justify-self:start;}
+    .h-eyebrow{font-size:11px;font-weight:600;color:var(--accent-strong);letter-spacing:.4px;text-transform:uppercase;}
+    .h-title{
+      font-size:20px;font-weight:700;color:var(--t1);
+      letter-spacing:-.4px;line-height:1.2;text-align:center;
+    }
+
+    /* PROFILE HERO */
+    .profile-hero{animation:haru-fade-in-up var(--duration-slow,350ms) var(--easing-standard) both;
+      margin:8px var(--pad) 0;padding:24px;
+      background:var(--palette-white);border-radius:24px;
+      box-shadow:var(--shadow-card-floating);
+      position:relative;z-index:1;
+    }
+    .pf-top{display:flex;align-items:center;gap:18px;}
+    .pf-ava{
+      width:68px;height:68px;border-radius:50%;flex-shrink:0;
+      background:var(--accent);
+      color:var(--palette-white);display:inline-flex;align-items:center;justify-content:center;
+      font-size:26px;font-weight:700;letter-spacing:-.7px;
+      box-shadow:0 6px 18px rgba(var(--brand-green-500-rgb), .3);
+      overflow:hidden;
+    }
+    .pf-ava img{width:100%;height:100%;object-fit:cover;object-position:center top;}
+    .pf-meta{flex:1;min-width:0;line-height:1.3;}
+    .pf-name{font-size:22px;font-weight:700;color:var(--t1);letter-spacing:-.5px;}
+    .pf-role{font-size:13px;font-weight:600;color:var(--accent-strong);margin-top:6px;}
+    .pf-org{font-size:12.5px;font-weight:500;color:var(--t3);margin-top:5px;display:flex;align-items:center;gap:5px;}
+    .pf-org iconify-icon{font-size:14px;color:var(--t3);}
+
+    .pf-stats{
+      margin-top:20px;padding-top:20px;border-top:1px solid rgba(0,0,0,.05);
+      display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+    }
+    .pf-stat{text-align:center;line-height:1.15;}
+    .pf-stat-val{
+      font-size:20px;font-weight:700;color:var(--t1);
+      font-variant-numeric:tabular-nums;letter-spacing:-.5px;
+    }
+    .pf-stat-val b{color:var(--accent-strong);}
+    .pf-stat-val .sm{font-size:12px;color:var(--t3);font-weight:600;}
+    .pf-stat-label{font-size:11px;font-weight:500;color:var(--t3);margin-top:6px;}
+
+    /* GPS / STATUS row */
+    .gps{animation:haru-fade-in-up var(--duration-slow,350ms) var(--easing-standard) 80ms both;
+      margin:16px var(--pad) 0;padding:18px 20px;
+      background:var(--palette-white);border-radius:var(--cg-card-radius);
+      display:flex;align-items:center;gap:14px;
+      box-shadow:var(--shadow-card-floating);
+      position:relative;z-index:1;
+    }
+    .gps-pulse{
+      width:42px;height:42px;border-radius:50%;flex-shrink:0;
+      background:var(--accent-soft);color:var(--accent-strong);
+      display:inline-flex;align-items:center;justify-content:center;position:relative;
+    }
+    .gps-pulse::before{
+      content:"";position:absolute;inset:-4px;border-radius:50%;
+      border:2px solid var(--accent);opacity:0;animation: haru-ring 2s ease-out infinite;
+    }
+    .gps-pulse iconify-icon{font-size:20px;}
+    .gps-meta{flex:1;min-width:0;line-height:1.3;}
+    .gps-main{font-size:14px;font-weight:600;color:var(--t1);letter-spacing:-.2px;}
+    .gps-sub{font-size:12px;font-weight:500;color:var(--t3);margin-top:3px;}
+    .gps-out{
+      flex-shrink:0;padding:9px 14px;border-radius:12px;
+      background:var(--danger-soft);color:var(--palette-red-700);
+      font-size:12px;font-weight:600;border:0;cursor:pointer;font-family:inherit;
+    }
+
+    /* SECTION + ROWS */
+    .sec{animation:haru-fade-in-up var(--duration-slow,350ms) var(--easing-standard) 160ms both;margin:32px var(--pad) 0;position:relative;z-index:1;}
+    .sec-ttl{
+      font-size:11px;font-weight:600;color:var(--t3);
+      letter-spacing:.4px;text-transform:uppercase;margin-bottom:10px;padding-left:4px;
+    }
+    .rows{
+      background:var(--palette-white);border-radius:var(--cg-card-radius);overflow:hidden;
+      box-shadow:var(--shadow-card-floating);
+    }
+    .row{
+      padding:16px 18px;display:flex;align-items:center;gap:14px;
+      border-bottom:1px solid rgba(0,0,0,.05);
+      cursor:pointer;text-decoration:none;color:inherit;
+      font-family:inherit;background:transparent;border-left:0;border-right:0;border-top:0;width:100%;text-align:left;
+    }
+    .row:last-child{border-bottom:0;}
+    .row-ico{
+      width:40px;height:40px;border-radius:12px;flex-shrink:0;
+      display:inline-flex;align-items:center;justify-content:center;
+    }
+    .row-ico iconify-icon{font-size:20px;}
+    .row-ico.ok{background:var(--accent-soft);color:var(--accent-strong);}
+    .row-ico.warn{background:var(--warn-soft);color:var(--palette-amber-700);}
+    .row-ico.danger{background:var(--danger-soft);color:var(--palette-red-700);}
+    .row-ico.neutral{background:var(--clinical-surface-muted);color:var(--t2);}
+    .row-meta{flex:1;min-width:0;line-height:1.3;}
+    .row-label{font-size:14.5px;font-weight:600;color:var(--t1);letter-spacing:-.2px;}
+    .row-sub{font-size:12.5px;font-weight:500;color:var(--t3);margin-top:3px;}
+    .row-val{font-size:12.5px;font-weight:500;color:var(--t3);flex-shrink:0;display:flex;align-items:center;gap:5px;}
+    .row-val iconify-icon{font-size:18px;color:var(--t3);}
+    .row-pending{
+      font-size:10.5px;font-weight:700;letter-spacing:.2px;
+      padding:3px 8px;border-radius:999px;
+      background:var(--palette-gray-100);color:var(--palette-gray-700);
+    }
+    .row-badge{
+      font-size:10.5px;font-weight:700;letter-spacing:.2px;
+      padding:3px 8px;border-radius:999px;
+      background:var(--danger);color:var(--palette-white);
+    }
+    .switch{
+      position:relative;width:48px;height:30px;border-radius:999px;
+      background:rgba(0,0,0,.12);cursor:pointer;flex-shrink:0;transition:.2s;border:0;
+    }
+    .switch::after{
+      content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;
+      border-radius:50%;background:var(--palette-white);
+      box-shadow:0 1px 3px rgba(0,0,0,.2);transition:.2s;
+    }
+    .switch.on{background:var(--accent);}
+    .switch.on::after{left:21px;}
+
+    .logout{
+      margin:24px var(--pad) 0;padding:15px;
+      width:calc(100% - 44px);
+      background:var(--palette-white);border:0;border-radius:16px;
+      color:var(--palette-red-600);font-size:13.5px;font-weight:600;
+      cursor:pointer;font-family:inherit;
+      display:flex;align-items:center;justify-content:center;gap:8px;
+      box-shadow:var(--cg-card-shadow);
+      position:relative;z-index:1;
+    }
+    .logout iconify-icon{font-size:18px;}
+    .ver{
+      margin:18px var(--pad) 0;text-align:center;
+      font-size:12px;font-weight:500;color:var(--t3);
+      position:relative;z-index:1;
+    }
+
+    /* TAB BAR · v3.2.5: 세 앱 탭바 위치 통일 — env(safe-bottom) + 12px (d01 기준) */
+    .tab-wrap{
+      position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);
+      left:50%;transform:translateX(-50%);
+      display:flex;align-items:center;gap:10px;
+      width:calc(100% - 32px);max-width:398px;z-index:40;
+    }
+    .tab iconify-icon{font-size:26px;}
+    .tab-label{display:none;}
+    .tab.active{color:var(--accent-strong);}
+    .tab.active iconify-icon{filter:drop-shadow(0 2px 6px rgba(var(--brand-green-500-rgb), .28));}
+    .sos{
+      position:relative;width:var(--tab-h);height:var(--tab-h);flex-shrink:0;border-radius:50%;
+      background:var(--color-danger);border:0;
+      box-shadow:0 6px 22px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.4);
+      display:inline-flex;align-items:center;justify-content:center;cursor:pointer;text-decoration:none;
+    }
+    .sos iconify-icon{font-size:26px;color:var(--palette-white);}
+
+    .toast{
+      position:fixed;left:50%;bottom:calc(var(--safe-b) + var(--tab-h) + var(--tab-bot) + 18px);
+      transform:translateX(-50%) translateY(20px);
+      background:rgba(28,28,30,.92);color:var(--palette-white);font-size:14px;font-weight:600;
+      padding:11px 20px;border-radius:999px;
+      opacity:0;transition:.25s;pointer-events:none;z-index:300;white-space:nowrap;
+    }
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  </style>
+</head>
+<body>
+  <div class="bg" aria-hidden="true"></div>
+  <div class="ai-orb-bg" aria-hidden="true"><div class="ai-orb"></div></div>
+  <div class="app">
+
+    <header class="header">
+      <div class="top-nav">
+        <span class="h-left" aria-hidden="true"></span>
+        <div class="title-block">
+          <h1 class="h-name">마이</h1>
+        </div>
+        <button class="icon-btn" aria-label="설정"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon></button>
+      </div>
+    </header>
+
+    <section class="profile-hero">
+      <div class="pf-top">
+        <span class="pf-ava">박</span>
+        <div class="pf-meta">
+          <div class="pf-name">박지현</div>
+          <div class="pf-role">간호사 · 7년차</div>
+          <div class="pf-org"><iconify-icon icon="fluent:building-24-filled"></iconify-icon>하늘요양원 · 2층 담당</div>
+        </div>
+      </div>
+      <div class="pf-stats">
+        <div class="pf-stat">
+          <div class="pf-stat-val"><b>15</b></div>
+          <div class="pf-stat-label">담당 환자</div>
+        </div>
+        <div class="pf-stat">
+          <div class="pf-stat-val"><b>8</b><span class="sm">/15</span></div>
+          <div class="pf-stat-label">오늘 회진</div>
+        </div>
+        <div class="pf-stat">
+          <div class="pf-stat-val"><b>7</b></div>
+          <div class="pf-stat-label">적립 메모</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="gps">
+      <span class="gps-pulse"><iconify-icon icon="fluent:location-live-24-filled"></iconify-icon></span>
+      <div class="gps-meta">
+        <div class="gps-main">근무 중 · 시설 내 위치 확인됨</div>
+        <div class="gps-sub">07:00 출근 · 9시간 12분 경과</div>
+      </div>
+      <button class="gps-out" onclick="toast('퇴근 처리 시작');">퇴근</button>
+    </section>
+
+    <section class="sec">
+      <div class="sec-ttl">알림 · 모드</div>
+      <div class="rows">
+        <div class="row">
+          <span class="row-ico ok"><iconify-icon icon="fluent:weather-moon-24-filled"></iconify-icon></span>
+          <div class="row-meta">
+            <div class="row-label">야간 모드</div>
+            <div class="row-sub">21:00–07:00 알림 민감도 ↑</div>
+          </div>
+          <button class="switch" onclick="this.classList.toggle('on');toast('야간 모드 '+(this.classList.contains('on')?'ON':'OFF'));"></button>
+        </div>
+        <div class="row">
+          <span class="row-ico ok"><iconify-icon icon="fluent:headset-vr-24-filled"></iconify-icon></span>
+          <div class="row-meta">
+            <div class="row-label">집중 모드</div>
+            <div class="row-sub">SOS·위험 알림만 수신</div>
+          </div>
+          <button class="switch" onclick="this.classList.toggle('on');toast('집중 모드 '+(this.classList.contains('on')?'ON':'OFF'));"></button>
+        </div>
+        <div class="row">
+          <span class="row-ico ok"><iconify-icon icon="fluent:phone-vibrate-24-filled"></iconify-icon></span>
+          <div class="row-meta">
+            <div class="row-label">햅틱 강조</div>
+            <div class="row-sub">시끄러운 환경 진동 강화</div>
+          </div>
+          <button class="switch on" onclick="this.classList.toggle('on');"></button>
+        </div>
+        <div class="row">
+          <span class="row-ico warn"><iconify-icon icon="fluent:translate-24-filled"></iconify-icon></span>
+          <div class="row-meta">
+            <div class="row-label">자동 번역</div>
+            <div class="row-sub">중국어·베트남어 ↔ 한국어</div>
+          </div>
+          <button class="switch on" onclick="this.classList.toggle('on');"></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-ttl">빠른 도구</div>
+      <div class="rows">
+        <a class="row" href="#" onclick="event.preventDefault();toast('빠른 처방 라이브러리');">
+          <span class="row-ico ok"><iconify-icon icon="fluent:pill-24-filled"></iconify-icon></span>
+          <div class="row-meta">
+            <div class="row-label">빠른 처방 라이브러리</div>
+            <div class="row-sub">자주 쓰는 처방 5건</div>
+          </div>
+          <span class="row-val">5건<iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></span>
+        </a>
+        <a class="row" href="#" onclick="event.preventDefault();toast('답변 템플릿 편집');">
+          <span class="row-ico ok"><iconify-icon icon="fluent:comment-multiple-24-filled"></iconify-icon></span>
+          <div class="row-meta">
+            <div class="row-label">빠른 답변 템플릿</div>
+            <div class="row-sub">보호자 회신 6종</div>
+          </div>
+          <span class="row-val">6건<iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></span>
+        </a>
+        <a class="row" href="#" onclick="event.preventDefault();toast('Apple Watch');">
+          <span class="row-ico neutral"><iconify-icon icon="fluent:smartwatch-24-filled"></iconify-icon></span>
+          <div class="row-meta">
+            <div class="row-label">Apple Watch 연동</div>
+            <div class="row-sub">SOS 진동 · 1탭 응답</div>
+          </div>
+          <span class="row-val">미연결<iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></span>
+        </a>
+        <a class="row" href="#" onclick="event.preventDefault();toast('잠금화면 위젯');">
+          <span class="row-ico neutral"><iconify-icon icon="fluent:phone-lock-24-filled"></iconify-icon></span>
+          <div class="row-meta">
+            <div class="row-label">잠금화면 위젯</div>
+            <div class="row-sub">다음 환자·미회신·SOS</div>
+          </div>
+          <span class="row-val">활성<iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></span>
+        </a>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-ttl">근무 · 데이터</div>
+      <div class="rows">
+        <a class="row" href="#" onclick="event.preventDefault();toast('근무표');">
+          <span class="row-ico neutral"><iconify-icon icon="fluent:calendar-clock-24-filled"></iconify-icon></span>
+          <div class="row-meta">
+            <div class="row-label">근무표</div>
+            <div class="row-sub">데이 5일 · 야간 1일</div>
+          </div>
+          <span class="row-val"><iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></span>
+        </a>
+        <a class="row" href="#" onclick="event.preventDefault();toast('활동 리포트');">
+          <span class="row-ico neutral"><iconify-icon icon="fluent:document-data-24-filled"></iconify-icon></span>
+          <div class="row-meta">
+            <div class="row-label">활동 리포트</div>
+            <div class="row-sub">이달 회진 142회 · SBAR 21건</div>
+          </div>
+          <span class="row-val"><iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></span>
+        </a>
+        <a class="row" href="#" onclick="event.preventDefault();toast('의료 STT 학습');">
+          <span class="row-ico ok"><iconify-icon icon="fluent:mic-sparkle-24-filled"></iconify-icon></span>
+          <div class="row-meta">
+            <div class="row-label">의료 STT 학습</div>
+            <div class="row-sub">개인 발화 89% 정확도</div>
+          </div>
+          <span class="row-val">학습 중<iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></span>
+        </a>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-ttl">지원</div>
+      <div class="rows">
+        <a class="row" href="#" onclick="event.preventDefault();toast('도움말 · 준비중');">
+          <span class="row-ico neutral"><iconify-icon icon="fluent:question-circle-24-filled"></iconify-icon></span>
+          <div class="row-meta"><div class="row-label">도움말 · FAQ</div></div>
+          <span class="row-val"><span class="row-pending">준비중</span><iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></span>
+        </a>
+        <a class="row" href="#" onclick="event.preventDefault();toast('개인정보 처리방침 · 준비중');">
+          <span class="row-ico neutral"><iconify-icon icon="fluent:shield-task-24-filled"></iconify-icon></span>
+          <div class="row-meta"><div class="row-label">개인정보 처리방침</div></div>
+          <span class="row-val"><span class="row-pending">준비중</span><iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></span>
+        </a>
+        <a class="row" href="../v10_의료진웹/의료진_대시보드_v9.5.html" target="_blank">
+          <span class="row-ico neutral"><iconify-icon icon="fluent:desktop-24-filled"></iconify-icon></span>
+          <div class="row-meta">
+            <div class="row-label">PC 웹 열기</div>
+            <div class="row-sub">데스크탑에서 분석 · 배치 처리</div>
+          </div>
+          <span class="row-val"><iconify-icon icon="fluent:open-24-filled"></iconify-icon></span>
+        </a>
+      </div>
+    </section>
+
+    <button class="logout" onclick="toast('로그아웃');">
+      <iconify-icon icon="fluent:sign-out-24-filled"></iconify-icon>로그아웃
+    </button>
+    <div class="ver">하루안부 · 의료진앱 v15.0</div>
+
+  </div>
+
+  <div class="tab-wrap">
+    <nav class="tabbar" role="tablist">
+      <a href="d01-home.html" class="tab" aria-label="지금"><iconify-icon icon="fluent:home-24-filled"></iconify-icon><span class="tab-label">지금</span></a>
+      <a href="d02-round.html" class="tab" aria-label="회진"><iconify-icon icon="fluent:bed-24-filled"></iconify-icon><span class="tab-label">회진</span></a>
+      <a href="d03-inbox.html" class="tab" aria-label="소통"><iconify-icon icon="fluent:chat-24-filled"></iconify-icon><span class="tab-label">소통</span></a>
+      <a href="d04-handover.html" class="tab" aria-label="인계"><iconify-icon icon="fluent:document-arrow-right-24-filled"></iconify-icon><span class="tab-label">인계</span></a>
+      <a href="d05-mypage.html" class="tab active" aria-current="page" aria-label="마이"><iconify-icon icon="fluent:person-24-filled"></iconify-icon><span class="tab-label">마이</span></a>
+    </nav>
+    <a href="d-sos.html" class="sos" aria-label="SOS"><iconify-icon icon="fluent:warning-24-filled"></iconify-icon></a>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script>
+    function toast(msg){
+      const el=document.getElementById('toast');
+      el.textContent=msg;el.classList.add('show');
+      clearTimeout(window.__t);window.__t=setTimeout(()=>el.classList.remove('show'),1800);
+    }
+  </script>
+  <div class="bottom-scrim" aria-hidden="true"></div>
+</body>
+</html>

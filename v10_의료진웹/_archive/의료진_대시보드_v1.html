@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>하루안부 — 의료진 대시보드</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.3.0/dist/iconify-icon.min.js"></script>
+  <style>
+    *,*::before,*::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --teal-50:  #F0FDFA;
+      --teal-100: #CCFBF1;
+      --teal-500: #14B8A6;
+      --teal-600: #0D9488;
+      --teal-700: #0F766E;
+      --teal-800: #115E59;
+      --red-50:   #FEF2F2;
+      --red-200:  #FECACA;
+      --red-500:  #EF4444;
+      --red-600:  #DC2626;
+      --orange-50:  #FFF7ED;
+      --orange-200: #FED7AA;
+      --orange-500: #F97316;
+      --blue-50:  #EFF6FF;
+      --blue-200: #BFDBFE;
+      --blue-500: #3B82F6;
+      --blue-600: #2563EB;
+      --green-50:  #F0FDF4;
+      --green-500: #22C55E;
+      --green-600: #16A34A;
+      --yellow-50:  #FEFCE8;
+      --yellow-200: #FEF08A;
+      --yellow-400: #FACC15;
+      --slate-50:  #F8FAFC;
+      --slate-100: #F1F5F9;
+      --slate-200: #E2E8F0;
+      --slate-300: #CBD5E1;
+      --slate-400: #94A3B8;
+      --slate-500: #64748B;
+      --slate-600: #475569;
+      --slate-700: #334155;
+      --slate-800: #1E293B;
+      --slate-900: #0F172A;
+      --glass:        rgba(255,255,255,.72);
+      --glass-border: rgba(255,255,255,.62);
+      --glass-shadow: 0 1px 1px rgba(255,255,255,.55) inset, 0 4px 20px rgba(0,0,0,.06);
+      --font: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont,
+              'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    }
+
+    html { height: 100%; }
+
+    body {
+      font-family: var(--font);
+      background: transparent;
+      color: var(--slate-800);
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ══════════════════════ 배경 ══════════════════════ */
+    .bg {
+      position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+      background: linear-gradient(160deg, #cdf7f2 0%, #dff5f2 25%, #ecfaf8 55%, #f5fffe 80%, #f8fffd 100%);
+    }
+
+    /* 하루안부 로고 워터마크 */
+    .bg-logo {
+      position: absolute; width: 55%; height: auto;
+      left: 55%; top: 42%; transform: translate(-50%, -50%);
+      opacity: .04; filter: blur(36px);
+      animation: bgl 10s ease-in-out infinite;
+    }
+
+    @keyframes bgl {
+      0%,100% { transform: translate(-50%,-50%) scale(1); opacity: .03; }
+      50%      { transform: translate(-50%,-50%) scale(1.07) rotate(1deg); opacity: .06; }
+    }
+
+    .bg-g1 {
+      position: absolute; width: 700px; height: 700px;
+      left: 35%; top: -10%; transform: translateX(-50%);
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(13,148,136,.13) 0%, transparent 65%);
+      filter: blur(40px);
+    }
+    .bg-g2 {
+      position: absolute; width: 900px; height: 600px;
+      left: 65%; top: 50%; transform: translate(-50%,-50%);
+      border-radius: 50%;
+      background: radial-gradient(ellipse, rgba(204,251,241,.28) 0%, transparent 65%);
+      filter: blur(50px);
+    }
+    .bg-g3 {
+      position: absolute; width: 600px; height: 600px;
+      right: -5%; bottom: -5%;
+      border-radius: 50%;
+      background: radial-gradient(ellipse, rgba(13,148,136,.07) 0%, transparent 70%);
+      filter: blur(45px);
+    }
+
+    /* ══════════════════════ SIDEBAR ══════════════════════ */
+    .sidebar {
+      position: fixed;
+      left: 0; top: 0; bottom: 0;
+      width: 240px;
+      background: #0B1629;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+    }
+
+    .sidebar-logo {
+      padding: 20px 16px 14px;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+
+    .logo-mark {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, var(--teal-600), var(--teal-800));
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .logo-name  { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+    .logo-sub   { font-size: 10px; color: var(--slate-500); margin-top: 1px; }
+
+    .sidebar-facility {
+      margin: 10px 12px;
+      padding: 9px 12px;
+      background: rgba(255,255,255,.05);
+      border-radius: 10px;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .facility-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--green-500);
+      flex-shrink: 0;
+      animation: pulse-green 2s infinite;
+    }
+
+    @keyframes pulse-green {
+      0%,100% { box-shadow: 0 0 0 0 rgba(34,197,94,.5); }
+      50%      { box-shadow: 0 0 0 4px rgba(34,197,94,0); }
+    }
+
+    .facility-name { font-size: 12px; color: var(--slate-300); font-weight: 500; }
+
+    .nav-section-label {
+      padding: 10px 16px 4px;
+      font-size: 10px;
+      color: var(--slate-600);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      font-weight: 700;
+    }
+
+    .nav-list { list-style: none; padding: 0 8px; flex: 1; overflow-y: auto; }
+    .nav-list::-webkit-scrollbar { width: 0; }
+
+    .nav-item { margin-bottom: 1px; }
+
+    .nav-link {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px;
+      border-radius: 10px;
+      color: var(--slate-400);
+      text-decoration: none;
+      font-size: 13px; font-weight: 500;
+      transition: all 0.14s ease;
+      cursor: pointer;
+    }
+
+    .nav-link:hover { background: rgba(255,255,255,.07); color: #fff; }
+
+    .nav-link.active {
+      background: var(--teal-600);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .nav-icon { width: 17px; height: 17px; flex-shrink: 0; opacity: 0.75; }
+    .nav-link.active .nav-icon,
+    .nav-link:hover  .nav-icon { opacity: 1; }
+
+    .nav-badge {
+      margin-left: auto;
+      background: var(--red-500);
+      color: #fff;
+      font-size: 10px; font-weight: 700;
+      padding: 1px 7px;
+      border-radius: 999px;
+      min-width: 18px; text-align: center;
+    }
+    .nav-badge.yellow { background: var(--yellow-400); color: var(--slate-800); }
+
+    .sidebar-user {
+      padding: 12px;
+      border-top: 1px solid rgba(255,255,255,.07);
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    .user-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--teal-700);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: var(--teal-100);
+      flex-shrink: 0;
+    }
+
+    .user-name { font-size: 13px; font-weight: 700; color: #fff; }
+    .user-role { font-size: 11px; color: var(--slate-500); margin-top: 1px; }
+
+    /* ══════════════════════ MAIN WRAPPER ══════════════════════ */
+    .main-wrapper {
+      margin-left: 240px;
+      margin-right: 320px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative; z-index: 1;
+    }
+
+    /* ── Top Bar ── */
+    .top-bar {
+      background: rgba(255,255,255,.65);
+      backdrop-filter: blur(28px) saturate(160%);
+      -webkit-backdrop-filter: blur(28px) saturate(160%);
+      border-bottom: 0.5px solid rgba(255,255,255,.60);
+      box-shadow: 0 1px 0 rgba(255,255,255,.55) inset, 0 2px 12px rgba(0,0,0,.04);
+      padding: 0 24px;
+      height: 58px;
+      display: flex; align-items: center; gap: 14px;
+      position: sticky; top: 0; z-index: 50;
+    }
+
+    .top-bar-left { flex: 1; display: flex; align-items: center; gap: 12px; }
+
+    .page-title { font-size: 15px; font-weight: 800; color: var(--slate-900); letter-spacing: -.3px; }
+
+    .page-date {
+      font-size: 12px; color: var(--slate-500);
+      background: rgba(255,255,255,.60);
+      border: 0.5px solid rgba(0,0,0,.07);
+      padding: 3px 10px; border-radius: 999px;
+      backdrop-filter: blur(8px);
+    }
+
+    .search-wrap { position: relative; flex: 1; max-width: 260px; }
+
+    .search-icon {
+      position: absolute; left: 10px; top: 50%;
+      transform: translateY(-50%);
+      width: 14px; color: var(--slate-400);
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 7px 12px 7px 30px;
+      background: rgba(255,255,255,.60);
+      border: 0.5px solid rgba(0,0,0,.08);
+      border-radius: 999px;
+      font-size: 13px; color: var(--slate-700);
+      outline: none; font-family: var(--font);
+      transition: all 0.14s;
+      backdrop-filter: blur(8px);
+    }
+
+    .search-input:focus {
+      border-color: var(--teal-500);
+      background: rgba(255,255,255,.85);
+      box-shadow: 0 0 0 3px rgba(13,148,136,.12);
+    }
+
+    .top-actions { display: flex; align-items: center; gap: 6px; }
+
+    .icon-btn {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,.55);
+      border: 0.5px solid rgba(0,0,0,.07);
+      cursor: pointer;
+      color: var(--slate-600); position: relative;
+      transition: all 0.14s;
+      backdrop-filter: blur(8px);
+    }
+
+    .icon-btn:hover { background: rgba(255,255,255,.85); transform: scale(1.04); }
+    .icon-btn svg  { width: 18px; height: 18px; }
+
+    .notif-dot {
+      position: absolute; top: 7px; right: 7px;
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--red-500); border: 2px solid rgba(255,255,255,.8);
+    }
+
+    .sos-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 16px;
+      background: var(--red-500); color: #fff;
+      border: none; border-radius: 999px;
+      font-size: 12px; font-weight: 700;
+      cursor: pointer; font-family: var(--font);
+      animation: sos-pulse 2.5s infinite;
+      transition: transform .12s;
+    }
+
+    .sos-btn:hover { background: var(--red-600); transform: scale(1.03); }
+    .sos-btn:active { transform: scale(.97); }
+
+    @keyframes sos-pulse {
+      0%,100% { box-shadow: 0 0 0 0   rgba(239,68,68,.5); }
+      50%      { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
+    }
+
+    /* ── Content ── */
+    .content { padding: 22px 24px; flex: 1; }
+
+    /* Greeting */
+    .greeting { margin-bottom: 20px; }
+    .greeting h1 { font-size: 20px; font-weight: 800; color: var(--slate-900); letter-spacing: -.4px; }
+    .greeting p  { font-size: 13px; color: var(--slate-500); margin-top: 4px; }
+    .greeting strong { color: var(--slate-800); font-weight: 700; }
+
+    /* ── Summary Cards ── */
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    /* Glass card base */
+    .glass-card {
+      background: var(--glass);
+      backdrop-filter: blur(20px) saturate(160%);
+      -webkit-backdrop-filter: blur(20px) saturate(160%);
+      border: 0.5px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
+      border-radius: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glass-card::before {
+      content: '';
+      position: absolute; inset: 0; border-radius: inherit;
+      background: linear-gradient(148deg, rgba(255,255,255,.42) 0%, transparent 55%);
+      pointer-events: none; z-index: 0;
+    }
+
+    .glass-card > * { position: relative; z-index: 1; }
+
+    .s-card {
+      padding: 16px;
+      transition: transform .15s, box-shadow .15s;
+      cursor: default;
+    }
+
+    .s-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(0,0,0,.09);
+    }
+
+    .s-card-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 11px;
+    }
+
+    .s-label { font-size: 11px; color: var(--slate-500); font-weight: 600; }
+
+    .s-icon {
+      width: 32px; height: 32px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .s-icon svg { width: 15px; height: 15px; }
+    .s-icon.teal   { background: rgba(13,148,136,.12);  color: var(--teal-600); }
+    .s-icon.blue   { background: rgba(59,130,246,.12);  color: var(--blue-500); }
+    .s-icon.orange { background: rgba(249,115,22,.12);  color: var(--orange-500); }
+    .s-icon.red    { background: rgba(239,68,68,.12);   color: var(--red-500); }
+    .s-icon.green  { background: rgba(34,197,94,.12);   color: var(--green-500); }
+
+    .s-value {
+      font-size: 28px; font-weight: 800; color: var(--slate-900);
+      line-height: 1; margin-bottom: 5px;
+      letter-spacing: -1px;
+    }
+    .s-value.danger  { color: var(--red-500); }
+    .s-value.warning { color: var(--orange-500); }
+
+    .s-sub { font-size: 11px; color: var(--slate-400); display: flex; align-items: center; gap: 5px; }
+    .s-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+    .s-bar { height: 4px; background: rgba(0,0,0,.06); border-radius: 2px; margin-top: 10px; overflow: hidden; }
+    .s-fill { height: 100%; border-radius: 2px; }
+
+    /* ── Content Grid ── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+
+    /* Card base */
+    .card {
+      background: var(--glass);
+      backdrop-filter: blur(20px) saturate(160%);
+      -webkit-backdrop-filter: blur(20px) saturate(160%);
+      border: 0.5px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
+      border-radius: 20px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute; inset: 0; border-radius: inherit;
+      background: linear-gradient(148deg, rgba(255,255,255,.38) 0%, transparent 55%);
+      pointer-events: none; z-index: 0;
+    }
+
+    .card > * { position: relative; z-index: 1; }
+
+    .card-head {
+      padding: 14px 16px 12px;
+      border-bottom: 0.5px solid rgba(0,0,0,.06);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .card-title {
+      font-size: 13px; font-weight: 700; color: var(--slate-800);
+      display: flex; align-items: center; gap: 7px;
+    }
+
+    .title-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .title-dot.teal { background: var(--teal-500); }
+    .title-dot.red  { background: var(--red-500); }
+
+    .card-more {
+      font-size: 12px; color: var(--teal-600); cursor: pointer; font-weight: 600;
+      padding: 3px 10px; border-radius: 999px;
+      background: rgba(13,148,136,.08);
+      transition: background .14s;
+    }
+    .card-more:hover { background: rgba(13,148,136,.15); }
+
+    /* ── Timeline ── */
+    .tl-wrap {
+      padding: 12px 16px;
+      max-height: 390px; overflow-y: auto;
+    }
+
+    .tl-wrap::-webkit-scrollbar { width: 4px; }
+    .tl-wrap::-webkit-scrollbar-thumb { background: rgba(0,0,0,.1); border-radius: 2px; }
+
+    .tl-now {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 12px; margin-bottom: 12px;
+      background: rgba(13,148,136,.08);
+      border: 0.5px solid rgba(13,148,136,.20);
+      border-radius: 10px;
+      font-size: 12px; color: var(--teal-700); font-weight: 700;
+    }
+
+    .tl-now-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--teal-500);
+      animation: blink 1.5s infinite;
+    }
+
+    @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:.3; } }
+
+    .tl-row {
+      display: flex; gap: 10px;
+      padding-bottom: 11px;
+      position: relative;
+    }
+
+    .tl-row:not(:last-child)::before {
+      content: '';
+      position: absolute;
+      left: 41px; top: 18px; bottom: 0;
+      width: 1px; background: rgba(0,0,0,.07);
+    }
+
+    .tl-time {
+      width: 44px; font-size: 11px; color: var(--slate-400);
+      padding-top: 2px; text-align: right; flex-shrink: 0;
+    }
+
+    .tl-dot-col { display: flex; flex-direction: column; align-items: center; padding-top: 3px; }
+
+    .tl-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; z-index: 1; }
+    .tl-dot.done     { background: var(--teal-500); }
+    .tl-dot.current  { background: var(--orange-500); box-shadow: 0 0 0 3px rgba(249,115,22,.25); }
+    .tl-dot.upcoming { background: rgba(0,0,0,.12); border: 2px solid rgba(0,0,0,.15); }
+    .tl-dot.alert    { background: var(--red-500); }
+
+    .tl-body { flex: 1; min-width: 0; }
+
+    .tl-name { font-size: 13px; font-weight: 600; color: var(--slate-700); margin-bottom: 1px; }
+    .tl-name.done    { color: var(--slate-400); text-decoration: line-through; }
+    .tl-name.current { color: var(--slate-900); }
+
+    .tl-desc { font-size: 11px; color: var(--slate-400); }
+
+    .tl-tag {
+      display: inline-block; margin-top: 3px;
+      padding: 2px 8px; border-radius: 999px;
+      font-size: 10px; font-weight: 700;
+    }
+
+    .tl-tag.done     { background: rgba(13,148,136,.1);  color: var(--teal-700); }
+    .tl-tag.current  { background: rgba(249,115,22,.1);  color: var(--orange-500); }
+    .tl-tag.upcoming { background: rgba(0,0,0,.06);       color: var(--slate-500); }
+    .tl-tag.alert    { background: rgba(239,68,68,.1);   color: var(--red-600); }
+
+    /* ── Alert Feed ── */
+    .alert-list { padding: 10px 14px; }
+
+    .al-item {
+      display: flex; gap: 10px;
+      padding: 12px 13px;
+      border-radius: 14px; margin-bottom: 8px;
+      border: 0.5px solid transparent;
+      cursor: pointer; transition: transform .12s, filter .12s;
+    }
+
+    .al-item:active { transform: scale(.98); }
+    .al-item.critical { background: rgba(239,68,68,.07);   border-color: rgba(239,68,68,.18); }
+    .al-item.warning  { background: rgba(249,115,22,.07);  border-color: rgba(249,115,22,.18); }
+    .al-item.caution  { background: rgba(250,204,21,.07);  border-color: rgba(250,204,21,.20); }
+    .al-item.info     { background: rgba(59,130,246,.07);  border-color: rgba(59,130,246,.18); }
+
+    .al-icon {
+      width: 32px; height: 32px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .al-icon svg { width: 15px; height: 15px; color: #fff; }
+    .al-icon.critical { background: var(--red-500); }
+    .al-icon.warning  { background: var(--orange-500); }
+    .al-icon.caution  { background: var(--yellow-400); }
+    .al-icon.info     { background: var(--blue-500); }
+
+    .al-body { flex: 1; min-width: 0; }
+    .al-patient { font-size: 12px; font-weight: 700; color: var(--slate-700); margin-bottom: 2px; }
+    .al-msg     { font-size: 12px; color: var(--slate-600); line-height: 1.4; }
+    .al-time    { font-size: 10px; color: var(--slate-400); margin-top: 3px; }
+
+    .al-btn {
+      align-self: center; padding: 5px 12px;
+      border-radius: 999px; font-size: 11px; font-weight: 700;
+      border: none; cursor: pointer; font-family: var(--font);
+      white-space: nowrap; transition: transform .12s, opacity .12s;
+    }
+    .al-btn:active { transform: scale(.96); }
+
+    .al-btn.critical { background: var(--red-500);    color: #fff; }
+    .al-btn.warning  { background: var(--orange-500); color: #fff; }
+    .al-btn.info     { background: var(--blue-500);   color: #fff; }
+
+    /* ── AI Panel ── */
+    .ai-panel {
+      background: var(--glass);
+      backdrop-filter: blur(20px) saturate(160%);
+      -webkit-backdrop-filter: blur(20px) saturate(160%);
+      border: 0.5px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
+      border-radius: 20px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .ai-panel::before {
+      content: '';
+      position: absolute; inset: 0; border-radius: inherit;
+      background: linear-gradient(148deg, rgba(255,255,255,.38) 0%, transparent 55%);
+      pointer-events: none; z-index: 0;
+    }
+
+    .ai-panel > * { position: relative; z-index: 1; }
+
+    .ai-head {
+      padding: 16px 18px;
+      background: linear-gradient(135deg, #0F766E, var(--teal-600));
+      display: flex; align-items: center; gap: 12px;
+    }
+
+    .ai-head-icon {
+      width: 40px; height: 40px; border-radius: 12px;
+      background: rgba(255,255,255,.18);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+    }
+
+    .ai-head h3   { font-size: 14px; font-weight: 800; color: #fff; letter-spacing: -.3px; }
+    .ai-head span { font-size: 11px; color: rgba(255,255,255,.65); margin-top: 2px; display: block; }
+
+    .ai-grid {
+      padding: 14px 16px;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    }
+
+    .ai-card {
+      padding: 14px; border-radius: 14px; border: 0.5px solid transparent;
+      transition: transform .12s;
+    }
+    .ai-card:active { transform: scale(.98); }
+
+    .ai-card.danger  { background: rgba(239,68,68,.07);  border-color: rgba(239,68,68,.18); }
+    .ai-card.warning { background: rgba(249,115,22,.07); border-color: rgba(249,115,22,.18); }
+    .ai-card.info    { background: rgba(59,130,246,.07); border-color: rgba(59,130,246,.18); }
+
+    .ai-tag {
+      font-size: 10px; font-weight: 700;
+      padding: 2px 8px; border-radius: 999px;
+      margin-bottom: 8px; display: inline-block;
+    }
+
+    .ai-card.danger  .ai-tag { background: var(--red-500);    color: #fff; }
+    .ai-card.warning .ai-tag { background: var(--orange-500); color: #fff; }
+    .ai-card.info    .ai-tag { background: var(--blue-500);   color: #fff; }
+
+    .ai-patient { font-size: 12px; font-weight: 700; color: var(--slate-800); margin-bottom: 4px; }
+    .ai-text    { font-size: 12px; color: var(--slate-600); line-height: 1.5; }
+
+    /* ══════════════════════ COMM PANEL ══════════════════════ */
+    .comm-panel {
+      position: fixed;
+      right: 0; top: 0; bottom: 0;
+      width: 320px;
+      background: rgba(255,255,255,.80);
+      backdrop-filter: blur(28px) saturate(160%);
+      -webkit-backdrop-filter: blur(28px) saturate(160%);
+      border-left: 0.5px solid rgba(255,255,255,.55);
+      box-shadow: -2px 0 20px rgba(0,0,0,.04);
+      display: flex; flex-direction: column;
+      z-index: 100;
+    }
+
+    .cp-header {
+      padding: 14px 16px 12px;
+      border-bottom: 0.5px solid rgba(0,0,0,.07);
+    }
+
+    .cp-header-top {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .cp-title { font-size: 14px; font-weight: 800; color: var(--slate-800); letter-spacing: -.3px; }
+
+    .focus-btn {
+      font-size: 11px; padding: 4px 12px;
+      border-radius: 999px; border: 0.5px solid rgba(0,0,0,.1);
+      background: rgba(255,255,255,.60); color: var(--slate-500);
+      cursor: pointer; font-family: var(--font); font-weight: 600;
+      transition: all .14s;
+    }
+
+    .focus-btn.on { background: rgba(239,68,68,.08); border-color: rgba(239,68,68,.25); color: var(--red-600); }
+
+    .cp-tabs {
+      display: flex; gap: 3px;
+      background: rgba(0,0,0,.05); border-radius: 999px; padding: 3px;
+    }
+
+    .cp-tab {
+      flex: 1; padding: 6px; border-radius: 999px;
+      font-size: 12px; font-weight: 500; color: var(--slate-500);
+      text-align: center; cursor: pointer; transition: all .14s;
+    }
+
+    .cp-tab.active {
+      background: #fff; color: var(--slate-800); font-weight: 700;
+      box-shadow: 0 1px 4px rgba(0,0,0,.10);
+    }
+
+    .cp-body { flex: 1; overflow-y: auto; }
+    .cp-body::-webkit-scrollbar { width: 4px; }
+    .cp-body::-webkit-scrollbar-thumb { background: rgba(0,0,0,.1); border-radius: 2px; }
+
+    .ch-label {
+      padding: 10px 16px 3px;
+      font-size: 10px; color: var(--slate-400);
+      font-weight: 700; text-transform: uppercase; letter-spacing: .6px;
+    }
+
+    .chat-row {
+      padding: 9px 14px;
+      display: flex; gap: 10px;
+      cursor: pointer; transition: background .1s;
+    }
+
+    .chat-row:hover { background: rgba(255,255,255,.50); }
+
+    .chat-av {
+      width: 38px; height: 38px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 800; flex-shrink: 0;
+      position: relative;
+    }
+
+    .chat-av.guardian { background: rgba(59,130,246,.12);  color: var(--blue-600); }
+    .chat-av.carer    { background: rgba(34,197,94,.12);   color: var(--green-600); }
+    .chat-av.doctor   { background: rgba(13,148,136,.12);  color: var(--teal-700); }
+
+    .st-dot {
+      position: absolute; bottom: 1px; right: 1px;
+      width: 9px; height: 9px; border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,.8);
+    }
+
+    .st-dot.online { background: var(--green-500); }
+    .st-dot.away   { background: var(--yellow-400); }
+
+    .chat-info { flex: 1; min-width: 0; }
+
+    .name-row {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin-bottom: 1px;
+    }
+
+    .chat-name  { font-size: 13px; font-weight: 700; color: var(--slate-800); }
+    .chat-time  { font-size: 10px; color: var(--slate-400); flex-shrink: 0; }
+    .chat-pt    { font-size: 10px; color: var(--teal-600); font-weight: 600; margin-bottom: 2px; }
+    .chat-prev  { font-size: 12px; color: var(--slate-500); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .chat-prev.unread { color: var(--slate-700); font-weight: 600; }
+
+    .unread-pill {
+      display: inline-block; margin-top: 3px;
+      background: var(--teal-600); color: #fff;
+      font-size: 10px; font-weight: 700;
+      padding: 1px 7px; border-radius: 999px;
+    }
+
+    /* AI Feed in comm */
+    .ai-feed { padding: 12px 14px; border-top: 0.5px solid rgba(0,0,0,.06); }
+    .ai-feed-title {
+      font-size: 10px; color: var(--slate-400); font-weight: 700;
+      text-transform: uppercase; letter-spacing: .6px; margin-bottom: 8px;
+    }
+
+    .af-card {
+      display: flex; gap: 8px;
+      padding: 10px 11px; border-radius: 12px; margin-bottom: 6px;
+      border: 0.5px solid transparent;
+    }
+
+    .af-card.urgent  { background: rgba(239,68,68,.07);  border-color: rgba(239,68,68,.15); }
+    .af-card.caution { background: rgba(249,115,22,.07); border-color: rgba(249,115,22,.15); }
+    .af-card.normal  { background: rgba(59,130,246,.07); border-color: rgba(59,130,246,.15); }
+
+    .af-bar { width: 3px; border-radius: 2px; flex-shrink: 0; }
+    .af-card.urgent  .af-bar { background: var(--red-500); }
+    .af-card.caution .af-bar { background: var(--orange-500); }
+    .af-card.normal  .af-bar { background: var(--blue-500); }
+
+    .af-text { font-size: 12px; color: var(--slate-700); line-height: 1.45; }
+    .af-text strong { font-weight: 700; color: var(--slate-900); }
+
+    /* Input */
+    .cp-input-wrap { padding: 10px 14px; border-top: 0.5px solid rgba(0,0,0,.07); }
+
+    .cp-input-box {
+      display: flex; gap: 8px;
+      background: rgba(0,0,0,.04); border-radius: 999px; padding: 8px 8px 8px 16px;
+      align-items: center;
+      border: 0.5px solid rgba(0,0,0,.06);
+    }
+
+    .cp-input {
+      flex: 1; border: none; background: transparent; outline: none;
+      font-size: 13px; font-family: var(--font); color: var(--slate-700);
+    }
+
+    .cp-input::placeholder { color: var(--slate-400); }
+
+    .send-btn {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: var(--teal-600); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: all .14s;
+    }
+
+    .send-btn:hover { background: var(--teal-700); transform: scale(1.06); }
+    .send-btn:active { transform: scale(.94); }
+    .send-btn svg { width: 13px; height: 13px; color: #fff; }
+  </style>
+</head>
+<body>
+
+<!-- ════════════ BACKGROUND ════════════ -->
+<div class="bg" aria-hidden="true">
+  <!-- 하루안부 로고 워터마크 -->
+  <svg class="bg-logo" viewBox="0 0 2526 2526" fill="none">
+    <path d="M2521.32 2506.66C1239.65 2657.48 1239.65 1895.6 1239.65 1279.34L2497.69 .00017C2518.68 494.198 2522.27 1157.92 1658.86 1262.48 2641.88 1314.25 2521.32 2101.84 2521.32 2506.66Z" fill="#0D9488"/>
+    <path d="M4.677 19.335C1286.35-131.481 1286.35 630.399 1286.35 1246.66L28.315 2526C7.322 2031.8 3.73 1368.08 867.143 1263.52-115.881 1211.75 4.677 424.157 4.677 19.335Z" fill="#0D9488"/>
+  </svg>
+  <div class="bg-g1"></div>
+  <div class="bg-g2"></div>
+  <div class="bg-g3"></div>
+</div>
+
+<!-- ════════════ SIDEBAR ════════════ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-icon">
+        <svg width="22" height="22" viewBox="0 0 2526 2526" fill="white">
+          <path d="M2521.32 2506.66C1239.65 2657.48 1239.65 1895.6 1239.65 1279.34L2497.69 0C2518.68 494.198 2522.27 1157.92 1658.86 1262.48C2641.88 1314.25 2521.32 2101.84 2521.32 2506.66Z"/>
+          <path d="M4.677 19.335C1286.35-131.481 1286.35 630.399 1286.35 1246.66L28.315 2526C7.322 2031.8 3.73 1368.08 867.143 1263.52C-115.881 1211.75 4.677 424.157 4.677 19.335Z"/>
+        </svg>
+      </div>
+      <div>
+        <div class="logo-name">하루안부</div>
+        <div class="logo-sub">오늘 하루도, 안녕하셨습니다</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-facility">
+    <div class="facility-dot"></div>
+    <span class="facility-name">햇살요양원 · 2병동</span>
+  </div>
+
+  <div class="nav-section-label">메인 메뉴</div>
+
+  <ul class="nav-list">
+    <li class="nav-item">
+      <a class="nav-link active" onclick="setActive(this)">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
+        </svg>
+        대시보드
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" onclick="setActive(this)">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+        </svg>
+        환자 관리
+        <span class="nav-badge yellow">3</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" onclick="setActive(this)">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm2 2V5h1v1H5zM3 13a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1v-3zm2 2v-1h1v1H5zM13 3a1 1 0 00-1 1v3a1 1 0 001 1h3a1 1 0 001-1V4a1 1 0 00-1-1h-3zm1 2v1h1V5h-1z" clip-rule="evenodd"/>
+        </svg>
+        투약 관리 (eMAR)
+        <span class="nav-badge">2</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" onclick="setActive(this)">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+          <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
+        </svg>
+        케어 체크리스트
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" onclick="setActive(this)">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/>
+        </svg>
+        인수인계
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" onclick="setActive(this)">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+        </svg>
+        스케줄
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" onclick="setActive(this)">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
+        </svg>
+        기록·보고서
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" onclick="setActive(this)">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd"/>
+        </svg>
+        마이페이지
+      </a>
+    </li>
+  </ul>
+
+  <div class="sidebar-user">
+    <div class="user-avatar">김</div>
+    <div>
+      <div class="user-name">김코디</div>
+      <div class="user-role">간호사 · 오전 2교대</div>
+    </div>
+  </div>
+</aside>
+
+
+<!-- ════════════ MAIN WRAPPER ════════════ -->
+<div class="main-wrapper">
+
+  <!-- Top Bar -->
+  <header class="top-bar">
+    <div class="top-bar-left">
+      <span class="page-title">대시보드</span>
+      <span class="page-date">2026년 4월 16일 목요일</span>
+    </div>
+
+    <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+      </svg>
+      <input class="search-input" type="text" placeholder="환자명, 약품명, 기록 검색...">
+    </div>
+
+    <div class="top-actions">
+      <button class="icon-btn" title="알림">
+        <svg viewBox="0 0 20 20" fill="currentColor">
+          <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
+        </svg>
+        <span class="notif-dot"></span>
+      </button>
+
+      <button class="sos-btn">
+        <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+        </svg>
+        SOS 발신
+      </button>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <main class="content">
+
+    <!-- Greeting -->
+    <div class="greeting">
+      <h1>안녕하세요, 김코디 간호사님 👋</h1>
+      <p>오늘 담당 환자 <strong>25명</strong> 중 <strong>3명</strong>의 상태를 주의 깊게 확인해 주세요. 다음 인수인계까지 <strong>4시간 20분</strong> 남았습니다.</p>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+
+      <!-- 케어 완료율 -->
+      <div class="glass-card s-card">
+        <div class="s-card-head">
+          <span class="s-label">케어 완료율</span>
+          <div class="s-icon teal">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+        </div>
+        <div class="s-value">68%</div>
+        <div class="s-sub">
+          <span class="s-dot" style="background:var(--teal-500)"></span>
+          17 / 25 완료
+        </div>
+        <div class="s-bar"><div class="s-fill" style="width:68%;background:var(--teal-500)"></div></div>
+      </div>
+
+      <!-- 투약 현황 -->
+      <div class="glass-card s-card">
+        <div class="s-card-head">
+          <span class="s-label">투약 현황</span>
+          <div class="s-icon blue">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm2 2V5h1v1H5zM3 13a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1v-3zm2 2v-1h1v1H5zM13 3a1 1 0 00-1 1v3a1 1 0 001 1h3a1 1 0 001-1V4a1 1 0 00-1-1h-3zm1 2v1h1V5h-1z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+        </div>
+        <div class="s-value">12<span style="font-size:14px;color:var(--slate-400);font-weight:500;letter-spacing:0"> / 22</span></div>
+        <div class="s-sub">
+          <span class="s-dot" style="background:var(--red-500)"></span>
+          미투여 2건 · 예정 8건
+        </div>
+        <div class="s-bar"><div class="s-fill" style="width:55%;background:var(--blue-500)"></div></div>
+      </div>
+
+      <!-- 주의 환자 -->
+      <div class="glass-card s-card">
+        <div class="s-card-head">
+          <span class="s-label">주의 환자</span>
+          <div class="s-icon orange">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+        </div>
+        <div class="s-value warning">3명</div>
+        <div class="s-sub">
+          <span class="s-dot" style="background:var(--orange-500)"></span>
+          이상 징후 감지
+        </div>
+      </div>
+
+      <!-- 활성 SOS -->
+      <div class="glass-card s-card">
+        <div class="s-card-head">
+          <span class="s-label">활성 SOS</span>
+          <div class="s-icon red">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+        </div>
+        <div class="s-value danger">1건</div>
+        <div class="s-sub">
+          <span class="s-dot" style="background:var(--red-500)"></span>
+          대응 중
+        </div>
+      </div>
+
+      <!-- 소통 현황 -->
+      <div class="glass-card s-card">
+        <div class="s-card-head">
+          <span class="s-label">소통 현황</span>
+          <div class="s-icon green">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+              <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"/>
+              <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="s-value">7</div>
+        <div class="s-sub">
+          <span class="s-dot" style="background:var(--green-500)"></span>
+          미읽은 메시지
+        </div>
+      </div>
+
+    </div><!-- /summary-cards -->
+
+    <!-- Content Grid -->
+    <div class="grid-2">
+
+      <!-- Timeline -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">
+            <span class="title-dot teal"></span>
+            시간대별 업무 타임라인
+          </div>
+          <span class="card-more">전체보기</span>
+        </div>
+        <div class="tl-wrap">
+
+          <div class="tl-now">
+            <div class="tl-now-dot"></div>
+            현재 10:24 — 상처 관리 진행 중
+          </div>
+
+          <div class="tl-row">
+            <div class="tl-time">06:00</div>
+            <div class="tl-dot-col"><div class="tl-dot done"></div></div>
+            <div class="tl-body">
+              <div class="tl-name done">아침 투약</div>
+              <div class="tl-desc">전체 25명 · 23명 완료</div>
+              <span class="tl-tag done">완료</span>
+            </div>
+          </div>
+
+          <div class="tl-row">
+            <div class="tl-time">07:00</div>
+            <div class="tl-dot-col"><div class="tl-dot done"></div></div>
+            <div class="tl-body">
+              <div class="tl-name done">아침 식사 체크</div>
+              <div class="tl-desc">섭취율 확인 완료</div>
+              <span class="tl-tag done">완료</span>
+            </div>
+          </div>
+
+          <div class="tl-row">
+            <div class="tl-time">08:30</div>
+            <div class="tl-dot-col"><div class="tl-dot alert"></div></div>
+            <div class="tl-body">
+              <div class="tl-name done">바이탈 측정</div>
+              <div class="tl-desc">혈압·체온·맥박</div>
+              <span class="tl-tag alert">이상 2건</span>
+            </div>
+          </div>
+
+          <div class="tl-row">
+            <div class="tl-time">10:00</div>
+            <div class="tl-dot-col"><div class="tl-dot current"></div></div>
+            <div class="tl-body">
+              <div class="tl-name current">상처 관리</div>
+              <div class="tl-desc">301호 박영수님 · 드레싱 교체</div>
+              <span class="tl-tag current">진행중</span>
+            </div>
+          </div>
+
+          <div class="tl-row">
+            <div class="tl-time">11:00</div>
+            <div class="tl-dot-col"><div class="tl-dot upcoming"></div></div>
+            <div class="tl-body">
+              <div class="tl-name">중간 투약 (PRN)</div>
+              <div class="tl-desc">303호 이철수님 · 진통제</div>
+              <span class="tl-tag upcoming">예정</span>
+            </div>
+          </div>
+
+          <div class="tl-row">
+            <div class="tl-time">12:00</div>
+            <div class="tl-dot-col"><div class="tl-dot upcoming"></div></div>
+            <div class="tl-body">
+              <div class="tl-name">점심 식사 체크</div>
+              <div class="tl-desc">전체 환자 섭취율 기록</div>
+              <span class="tl-tag upcoming">예정</span>
+            </div>
+          </div>
+
+          <div class="tl-row">
+            <div class="tl-time">14:00</div>
+            <div class="tl-dot-col"><div class="tl-dot upcoming"></div></div>
+            <div class="tl-body">
+              <div class="tl-name">재활 치료 동행</div>
+              <div class="tl-desc">305호 최미경님 · 물리치료실</div>
+              <span class="tl-tag upcoming">예정</span>
+            </div>
+          </div>
+
+          <div class="tl-row">
+            <div class="tl-time">17:00</div>
+            <div class="tl-dot-col"><div class="tl-dot upcoming"></div></div>
+            <div class="tl-body">
+              <div class="tl-name">저녁 투약</div>
+              <div class="tl-desc">전체 환자</div>
+              <span class="tl-tag upcoming">예정</span>
+            </div>
+          </div>
+
+          <div class="tl-row">
+            <div class="tl-time">22:00</div>
+            <div class="tl-dot-col"><div class="tl-dot upcoming"></div></div>
+            <div class="tl-body">
+              <div class="tl-name">인수인계</div>
+              <div class="tl-desc">AI SBAR 리포트 자동 생성</div>
+              <span class="tl-tag upcoming">예정</span>
+            </div>
+          </div>
+
+        </div>
+      </div><!-- /timeline card -->
+
+      <!-- Alert Feed -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">
+            <span class="title-dot red"></span>
+            주의 환자 알림
+          </div>
+          <span class="card-more">모두 보기</span>
+        </div>
+        <div class="alert-list">
+
+          <div class="al-item critical">
+            <div class="al-icon critical">
+              <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+            <div class="al-body">
+              <div class="al-patient">301호 박영수 (남/82세)</div>
+              <div class="al-msg">혈압 180/110 측정 · 2시간 내 재측정 후 이송 검토 권장</div>
+              <div class="al-time">10분 전 · AI 감지</div>
+            </div>
+            <button class="al-btn critical">대응</button>
+          </div>
+
+          <div class="al-item warning">
+            <div class="al-icon warning">
+              <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+            <div class="al-body">
+              <div class="al-patient">302호 김순자 (여/78세)</div>
+              <div class="al-msg">식사량 3일 연속 30% 미만 · 영양 상담 및 보호자 알림 고려</div>
+              <div class="al-time">어제부터 추이 감지</div>
+            </div>
+            <button class="al-btn warning">확인</button>
+          </div>
+
+          <div class="al-item caution">
+            <div class="al-icon caution">
+              <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+            <div class="al-body">
+              <div class="al-patient">303호 이철수 (남/75세)</div>
+              <div class="al-msg">09:00 투약 미완료 · 본인 거부 의사 표시</div>
+              <div class="al-time">1시간 전 요양보호사 보고</div>
+            </div>
+          </div>
+
+          <div class="al-item info">
+            <div class="al-icon info">
+              <svg viewBox="0 0 20 20" fill="currentColor">
+                <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"/>
+              </svg>
+            </div>
+            <div class="al-body">
+              <div class="al-patient">305호 최미경 보호자</div>
+              <div class="al-msg">"오늘 어머니 재활 치료 결과 어떻게 됐나요?" 미확인 메시지</div>
+              <div class="al-time">30분 전</div>
+            </div>
+            <button class="al-btn info">답장</button>
+          </div>
+
+        </div>
+      </div><!-- /alert card -->
+
+    </div><!-- /grid-2 -->
+
+    <!-- AI Assistant -->
+    <div class="ai-panel">
+      <div class="ai-head">
+        <div class="ai-head-icon">
+          <svg width="22" height="22" viewBox="0 0 2526 2526" fill="white">
+            <path d="M2521.32 2506.66C1239.65 2657.48 1239.65 1895.6 1239.65 1279.34L2497.69 0C2518.68 494.198 2522.27 1157.92 1658.86 1262.48C2641.88 1314.25 2521.32 2101.84 2521.32 2506.66Z"/>
+            <path d="M4.677 19.335C1286.35-131.481 1286.35 630.399 1286.35 1246.66L28.315 2526C7.322 2031.8 3.73 1368.08 867.143 1263.52C-115.881 1211.75 4.677 424.157 4.677 19.335Z"/>
+          </svg>
+        </div>
+        <div>
+          <h3>하루 AI 어시스턴트</h3>
+          <span>오늘 주요 감지 사항 · 2026.04.16 10:24 기준</span>
+        </div>
+      </div>
+      <div class="ai-grid">
+        <div class="ai-card danger">
+          <span class="ai-tag">긴급</span>
+          <div class="ai-patient">박영수님 (301호)</div>
+          <div class="ai-text">혈압 180/110, 2시간 내 재측정 후 이송 검토 권장. 지난주 비슷한 패턴 후 응급실 방문 이력 있음.</div>
+        </div>
+        <div class="ai-card warning">
+          <span class="ai-tag">주의</span>
+          <div class="ai-patient">김순자님 (302호)</div>
+          <div class="ai-text">식사량 3일 연속 30% 미만 감지. 영양 상담 및 보호자 알림 고려 권장.</div>
+        </div>
+        <div class="ai-card info">
+          <span class="ai-tag">정보</span>
+          <div class="ai-patient">기록 관리</div>
+          <div class="ai-text">이번 달 급여제공기록지 미작성 3건. 실사 전 작성 완료 필요. 자동생성 가능.</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div><!-- /main-wrapper -->
+
+
+<!-- ════════════ COMM PANEL ════════════ -->
+<aside class="comm-panel">
+  <div class="cp-header">
+    <div class="cp-header-top">
+      <span class="cp-title">소통 패널</span>
+      <button class="focus-btn" onclick="toggleFocus(this)">집중 모드</button>
+    </div>
+    <div class="cp-tabs">
+      <div class="cp-tab active" onclick="setTab(this)">전체</div>
+      <div class="cp-tab" onclick="setTab(this)">현재 환자</div>
+      <div class="cp-tab" onclick="setTab(this)">AI 요약</div>
+    </div>
+  </div>
+
+  <div class="cp-body">
+
+    <!-- 보호자 -->
+    <div class="ch-label">보호자 채팅</div>
+
+    <div class="chat-row">
+      <div class="chat-av guardian">김<div class="st-dot online"></div></div>
+      <div class="chat-info">
+        <div class="name-row">
+          <span class="chat-name">김민준 보호자</span>
+          <span class="chat-time">10분 전</span>
+        </div>
+        <div class="chat-pt">302호 김순자님</div>
+        <div class="chat-prev unread">어머니 오늘 식사는 잘 하셨나요?</div>
+        <span class="unread-pill">2</span>
+      </div>
+    </div>
+
+    <div class="chat-row">
+      <div class="chat-av guardian">최<div class="st-dot online"></div></div>
+      <div class="chat-info">
+        <div class="name-row">
+          <span class="chat-name">최영수 보호자</span>
+          <span class="chat-time">30분 전</span>
+        </div>
+        <div class="chat-pt">305호 최미경님</div>
+        <div class="chat-prev unread">재활 치료 결과 어떻게 됐나요?</div>
+        <span class="unread-pill">1</span>
+      </div>
+    </div>
+
+    <div class="chat-row">
+      <div class="chat-av guardian">박<div class="st-dot away"></div></div>
+      <div class="chat-info">
+        <div class="name-row">
+          <span class="chat-name">박지영 보호자</span>
+          <span class="chat-time">2시간 전</span>
+        </div>
+        <div class="chat-pt">301호 박영수님</div>
+        <div class="chat-prev">감사합니다, 확인했어요</div>
+      </div>
+    </div>
+
+    <!-- 요양보호사 -->
+    <div class="ch-label">요양보호사 보고</div>
+
+    <div class="chat-row">
+      <div class="chat-av carer">이<div class="st-dot online"></div></div>
+      <div class="chat-info">
+        <div class="name-row">
+          <span class="chat-name">이수진 요양보호사</span>
+          <span class="chat-time">1시간 전</span>
+        </div>
+        <div class="chat-pt">303호 이철수님</div>
+        <div class="chat-prev unread">환자분이 약 복용을 거부하십니다</div>
+        <span class="unread-pill">1</span>
+      </div>
+    </div>
+
+    <div class="chat-row">
+      <div class="chat-av carer">정<div class="st-dot online"></div></div>
+      <div class="chat-info">
+        <div class="name-row">
+          <span class="chat-name">정하늘 요양보호사</span>
+          <span class="chat-time">3시간 전</span>
+        </div>
+        <div class="chat-pt">304호 오병석님</div>
+        <div class="chat-prev">아침 식사 80% 섭취 완료했습니다</div>
+      </div>
+    </div>
+
+    <!-- 촉탁의 -->
+    <div class="ch-label">촉탁의 채널</div>
+
+    <div class="chat-row">
+      <div class="chat-av doctor">김<div class="st-dot away"></div></div>
+      <div class="chat-info">
+        <div class="name-row">
+          <span class="chat-name">김태호 촉탁의</span>
+          <span class="chat-time">어제</span>
+        </div>
+        <div class="chat-pt">301호 박영수님</div>
+        <div class="chat-prev unread">혈압약 용량 조정 지시사항 확인</div>
+        <span class="unread-pill">1</span>
+      </div>
+    </div>
+
+    <!-- AI Feed -->
+    <div class="ai-feed">
+      <div class="ai-feed-title">
+        <svg width="10" height="10" viewBox="0 0 2526 2526" fill="currentColor" style="vertical-align:middle;margin-right:4px">
+          <path d="M2521.32 2506.66C1239.65 2657.48 1239.65 1895.6 1239.65 1279.34L2497.69 0C2518.68 494.198 2522.27 1157.92 1658.86 1262.48C2641.88 1314.25 2521.32 2101.84 2521.32 2506.66Z"/>
+          <path d="M4.677 19.335C1286.35-131.481 1286.35 630.399 1286.35 1246.66L28.315 2526C7.322 2031.8 3.73 1368.08 867.143 1263.52C-115.881 1211.75 4.677 424.157 4.677 19.335Z"/>
+        </svg>
+        AI 요약 피드
+      </div>
+
+      <div class="af-card urgent">
+        <div class="af-bar"></div>
+        <div class="af-text"><strong>박영수님</strong> 혈압 이상 감지 — 즉시 재측정 권장</div>
+      </div>
+
+      <div class="af-card caution">
+        <div class="af-bar"></div>
+        <div class="af-text"><strong>김순자님</strong> 식사량 추이 악화 3일차 — 영양사 상담 필요</div>
+      </div>
+
+      <div class="af-card normal">
+        <div class="af-bar"></div>
+        <div class="af-text">급여제공기록지 <strong>3건</strong> 미작성 — 자동생성 가능</div>
+      </div>
+    </div>
+
+  </div><!-- /cp-body -->
+
+  <!-- Input -->
+  <div class="cp-input-wrap">
+    <div class="cp-input-box">
+      <input class="cp-input" type="text" placeholder="메시지 입력...">
+      <button class="send-btn">
+        <svg viewBox="0 0 20 20" fill="currentColor">
+          <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</aside>
+
+<script>
+  function setActive(el) {
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function toggleFocus(btn) {
+    btn.classList.toggle('on');
+    btn.textContent = btn.classList.contains('on') ? '집중 모드 ON' : '집중 모드';
+  }
+
+  function setTab(el) {
+    document.querySelectorAll('.cp-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+  }
+</script>
+</body>
+</html>

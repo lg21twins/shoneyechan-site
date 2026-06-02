@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ko" data-role="medical" data-platform="mobile">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>탭바 아이콘 통일 — 회진 · SBAR 후보 각 5종</title>
+<link rel="stylesheet" href="../07_디자인/tokens/tokens.css">
+<script src="../07_디자인/_app-theme.js"></script>
+<link rel="stylesheet" href="./_shared.css?v=20260525p">
+<script src="../07_디자인/_iconify-icon.min.js"></script>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:var(--color-bg-canvas);color:var(--t1);font-family:var(--font-family-base);letter-spacing:-.2px;-webkit-font-smoothing:antialiased;}
+  body{padding:40px 24px 80px;}
+  .pv-wrap{max-width:1240px;margin:0 auto;}
+  .pv-h{font-size:13px;font-weight:700;color:var(--t3);letter-spacing:.4px;text-transform:uppercase;margin-bottom:6px;}
+  .pv-title{font-size:22px;font-weight:800;color:var(--t1);margin-bottom:6px;letter-spacing:-.4px;}
+  .pv-sub{font-size:14px;color:var(--t2);margin-bottom:28px;line-height:1.5;max-width:780px;}
+  .section{margin-top:40px;}
+  .sec-title{font-size:16px;font-weight:800;color:var(--t1);margin-bottom:12px;letter-spacing:-.3px;}
+  .sec-note{font-size:13px;color:var(--t2);margin-bottom:18px;line-height:1.55;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;}
+
+  /* 미니 탭바 미리보기 */
+  .preview-card{
+    background:#fff;border-radius:18px;padding:18px 18px 14px;
+    box-shadow:0 2px 12px rgba(0,0,0,.04);
+  }
+  .preview-label{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:14px;
+  }
+  .pl-name{font-size:12px;font-weight:800;color:var(--t1);letter-spacing:-.2px;}
+  .pl-code{font-size:10.5px;font-weight:600;color:var(--t3);font-family:ui-monospace,SF Mono,Menlo,monospace;}
+
+  .tabbar-mini{
+    height:62px;
+    background:rgba(255,255,255,.85);
+    backdrop-filter:blur(20px) saturate(140%);
+    border:1px solid rgba(255,255,255,.55);
+    border-radius:999px;
+    box-shadow:0 6px 22px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.4);
+    display:flex;align-items:stretch;justify-content:space-around;padding:0 10px;
+  }
+  .tab-mini{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-decoration:none;color:rgba(28,28,30,.45);
+  }
+  .tab-mini iconify-icon{font-size:26px;}
+  .tab-mini .tab-svg{display:block;}
+  .tab-mini.active{color:var(--accent-strong);}
+  .tab-mini.active iconify-icon{filter:drop-shadow(0 2px 6px rgba(34,197,94,.28));}
+  .candidate-hl{background:#FEF3C7;border-radius:999px;padding:6px 10px;margin:-6px -2px;}
+
+  .note-row{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:10px;font-size:11px;color:var(--t3);
+  }
+
+  .legend{
+    display:flex;gap:14px;flex-wrap:wrap;
+    background:#fff;padding:14px 18px;border-radius:14px;margin-bottom:24px;
+    box-shadow:0 2px 8px rgba(0,0,0,.03);
+  }
+  .legend-item{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--t2);}
+  .legend-item iconify-icon{font-size:20px;}
+  .legend-cur{background:#FEF3C7;padding:2px 6px;border-radius:6px;font-size:11px;font-weight:700;color:#B45309;}
+</style>
+</head>
+<body>
+<div class="pv-wrap">
+  <div class="pv-h">의료진앱 탭바 · 아이콘 통일</div>
+  <div class="pv-title">회진 + 인계(SBAR) 후보 각 5종</div>
+  <div class="pv-sub">현재 stethoscope(회진)와 arrow-swap(인계)는 라인 톤이 강해 home/chat bubble의 충만한 실루엣과 충돌. 다른 두 탭(지금·소통)과 시각적 무게가 맞는 fill 형태로 5개씩 후보 시각화.</div>
+
+  <div class="legend">
+    <div class="legend-item"><iconify-icon icon="fluent:home-24-filled"></iconify-icon>지금 (home-24-filled)</div>
+    <div class="legend-item"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.81 2 10.5c0 2.65 1.56 5.02 4 6.56V22l4.34-2.41c.54.07 1.1.11 1.66.11 5.52 0 10-3.81 10-8.5S17.52 2 12 2z"/></svg>소통 (chat-bubble)</div>
+    <div class="legend-item"><span class="legend-cur">교체 대상</span>회진 · 인계</div>
+  </div>
+
+  <!-- ============================= -->
+  <!-- 회진 (Medical Rounds) 후보 5종 -->
+  <!-- ============================= -->
+  <div class="section">
+    <div class="sec-title">A · 회진 아이콘 후보 5종</div>
+    <div class="sec-note">현재: <code>fluent:stethoscope-24-filled</code> — 청진기 튜브가 본질적으로 선이라 실루엣 부피가 작음. 후보는 침대·차트·심박 등 더 묵직한 매스를 가진 fill 아이콘.</div>
+
+    <div class="grid">
+      <!-- A1 -->
+      <div class="preview-card">
+        <div class="preview-label">
+          <span class="pl-name">A1 · 침상 라운드</span>
+          <span class="pl-code">fluent:bed-24-filled</span>
+        </div>
+        <nav class="tabbar-mini">
+          <a class="tab-mini"><iconify-icon icon="fluent:home-24-filled"></iconify-icon></a>
+          <a class="tab-mini active candidate-hl"><iconify-icon icon="fluent:bed-24-filled"></iconify-icon></a>
+          <a class="tab-mini"><svg class="tab-svg" width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.81 2 10.5c0 2.65 1.56 5.02 4 6.56V22l4.34-2.41c.54.07 1.1.11 1.66.11 5.52 0 10-3.81 10-8.5S17.52 2 12 2z"/></svg></a>
+          <a class="tab-mini"><iconify-icon icon="fluent:arrow-swap-24-filled"></iconify-icon></a>
+        </nav>
+        <div class="note-row"><span>침상 = 환자 회진의 가장 직관적 메타포. 매스 강함</span></div>
+      </div>
+
+      <!-- A2 -->
+      <div class="preview-card">
+        <div class="preview-label">
+          <span class="pl-name">A2 · 차트 + 펄스</span>
+          <span class="pl-code">fluent:clipboard-pulse-24-filled</span>
+        </div>
+        <nav class="tabbar-mini">
+          <a class="tab-mini"><iconify-icon icon="fluent:home-24-filled"></iconify-icon></a>
+          <a class="tab-mini active candidate-hl"><iconify-icon icon="fluent:clipboard-pulse-24-filled"></iconify-icon></a>
+          <a class="tab-mini"><svg class="tab-svg" width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.81 2 10.5c0 2.65 1.56 5.02 4 6.56V22l4.34-2.41c.54.07 1.1.11 1.66.11 5.52 0 10-3.81 10-8.5S17.52 2 12 2z"/></svg></a>
+          <a class="tab-mini"><iconify-icon icon="fluent:arrow-swap-24-filled"></iconify-icon></a>
+        </nav>
+        <div class="note-row"><span>회진 차트 + 바이탈 펄스. 의료 컨텍스트 명확</span></div>
+      </div>
+
+      <!-- A3 -->
+      <div class="preview-card">
+        <div class="preview-label">
+          <span class="pl-name">A3 · 환자 카드</span>
+          <span class="pl-code">fluent:notepad-person-24-filled</span>
+        </div>
+        <nav class="tabbar-mini">
+          <a class="tab-mini"><iconify-icon icon="fluent:home-24-filled"></iconify-icon></a>
+          <a class="tab-mini active candidate-hl"><iconify-icon icon="fluent:notepad-person-24-filled"></iconify-icon></a>
+          <a class="tab-mini"><svg class="tab-svg" width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.81 2 10.5c0 2.65 1.56 5.02 4 6.56V22l4.34-2.41c.54.07 1.1.11 1.66.11 5.52 0 10-3.81 10-8.5S17.52 2 12 2z"/></svg></a>
+          <a class="tab-mini"><iconify-icon icon="fluent:arrow-swap-24-filled"></iconify-icon></a>
+        </nav>
+        <div class="note-row"><span>환자 노트 + 사람 실루엣. 환자 중심성 강조</span></div>
+      </div>
+
+      <!-- A4 -->
+      <div class="preview-card">
+        <div class="preview-label">
+          <span class="pl-name">A4 · 회진 체크</span>
+          <span class="pl-code">fluent:clipboard-task-list-ltr-24-filled</span>
+        </div>
+        <nav class="tabbar-mini">
+          <a class="tab-mini"><iconify-icon icon="fluent:home-24-filled"></iconify-icon></a>
+          <a class="tab-mini active candidate-hl"><iconify-icon icon="fluent:clipboard-task-list-ltr-24-filled"></iconify-icon></a>
+          <a class="tab-mini"><svg class="tab-svg" width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.81 2 10.5c0 2.65 1.56 5.02 4 6.56V22l4.34-2.41c.54.07 1.1.11 1.66.11 5.52 0 10-3.81 10-8.5S17.52 2 12 2z"/></svg></a>
+          <a class="tab-mini"><iconify-icon icon="fluent:arrow-swap-24-filled"></iconify-icon></a>
+        </nav>
+        <div class="note-row"><span>회진 체크리스트 메타포. 실행적 느낌 강함</span></div>
+      </div>
+
+      <!-- A5 -->
+      <div class="preview-card">
+        <div class="preview-label">
+          <span class="pl-name">A5 · 하트 펄스</span>
+          <span class="pl-code">fluent:heart-pulse-24-filled</span>
+        </div>
+        <nav class="tabbar-mini">
+          <a class="tab-mini"><iconify-icon icon="fluent:home-24-filled"></iconify-icon></a>
+          <a class="tab-mini active candidate-hl"><iconify-icon icon="fluent:heart-pulse-24-filled"></iconify-icon></a>
+          <a class="tab-mini"><svg class="tab-svg" width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.81 2 10.5c0 2.65 1.56 5.02 4 6.56V22l4.34-2.41c.54.07 1.1.11 1.66.11 5.52 0 10-3.81 10-8.5S17.52 2 12 2z"/></svg></a>
+          <a class="tab-mini"><iconify-icon icon="fluent:arrow-swap-24-filled"></iconify-icon></a>
+        </nav>
+        <div class="note-row"><span>하트 매스 + 펄스. 의료 + 케어 톤. 단점: 응급 색채</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================= -->
+  <!-- 인계 (SBAR / Handover) 후보 5종 -->
+  <!-- ============================= -->
+  <div class="section">
+    <div class="sec-title">B · 인계(SBAR) 아이콘 후보 5종</div>
+    <div class="sec-note">현재: <code>fluent:arrow-swap-24-filled</code> — 화살표 두 개만 있어 실루엣이 가볍고 라인적. 후보는 문서·노트 + 화살표/사람 조합으로 매스 확보.</div>
+
+    <div class="grid">
+      <!-- B1 -->
+      <div class="preview-card">
+        <div class="preview-label">
+          <span class="pl-name">B1 · 사람 교대</span>
+          <span class="pl-code">fluent:people-swap-24-filled</span>
+        </div>
+        <nav class="tabbar-mini">
+          <a class="tab-mini"><iconify-icon icon="fluent:home-24-filled"></iconify-icon></a>
+          <a class="tab-mini"><iconify-icon icon="fluent:stethoscope-24-filled"></iconify-icon></a>
+          <a class="tab-mini"><svg class="tab-svg" width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.81 2 10.5c0 2.65 1.56 5.02 4 6.56V22l4.34-2.41c.54.07 1.1.11 1.66.11 5.52 0 10-3.81 10-8.5S17.52 2 12 2z"/></svg></a>
+          <a class="tab-mini active candidate-hl"><iconify-icon icon="fluent:people-swap-24-filled"></iconify-icon></a>
+        </nav>
+        <div class="note-row"><span>교대조 핸드오프 직관. 사람 매스 충분</span></div>
+      </div>
+
+      <!-- B2 -->
+      <div class="preview-card">
+        <div class="preview-label">
+          <span class="pl-name">B2 · 문서 인계</span>
+          <span class="pl-code">fluent:document-arrow-right-24-filled</span>
+        </div>
+        <nav class="tabbar-mini">
+          <a class="tab-mini"><iconify-icon icon="fluent:home-24-filled"></iconify-icon></a>
+          <a class="tab-mini"><iconify-icon icon="fluent:stethoscope-24-filled"></iconify-icon></a>
+          <a class="tab-mini"><svg class="tab-svg" width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.81 2 10.5c0 2.65 1.56 5.02 4 6.56V22l4.34-2.41c.54.07 1.1.11 1.66.11 5.52 0 10-3.81 10-8.5S17.52 2 12 2z"/></svg></a>
+          <a class="tab-mini active candidate-hl"><iconify-icon icon="fluent:document-arrow-right-24-filled"></iconify-icon></a>
+        </nav>
+        <div class="note-row"><span>SBAR 문서 전달. 문서 매스 + 방향성 명확</span></div>
+      </div>
+
+      <!-- B3 -->
+      <div class="preview-card">
+        <div class="preview-label">
+          <span class="pl-name">B3 · 클립보드 인계</span>
+          <span class="pl-code">fluent:clipboard-arrow-right-24-filled</span>
+        </div>
+        <nav class="tabbar-mini">
+          <a class="tab-mini"><iconify-icon icon="fluent:home-24-filled"></iconify-icon></a>
+          <a class="tab-mini"><iconify-icon icon="fluent:stethoscope-24-filled"></iconify-icon></a>
+          <a class="tab-mini"><svg class="tab-svg" width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.81 2 10.5c0 2.65 1.56 5.02 4 6.56V22l4.34-2.41c.54.07 1.1.11 1.66.11 5.52 0 10-3.81 10-8.5S17.52 2 12 2z"/></svg></a>
+          <a class="tab-mini active candidate-hl"><iconify-icon icon="fluent:clipboard-arrow-right-24-filled"></iconify-icon></a>
+        </nav>
+        <div class="note-row"><span>회진 카드와 시리즈감(클립보드 계열). 단점: 회진 후보 A2/A4와 형제</span></div>
+      </div>
+
+      <!-- B4 -->
+      <div class="preview-card">
+        <div class="preview-label">
+          <span class="pl-name">B4 · 노트 편집</span>
+          <span class="pl-code">fluent:notepad-edit-24-filled</span>
+        </div>
+        <nav class="tabbar-mini">
+          <a class="tab-mini"><iconify-icon icon="fluent:home-24-filled"></iconify-icon></a>
+          <a class="tab-mini"><iconify-icon icon="fluent:stethoscope-24-filled"></iconify-icon></a>
+          <a class="tab-mini"><svg class="tab-svg" width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.81 2 10.5c0 2.65 1.56 5.02 4 6.56V22l4.34-2.41c.54.07 1.1.11 1.66.11 5.52 0 10-3.81 10-8.5S17.52 2 12 2z"/></svg></a>
+          <a class="tab-mini active candidate-hl"><iconify-icon icon="fluent:notepad-edit-24-filled"></iconify-icon></a>
+        </nav>
+        <div class="note-row"><span>SBAR 초안 작성 메타포. 노트 매스 강함</span></div>
+      </div>
+
+      <!-- B5 -->
+      <div class="preview-card">
+        <div class="preview-label">
+          <span class="pl-name">B5 · 패스 / 공유</span>
+          <span class="pl-code">fluent:share-24-filled</span>
+        </div>
+        <nav class="tabbar-mini">
+          <a class="tab-mini"><iconify-icon icon="fluent:home-24-filled"></iconify-icon></a>
+          <a class="tab-mini"><iconify-icon icon="fluent:stethoscope-24-filled"></iconify-icon></a>
+          <a class="tab-mini"><svg class="tab-svg" width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.81 2 10.5c0 2.65 1.56 5.02 4 6.56V22l4.34-2.41c.54.07 1.1.11 1.66.11 5.52 0 10-3.81 10-8.5S17.52 2 12 2z"/></svg></a>
+          <a class="tab-mini active candidate-hl"><iconify-icon icon="fluent:share-24-filled"></iconify-icon></a>
+        </nav>
+        <div class="note-row"><span>가장 가볍고 추상적. 노드+화살표 실루엣</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================= -->
+  <!-- 추천 조합 -->
+  <!-- ============================= -->
+  <div class="section">
+    <div class="sec-title">C · 추천 조합 (회진 + 인계 동시 적용)</div>
+    <div class="sec-note">시리즈 충돌(둘 다 클립보드 등) 피하면서 매스가 균형 잡힌 조합 3가지.</div>
+
+    <div class="grid">
+      <div class="preview-card">
+        <div class="preview-label">
+          <span class="pl-name">추천 1 · 침상 + 사람 교대</span>
+          <span class="pl-code">bed + people-swap</span>
+        </div>
+        <nav class="tabbar-mini">
+          <a class="tab-mini"><iconify-icon icon="fluent:home-24-filled"></iconify-icon></a>
+          <a class="tab-mini active candidate-hl"><iconify-icon icon="fluent:bed-24-filled"></iconify-icon></a>
+          <a class="tab-mini"><svg class="tab-svg" width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.81 2 10.5c0 2.65 1.56 5.02 4 6.56V22l4.34-2.41c.54.07 1.1.11 1.66.11 5.52 0 10-3.81 10-8.5S17.52 2 12 2z"/></svg></a>
+          <a class="tab-mini active candidate-hl"><iconify-icon icon="fluent:people-swap-24-filled"></iconify-icon></a>
+        </nav>
+        <div class="note-row"><span>"환자 침상 라운드 → 교대조에 인계" 스토리 가장 직관적</span></div>
+      </div>
+
+      <div class="preview-card">
+        <div class="preview-label">
+          <span class="pl-name">추천 2 · 차트 + 문서 전송</span>
+          <span class="pl-code">clipboard-pulse + document-arrow-right</span>
+        </div>
+        <nav class="tabbar-mini">
+          <a class="tab-mini"><iconify-icon icon="fluent:home-24-filled"></iconify-icon></a>
+          <a class="tab-mini active candidate-hl"><iconify-icon icon="fluent:clipboard-pulse-24-filled"></iconify-icon></a>
+          <a class="tab-mini"><svg class="tab-svg" width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.81 2 10.5c0 2.65 1.56 5.02 4 6.56V22l4.34-2.41c.54.07 1.1.11 1.66.11 5.52 0 10-3.81 10-8.5S17.52 2 12 2z"/></svg></a>
+          <a class="tab-mini active candidate-hl"><iconify-icon icon="fluent:document-arrow-right-24-filled"></iconify-icon></a>
+        </nav>
+        <div class="note-row"><span>"바이탈 차트 → SBAR 문서 전송" — 의료 문서 워크플로 강조</span></div>
+      </div>
+
+      <div class="preview-card">
+        <div class="preview-label">
+          <span class="pl-name">추천 3 · 환자 노트 + 노트 편집</span>
+          <span class="pl-code">notepad-person + notepad-edit</span>
+        </div>
+        <nav class="tabbar-mini">
+          <a class="tab-mini"><iconify-icon icon="fluent:home-24-filled"></iconify-icon></a>
+          <a class="tab-mini active candidate-hl"><iconify-icon icon="fluent:notepad-person-24-filled"></iconify-icon></a>
+          <a class="tab-mini"><svg class="tab-svg" width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.81 2 10.5c0 2.65 1.56 5.02 4 6.56V22l4.34-2.41c.54.07 1.1.11 1.66.11 5.52 0 10-3.81 10-8.5S17.52 2 12 2z"/></svg></a>
+          <a class="tab-mini active candidate-hl"><iconify-icon icon="fluent:notepad-edit-24-filled"></iconify-icon></a>
+        </nav>
+        <div class="note-row"><span>같은 노트 패밀리로 시리즈감. 단점: 두 아이콘이 다소 비슷</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>마이페이지 stats — 개선안 3종</title>
+<link rel="stylesheet" href="../07_디자인/tokens/tokens.css">
+<script src="../07_디자인/_iconify-icon.min.js"></script>
+<style>
+:root{
+  --accent:var(--color-accent);
+  --accent-soft:var(--color-accent-soft);
+  --accent-strong:var(--color-accent-strong);
+  --t1:var(--color-text-primary);
+  --t2:var(--color-text-secondary);
+  --t3:var(--color-text-tertiary);
+  --warn:var(--color-warning);
+  --warn-soft:var(--color-warning-soft);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:#EAF0EC;color:var(--t1);font-family:var(--font-family-base);-webkit-font-smoothing:antialiased;letter-spacing:-.2px;}
+body{padding:32px 16px 96px;}
+.title{font-size:13px;font-weight:700;color:var(--t3);letter-spacing:.4px;text-transform:uppercase;margin:24px auto 12px;text-align:center;}
+.label{font-size:14px;font-weight:600;color:var(--t2);margin:0 auto 8px;text-align:center;max-width:360px;line-height:1.4;}
+.frame{max-width:390px;margin:0 auto;padding:20px;background:#F4FAF6;border-radius:24px;box-shadow:0 4px 18px rgba(0,0,0,.05);}
+.card{background:#fff;border-radius:24px;padding:24px;box-shadow:0 8px 28px rgba(0,0,0,.06),0 1px 3px rgba(0,0,0,.04);}
+.pf-top{display:flex;align-items:center;gap:16px;}
+.pf-ava{width:64px;height:64px;border-radius:50%;background:var(--accent);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;letter-spacing:-.7px;flex-shrink:0;}
+.pf-name{font-size:20px;font-weight:700;color:var(--t1);letter-spacing:-.5px;}
+.pf-sub{font-size:13px;font-weight:500;color:var(--t2);margin-top:3px;}
+
+/* --- BEFORE --- */
+.before .pf-stats{margin-top:20px;padding-top:20px;border-top:1px solid rgba(0,0,0,.05);display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.before .pf-stat{text-align:center;line-height:1.15;}
+.before .pf-stat-val{font-size:20px;font-weight:700;color:var(--t1);font-variant-numeric:tabular-nums;letter-spacing:-.5px;}
+.before .pf-stat-val b{color:var(--accent-strong);}
+.before .pf-stat-val .sm{font-size:12px;color:var(--t3);font-weight:600;}
+.before .pf-stat-label{font-size:11px;font-weight:500;color:var(--t3);margin-top:6px;}
+
+/* ==================== Option A ==================== */
+/* List-style: 아이콘 + 라벨(왼쪽) · 큰 숫자(오른쪽) · 진행률 바 (Beli/Runbuds 패턴)
+   → 위계 명확 (큰 숫자가 우측 정렬), 진행 정도 시각화 */
+.opt-a .a-rows{margin-top:18px;padding-top:18px;border-top:1px solid rgba(0,0,0,.05);display:flex;flex-direction:column;gap:14px;}
+.opt-a .a-row{display:flex;align-items:center;gap:12px;}
+.opt-a .a-ico{width:32px;height:32px;border-radius:10px;background:#F4F6F8;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--t2);}
+.opt-a .a-ico iconify-icon{font-size:16px;}
+.opt-a .a-meta{flex:1;min-width:0;}
+.opt-a .a-label{font-size:13px;font-weight:500;color:var(--t2);}
+.opt-a .a-bar{margin-top:4px;height:4px;border-radius:999px;background:#EEF1F3;overflow:hidden;}
+.opt-a .a-bar__fill{height:100%;background:var(--accent);border-radius:999px;}
+.opt-a .a-val{font-size:18px;font-weight:700;color:var(--t1);font-variant-numeric:tabular-nums;letter-spacing:-.3px;line-height:1;flex-shrink:0;}
+.opt-a .a-val .sm{font-size:12px;color:var(--t3);font-weight:600;}
+
+/* ==================== Option B ==================== */
+/* Hero focal: 가장 중요한 KPI 하나(기록지 제출)를 큰 카드로 빼고 나머지 2개는 보조
+   (Opal/Me+ 패턴) → 가장 액션 필요한 지표 강조 */
+.opt-b{padding:0;background:transparent;box-shadow:none;}
+.opt-b .b-profile{background:#fff;border-radius:24px;padding:24px;box-shadow:0 8px 28px rgba(0,0,0,.06);}
+.opt-b .b-hero{margin-top:12px;background:#fff;border-radius:20px;padding:18px 20px;box-shadow:0 4px 16px rgba(0,0,0,.05);display:flex;align-items:center;gap:14px;}
+.opt-b .b-hero__num{font-size:32px;font-weight:800;color:var(--accent-strong);font-variant-numeric:tabular-nums;letter-spacing:-1px;line-height:1;}
+.opt-b .b-hero__num .sm{font-size:14px;color:var(--t3);font-weight:600;}
+.opt-b .b-hero__body{flex:1;min-width:0;}
+.opt-b .b-hero__label{font-size:13px;font-weight:700;color:var(--t1);}
+.opt-b .b-hero__sub{font-size:12px;font-weight:500;color:var(--t2);margin-top:2px;}
+.opt-b .b-hero__bar{margin-top:6px;height:5px;border-radius:999px;background:#EEF1F3;overflow:hidden;}
+.opt-b .b-hero__fill{height:100%;background:var(--accent);border-radius:999px;}
+.opt-b .b-grid{margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.opt-b .b-mini{background:#fff;border-radius:18px;padding:14px 16px;box-shadow:0 2px 10px rgba(0,0,0,.04);}
+.opt-b .b-mini__num{font-size:22px;font-weight:700;color:var(--t1);font-variant-numeric:tabular-nums;letter-spacing:-.5px;line-height:1;}
+.opt-b .b-mini__num .sm{font-size:11px;color:var(--t3);font-weight:600;}
+.opt-b .b-mini__label{font-size:11.5px;font-weight:600;color:var(--t2);margin-top:6px;}
+
+/* ==================== Option C ==================== */
+/* Inline meta: 별도 stats 카드 자체를 제거, 프로필 카드 안에 inline 메타 라인으로
+   (Binance/Beli 헤더 패턴) → 화면 절약, 마이페이지 첫 화면 밀도 ↓ */
+.opt-c .c-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+.opt-c .c-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:#F4F6F8;font-size:12px;font-weight:600;color:var(--t2);}
+.opt-c .c-pill b{color:var(--t1);font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.2px;}
+.opt-c .c-pill iconify-icon{font-size:13px;color:var(--t3);}
+.opt-c .c-pill--warn{background:var(--warn-soft);color:var(--palette-amber-700,#B45309);}
+.opt-c .c-pill--warn iconify-icon{color:var(--palette-amber-700,#B45309);}
+.opt-c .c-pill--warn b{color:var(--palette-amber-700,#B45309);}
+
+/* Pros/Cons */
+.notes{max-width:390px;margin:10px auto 0;padding:14px 18px;background:rgba(255,255,255,.6);border-radius:14px;font-size:12.5px;line-height:1.55;color:var(--t2);}
+.notes b{color:var(--t1);}
+.notes .pro{color:var(--accent-strong);font-weight:700;}
+.notes .con{color:#B45309;font-weight:700;}
+</style>
+</head>
+<body>
+
+<div class="title">현재 (Before)</div>
+<div class="label">3개 숫자가 같은 비중 · 위계 X · 진행률 숨김</div>
+<div class="frame">
+  <section class="card before">
+    <div class="pf-top">
+      <span class="pf-ava">이영</span>
+      <div><div class="pf-name">이영수 선생님</div><div class="pf-sub">서초실버케어 · 2층 담당</div></div>
+    </div>
+    <div class="pf-stats">
+      <div class="pf-stat"><div class="pf-stat-val"><b>4</b></div><div class="pf-stat-label">담당 어르신</div></div>
+      <div class="pf-stat"><div class="pf-stat-val"><b>17</b><span class="sm">/20</span></div><div class="pf-stat-label">기록지 제출</div></div>
+      <div class="pf-stat"><div class="pf-stat-val"><b>6</b><span class="sm">/8h</span></div><div class="pf-stat-label">보수교육</div></div>
+    </div>
+  </section>
+</div>
+
+<div class="title">개선안 A · List-style 진행률 (Beli/Runbuds 참고)</div>
+<div class="label">아이콘 + 라벨(좌) · 큰 숫자(우) · 진행률 바</div>
+<div class="frame">
+  <section class="card opt-a">
+    <div class="pf-top">
+      <span class="pf-ava">이영</span>
+      <div><div class="pf-name">이영수 선생님</div><div class="pf-sub">서초실버케어 · 2층 담당</div></div>
+    </div>
+    <div class="a-rows">
+      <div class="a-row">
+        <span class="a-ico"><iconify-icon icon="fluent:people-24-filled"></iconify-icon></span>
+        <div class="a-meta"><div class="a-label">담당 어르신</div></div>
+        <div class="a-val">4<span class="sm">명</span></div>
+      </div>
+      <div class="a-row">
+        <span class="a-ico"><iconify-icon icon="fluent:document-text-24-filled"></iconify-icon></span>
+        <div class="a-meta">
+          <div class="a-label">이번 달 기록지 제출</div>
+          <div class="a-bar"><div class="a-bar__fill" style="width:85%"></div></div>
+        </div>
+        <div class="a-val">17<span class="sm">/20</span></div>
+      </div>
+      <div class="a-row">
+        <span class="a-ico"><iconify-icon icon="fluent:shield-checkmark-24-filled"></iconify-icon></span>
+        <div class="a-meta">
+          <div class="a-label">올해 보수교육</div>
+          <div class="a-bar"><div class="a-bar__fill" style="width:75%"></div></div>
+        </div>
+        <div class="a-val">6<span class="sm">/8h</span></div>
+      </div>
+    </div>
+  </section>
+</div>
+<div class="notes">
+  <b>장점</b> · <span class="pro">진행률 즉시 인지</span> (85% / 75%). 라벨이 길어져도 깨지지 않음 (수직 스택). 우측 정렬 큰 숫자가 일관된 시각 앵커.<br>
+  <b>단점</b> · 세로 길이 증가 (3행 ≈ 130px). "담당 어르신"엔 진행률이 없어 살짝 비대칭.<br>
+  <b>적합</b> · 보수교육·기록지처럼 <b>완료해야 할 의무</b>가 핵심 정보일 때.
+</div>
+
+<div class="title">개선안 B · Hero focal + 보조 2-up (Opal/Me+ 참고)</div>
+<div class="label">가장 액션 필요한 지표 하나(기록지)를 hero로 · 나머지는 보조 카드</div>
+<div class="frame">
+  <section class="opt-b">
+    <div class="b-profile">
+      <div class="pf-top">
+        <span class="pf-ava">이영</span>
+        <div><div class="pf-name">이영수 선생님</div><div class="pf-sub">서초실버케어 · 2층 담당</div></div>
+      </div>
+    </div>
+    <div class="b-hero">
+      <div class="b-hero__num">17<span class="sm">/20</span></div>
+      <div class="b-hero__body">
+        <div class="b-hero__label">이번 달 기록지 제출</div>
+        <div class="b-hero__sub">3건 남음 · 월말까지 제출</div>
+        <div class="b-hero__bar"><div class="b-hero__fill" style="width:85%"></div></div>
+      </div>
+    </div>
+    <div class="b-grid">
+      <div class="b-mini">
+        <div class="b-mini__num">4<span class="sm"> 명</span></div>
+        <div class="b-mini__label">담당 어르신</div>
+      </div>
+      <div class="b-mini">
+        <div class="b-mini__num">6<span class="sm">/8h</span></div>
+        <div class="b-mini__label">보수교육</div>
+      </div>
+    </div>
+  </section>
+</div>
+<div class="notes">
+  <b>장점</b> · <span class="pro">위계 명확</span> (가장 시급한 지표 강조). 큰 숫자 + 서브카피로 행동 유도 ("3건 남음").<br>
+  <b>단점</b> · 카드 3개로 분리되어 <b>세로 길이가 가장 큼</b>. 어떤 지표를 hero로 둘지 비즈니스 우선순위에 종속.<br>
+  <b>적합</b> · 마이페이지가 단순 통계가 아니라 <b>"오늘/이번달 액션"</b> 알리미 역할도 할 때.
+</div>
+
+<div class="title">개선안 C · Inline 메타 pills (Binance 참고)</div>
+<div class="label">stats 카드 자체 제거 · 프로필 카드 안에 inline pills로 흡수</div>
+<div class="frame">
+  <section class="card opt-c">
+    <div class="pf-top">
+      <span class="pf-ava">이영</span>
+      <div style="flex:1">
+        <div class="pf-name">이영수 선생님</div>
+        <div class="pf-sub">서초실버케어 · 2층 담당</div>
+        <div class="c-pills">
+          <span class="c-pill"><iconify-icon icon="fluent:people-24-filled"></iconify-icon>담당 <b>4</b></span>
+          <span class="c-pill c-pill--warn"><iconify-icon icon="fluent:document-text-24-filled"></iconify-icon>기록지 <b>17/20</b></span>
+          <span class="c-pill"><iconify-icon icon="fluent:shield-checkmark-24-filled"></iconify-icon>보수 <b>6/8h</b></span>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+<div class="notes">
+  <b>장점</b> · 가장 <span class="pro">컴팩트</span> (현재 대비 세로 약 40px 절감). 첫 화면 밀도 ↓, GPS 카드와 첫 sec까지 한눈에. 미제출 건은 앰버 pill로 즉시 부각.<br>
+  <b>단점</b> · 숫자가 작아 <b>주목도 하락</b>. 진행률 시각화 없음. 4개 이상으로 늘면 줄바꿈 정렬 깨짐.<br>
+  <b>적합</b> · stats가 부차 정보고, 마이페이지의 진짜 주역은 <b>아래 메뉴/액션</b>일 때.
+</div>
+
+<div class="title" style="margin-top:48px">한 줄 요약</div>
+<div class="label" style="text-align:left;padding:16px 18px;background:#fff;border-radius:14px;line-height:1.7;">
+  · <b>A</b>: 진행률을 보여주고 싶다 → 정직, 보편적<br>
+  · <b>B</b>: "이번 달 기록지 3건 남음" 같은 액션 트리거 → 행동 유도<br>
+  · <b>C</b>: 통계는 거들 뿐 → 깔끔, 메뉴 중심
+</div>
+
+</body>
+</html>

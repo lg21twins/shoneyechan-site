@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ko" data-role="caregiver" data-platform="mobile">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#DCFCE7">
+  <title>하루안부 · 요양보호사 · 마이</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css">
+
+  <script src="../07_디자인/_app-theme.js"></script>
+  <link rel="stylesheet" href="../07_디자인/system/app.css">
+  <link rel="stylesheet" href="../07_디자인/system/components.css?v=20260523e">
+  <link rel="stylesheet" href="caregiver.css">
+  <script src="../07_디자인/_iconify-icon.min.js"></script>
+  <script defer src="caregiver.js"></script>
+  <style>
+    /* ============================================================
+       마이페이지 통일 기준 (d-base) — caregiver
+       구조: bg → app → header → profile-hero → status(GPS) → sec×N → logout
+       ============================================================ */
+    :root {
+      --accent: var(--color-accent);
+      --accent-soft: var(--color-accent-soft);
+      --accent-strong: var(--color-accent-strong);
+      --danger: var(--color-danger);
+      --danger-soft: var(--color-danger-soft);
+      --warn: var(--color-warning);
+      --warn-soft: var(--color-warning-soft);
+      --t1: var(--color-text-primary);
+      --t2: var(--color-text-secondary);
+      --t3: var(--color-text-tertiary);
+      --safe-t: env(safe-area-inset-top, 0px);
+      --safe-b: max(env(safe-area-inset-bottom, 0px), 20px);
+      --tab-h: 64px;
+      --tab-bot: 12px;
+      --pad: 20px;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+    html{height:100%;background:var(--clinical-canvas);font-size:16px;}
+    body{height:100%;color:var(--t1);overflow-x:hidden;font-family:var(--font-family-base);font-size:18px;letter-spacing:-.2px;-webkit-font-smoothing:antialiased;} /* v3.2.7: 본문 18px — caregiver 고령 배려 표준 통일 */
+    .bg{
+      position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;
+      background: var(--clinical-bg-image);
+    }
+    .app{
+      max-width:430px;margin:0 auto;min-height:100%;position:relative;
+      padding-bottom:calc(var(--safe-b) + var(--tab-h) + var(--tab-bot) + 40px);
+    }
+    /* 보호자앱 header-mobile 통일 v4.0 */
+    .app .header-mobile {
+      position: static !important;
+      background: transparent !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+    .app .header-mobile__left,
+    .app .header-mobile__right { color: var(--t2); }
+    .app .header-mobile__right iconify-icon { font-size: var(--size-icon-md); }
+    /* .top-nav 정의는 caregiver.css 표준 사용 — grid 44·1fr·44 / margin-bottom 24px */
+    /* v15 d05-mypage와 동일 — glass icon-btn 통일 */
+    .icon-btn{
+      width:44px;height:44px;border-radius:50%;
+      background:rgba(255,255,255,.55);
+      border:.5px solid rgba(255,255,255,.55);
+      backdrop-filter:blur(12px) saturate(140%);
+      -webkit-backdrop-filter:blur(12px) saturate(140%);
+      cursor:pointer;text-decoration:none;
+      display:inline-flex;align-items:center;justify-content:center;
+      box-shadow:0 1px 1px rgba(255,255,255,.6) inset, 0 4px 16px rgba(0,0,0,.06);
+      position:relative;transition:transform .1s;font-family:inherit;
+    }
+    .h-title{flex:1;text-align:center;font-size:17px;font-weight:700;color:var(--t1);letter-spacing:-.3px;}
+
+    .profile-hero{animation:haru-fade-in-up var(--duration-slow,350ms) var(--easing-standard) both;
+      margin:8px var(--pad) 0;padding:24px;
+      /* v3.2.8: 카드 토큰 (caregiver.css --cg-card-*) — hero는 라운드만 24px로 강조 */
+      background:var(--cg-card-bg);border-radius:24px;
+      box-shadow:var(--shadow-card-floating);
+      position:relative;z-index:1;
+    }
+    .pf-top{display:flex;align-items:center;gap:16px;}
+    .pf-ava{
+      width:68px;height:68px;border-radius:50%;flex-shrink:0;
+      background:var(--accent);color:var(--palette-white);
+      display:inline-flex;align-items:center;justify-content:center;
+      font-size:26px;font-weight:700;letter-spacing:-.7px;overflow:hidden;
+    }
+    .pf-meta{flex:1;min-width:0;line-height:1.3;}
+    .pf-name{font-size:20px;font-weight:700;color:var(--t1);letter-spacing:-.5px;}
+    .pf-sub{font-size:13px;font-weight:500;color:var(--t2);margin-top:3px;}
+    .pf-pills{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;}
+    .pf-pill{
+      display:inline-flex;align-items:center;gap:4px;
+      padding:3px 9px;border-radius:999px;
+      background:var(--palette-gray-100);
+      font-size:11.5px;font-weight:600;color:var(--t2);
+    }
+    .pf-pill iconify-icon{font-size:12px;color:var(--t3);}
+    .pf-pill--accent{background:var(--accent-soft);color:var(--accent-strong);}
+    .pf-pill--accent iconify-icon{color:var(--accent-strong);}
+
+    .pf-stats{
+      margin-top:18px;padding-top:18px;border-top:1px solid rgba(0,0,0,.05);
+      display:flex;flex-direction:column;gap:14px;
+    }
+    .pf-stat{display:flex;align-items:center;gap:12px;}
+    .pf-stat__ico{
+      width:32px;height:32px;border-radius:10px;flex-shrink:0;
+      background:var(--palette-gray-100);color:var(--t2);
+      display:inline-flex;align-items:center;justify-content:center;
+    }
+    .pf-stat__ico iconify-icon{font-size:16px;}
+    .pf-stat__meta{flex:1;min-width:0;}
+    .pf-stat__label{font-size:13px;font-weight:500;color:var(--t2);}
+    .pf-stat__bar{margin-top:4px;height:4px;border-radius:999px;background:var(--palette-gray-150);overflow:hidden;}
+    .pf-stat__bar-fill{height:100%;width:var(--bar-w, 0%);background:var(--accent);border-radius:999px;}
+    .pf-stat__val{
+      font-size:18px;font-weight:700;color:var(--t1);
+      font-variant-numeric:tabular-nums;letter-spacing:-.3px;line-height:1;flex-shrink:0;
+    }
+    .pf-stat__val .sm{font-size:12px;color:var(--t3);font-weight:600;}
+
+    .gps{animation:haru-fade-in-up var(--duration-slow,350ms) var(--easing-standard) 80ms both;
+      margin:16px var(--pad) 0;padding:18px 20px;
+      background:var(--cg-card-bg);border-radius:var(--cg-card-radius);
+      display:flex;align-items:center;gap:14px;
+      box-shadow:var(--shadow-card-floating);
+      position:relative;z-index:1;
+    }
+    .gps-pulse{
+      width:42px;height:42px;border-radius:50%;flex-shrink:0;
+      background:var(--accent-soft);color:var(--accent-strong);
+      display:inline-flex;align-items:center;justify-content:center;position:relative;
+    }
+    .gps-pulse::before{
+      content:"";position:absolute;inset:-4px;border-radius:50%;
+      border:2px solid var(--accent);opacity:0;animation: haru-ring 2s ease-out infinite;
+    }
+    .gps-pulse iconify-icon{font-size:20px;}
+    .gps-meta{flex:1;min-width:0;line-height:1.3;}
+    .gps-main{font-size:14px;font-weight:600;color:var(--t1);letter-spacing:-.2px;}
+    .gps-sub{font-size:12px;font-weight:500;color:var(--t3);margin-top:3px;}
+    .gps-out{
+      flex-shrink:0;padding:9px 14px;border-radius:12px;
+      background:var(--danger-soft);color:var(--palette-red-700);
+      font-size:12px;font-weight:600;border:0;cursor:pointer;font-family:inherit;
+    }
+
+    .sec{animation:haru-fade-in-up var(--duration-slow,350ms) var(--easing-standard) 160ms both;margin:32px var(--pad) 0;position:relative;z-index:1;}
+    .sec-ttl{
+      font-size:11px;font-weight:600;color:var(--t3);
+      letter-spacing:.4px;text-transform:uppercase;margin-bottom:10px;padding-left:4px;
+    }
+    .rows{
+      background:var(--cg-card-bg);border-radius:var(--cg-card-radius);overflow:hidden;
+      box-shadow:var(--shadow-card-floating);
+    }
+    .row{
+      padding:16px 18px;display:flex;align-items:center;gap:14px;
+      border-bottom:1px solid rgba(0,0,0,.05);
+      cursor:pointer;text-decoration:none;color:inherit;
+      font-family:inherit;background:transparent;border-left:0;border-right:0;border-top:0;width:100%;text-align:left;
+    }
+    .row:last-child{border-bottom:0;}
+    .row-ico{
+      width:40px;height:40px;border-radius:12px;flex-shrink:0;
+      display:inline-flex;align-items:center;justify-content:center;
+    }
+    .row-ico iconify-icon{font-size:20px;}
+    .row-ico.ok{background:var(--accent-soft);color:var(--accent-strong);}
+    .row-ico.warn{background:var(--warn-soft);color:var(--palette-amber-700);}
+    .row-ico.danger{background:var(--danger-soft);color:var(--palette-red-700);}
+    .row-ico.neutral{background:var(--palette-gray-100);color:var(--t2);}
+    .row-meta{flex:1;min-width:0;line-height:1.3;}
+    .row-label{font-size:14.5px;font-weight:600;color:var(--t1);letter-spacing:-.2px;}
+    .row-sub{font-size:12.5px;font-weight:500;color:var(--t3);margin-top:3px;}
+    .row-val{font-size:12.5px;font-weight:500;color:var(--t3);flex-shrink:0;display:flex;align-items:center;gap:5px;}
+    .row-val iconify-icon{font-size:18px;color:var(--t3);}
+    .row-pending{
+      font-size:10.5px;font-weight:700;letter-spacing:.2px;
+      padding:3px 8px;border-radius:999px;
+      background:var(--palette-gray-100);color:var(--palette-gray-700);
+    }
+    .row-badge{
+      font-size:10.5px;font-weight:700;letter-spacing:.2px;
+      padding:3px 8px;border-radius:999px;
+      background:var(--danger);color:var(--palette-white);
+    }
+    .switch{
+      position:relative;width:48px;height:30px;border-radius:999px;
+      background:rgba(0,0,0,.12);cursor:pointer;flex-shrink:0;transition:.2s;border:0;
+    }
+    .switch::after{
+      content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;
+      border-radius:50%;background:var(--palette-white);
+      box-shadow:0 1px 3px rgba(0,0,0,.2);transition:.2s;
+    }
+    .switch.on{background:var(--accent);}
+    .switch.on::after{left:21px;}
+
+    .logout{
+      margin:24px var(--pad) 0;padding:15px;
+      width:calc(100% - 44px);
+      background:var(--cg-card-bg);border:0;border-radius:16px;
+      box-shadow:var(--cg-card-shadow);
+      color:var(--palette-red-600);font-size:13.5px;font-weight:600;
+      cursor:pointer;font-family:inherit;
+      display:flex;align-items:center;justify-content:center;gap:8px;
+      box-shadow:0 2px 8px rgba(0,0,0,.04);
+      position:relative;z-index:1;
+    }
+    .logout iconify-icon{font-size:18px;}
+    .ver{
+      margin:18px var(--pad) 0;text-align:center;
+      font-size:12px;font-weight:500;color:var(--t3);
+      position:relative;z-index:1;
+    }
+
+    /* v3.2.7: .bottom-bar / .tabbar / .tab 로컬 정의 제거 — caregiver.css가 SoT (4-b 섹션) */
+
+    .toast{
+      position:fixed;left:50%;bottom:calc(var(--safe-b) + var(--tab-h) + var(--tab-bot) + 18px);
+      transform:translateX(-50%) translateY(20px);
+      background:rgba(28,28,30,.92);color:var(--palette-white);font-size:14px;font-weight:600;
+      padding:11px 20px;border-radius:999px;
+      opacity:0;transition:.25s;pointer-events:none;z-index:300;white-space:nowrap;
+    }
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  </style>
+</head>
+<body>
+  <div class="bg" aria-hidden="true"></div>
+  <div class="app">
+
+    <header class="header">
+      <div class="top-nav">
+        <span class="h-left" aria-hidden="true"></span>
+        <div class="title-block">
+          <h1 class="h-name">마이</h1>
+        </div>
+        <button class="icon-btn" type="button" aria-label="설정" onclick="toast('설정')">
+          <iconify-icon icon="fluent:settings-24-filled"></iconify-icon>
+        </button>
+      </div>
+    </header>
+
+    <section class="profile-hero">
+      <div class="pf-top">
+        <span class="pf-ava">이영</span>
+        <div class="pf-meta">
+          <div class="pf-name">이영수 선생님</div>
+          <div class="pf-sub">서초실버케어 · 2층 담당</div>
+          <div class="pf-pills">
+            <span class="pf-pill pf-pill--accent"><iconify-icon icon="fluent:shield-checkmark-24-filled"></iconify-icon>요양보호사 1급</span>
+            <span class="pf-pill"><iconify-icon icon="fluent:calendar-24-filled"></iconify-icon>4년차</span>
+            <span class="pf-pill"><iconify-icon icon="fluent:building-24-filled"></iconify-icon>2층</span>
+          </div>
+        </div>
+      </div>
+      <div class="pf-stats">
+        <div class="pf-stat">
+          <span class="pf-stat__ico"><iconify-icon icon="fluent:people-24-filled"></iconify-icon></span>
+          <div class="pf-stat__meta"><div class="pf-stat__label">담당 어르신</div></div>
+          <div class="pf-stat__val">4<span class="sm">명</span></div>
+        </div>
+        <div class="pf-stat">
+          <span class="pf-stat__ico"><iconify-icon icon="fluent:document-text-24-filled"></iconify-icon></span>
+          <div class="pf-stat__meta">
+            <div class="pf-stat__label">이번 달 기록지 제출</div>
+            <div class="pf-stat__bar"><div class="pf-stat__bar-fill" style="--bar-w:85%"></div></div>
+          </div>
+          <div class="pf-stat__val">17<span class="sm">/20</span></div>
+        </div>
+        <div class="pf-stat">
+          <span class="pf-stat__ico"><iconify-icon icon="fluent:shield-checkmark-24-filled"></iconify-icon></span>
+          <div class="pf-stat__meta">
+            <div class="pf-stat__label">올해 보수교육</div>
+            <div class="pf-stat__bar"><div class="pf-stat__bar-fill" style="--bar-w:75%"></div></div>
+          </div>
+          <div class="pf-stat__val">6<span class="sm">/8h</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="gps">
+      <span class="gps-pulse"><iconify-icon icon="fluent:location-live-24-filled"></iconify-icon></span>
+      <div class="gps-meta">
+        <div class="gps-main">주간 근무 중 · 시설 GPS 확인됨</div>
+        <div class="gps-sub">07:00 출근 · 3시간 12분 남음</div>
+      </div>
+      <button class="gps-out" onclick="toast('퇴근 처리 시작');">퇴근</button>
+    </section>
+
+    <section class="sec">
+      <div class="sec-ttl">알림 · 모드</div>
+      <div class="rows">
+        <div class="row">
+          <div class="row-meta">
+            <div class="row-label">SOS 수신 알림</div>
+            <div class="row-sub">다른 직원의 긴급 발송 수신</div>
+          </div>
+          <button class="switch on" onclick="this.classList.toggle('on');toast('SOS 알림 '+(this.classList.contains('on')?'ON':'OFF'));"></button>
+        </div>
+        <div class="row">
+          <div class="row-meta">
+            <div class="row-label">업무 리마인더</div>
+            <div class="row-sub">투약 · 체위 변경 · 식사</div>
+          </div>
+          <button class="switch on" onclick="this.classList.toggle('on');"></button>
+        </div>
+        <div class="row">
+          <div class="row-meta">
+            <div class="row-label">보호자 메시지</div>
+            <div class="row-sub">읽지 않은 메시지 푸시</div>
+          </div>
+          <button class="switch on" onclick="this.classList.toggle('on');"></button>
+        </div>
+        <div class="row">
+          <div class="row-meta">
+            <div class="row-label">집중 모드</div>
+            <div class="row-sub">긴급 외 알림 숨김</div>
+          </div>
+          <button class="switch" onclick="this.classList.toggle('on');toast('집중 모드 '+(this.classList.contains('on')?'ON':'OFF'));"></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-ttl">빠른 도구</div>
+      <div class="rows">
+        <a class="row" href="c04-schedule.html">
+          <div class="row-meta">
+            <div class="row-label">이번 주 일정</div>
+            <div class="row-sub">주간 4일 · 야간 1일 · 휴무 2일</div>
+          </div>
+          <span class="row-val">7일<iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></span>
+        </a>
+        <a class="row" href="#" onclick="event.preventDefault();toast('인수인계 메모 · 준비중');">
+          <div class="row-meta">
+            <div class="row-label">인수인계 메모</div>
+            <div class="row-sub">음성 · 텍스트 · 사진</div>
+          </div>
+          <span class="row-val"><span class="row-pending">준비중</span><iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></span>
+        </a>
+        <a class="row" href="#" onclick="event.preventDefault();toast('AI 업무 가이드 · 준비중');">
+          <div class="row-meta">
+            <div class="row-label">AI 업무 가이드</div>
+            <div class="row-sub">매뉴얼 · 규정 · 상황별 대응</div>
+          </div>
+          <span class="row-val"><span class="row-pending">준비중</span><iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></span>
+        </a>
+        <a class="row" href="#" onclick="event.preventDefault();toast('언어 설정 · 한국어');">
+          <div class="row-meta">
+            <div class="row-label">언어</div>
+            <div class="row-sub">한국어 · 中文 · Tiếng Việt</div>
+          </div>
+          <span class="row-val">한국어<iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></span>
+        </a>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-ttl">근무 · 데이터</div>
+      <div class="rows">
+        <a class="row" href="#" onclick="event.preventDefault();toast('서비스 제공기록지 17/20');">
+          <div class="row-meta">
+            <div class="row-label">서비스 제공기록지</div>
+            <div class="row-sub">월별 자동 집계 · 전자서명</div>
+          </div>
+          <span class="row-val"><span class="row-badge">3</span><iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></span>
+        </a>
+        <a class="row" href="#" onclick="event.preventDefault();toast('출퇴근 기록 15/15');">
+          <div class="row-meta">
+            <div class="row-label">출퇴근 기록</div>
+            <div class="row-sub">GPS · 시간 · 서명 이력</div>
+          </div>
+          <span class="row-val">15일<iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></span>
+        </a>
+        <a class="row" href="#" onclick="event.preventDefault();toast('자격증 · 보수교육 6/8h');">
+          <div class="row-meta">
+            <div class="row-label">자격증 · 교육이수</div>
+            <div class="row-sub">1급 · 만료 2028.07 · 보수 6/8h</div>
+          </div>
+          <span class="row-val"><iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></span>
+        </a>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-ttl">지원</div>
+      <div class="rows">
+        <a class="row" href="#" onclick="event.preventDefault();toast('도움말 · 준비중');">
+          <div class="row-meta"><div class="row-label">도움말 · FAQ</div></div>
+          <span class="row-val"><span class="row-pending">준비중</span><iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></span>
+        </a>
+        <a class="row" href="#" onclick="event.preventDefault();toast('고객센터 · 준비중');">
+          <div class="row-meta"><div class="row-label">고객센터 · 1:1 문의</div></div>
+          <span class="row-val"><span class="row-pending">준비중</span><iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></span>
+        </a>
+        <a class="row" href="#" onclick="event.preventDefault();toast('하루안부 요양보호사 v1.0');">
+          <div class="row-meta">
+            <div class="row-label">앱 정보</div>
+            <div class="row-sub">버전 1.0.0 · PWA</div>
+          </div>
+          <span class="row-val"><iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></span>
+        </a>
+      </div>
+    </section>
+
+    <button class="logout" onclick="toast('로그아웃 · 다음 로그인 시 PIN 설정 필요');">
+      <iconify-icon icon="fluent:sign-out-24-filled"></iconify-icon>로그아웃
+    </button>
+    <div class="ver">하루안부 · 요양보호사앱 v1.0</div>
+
+  </div>
+
+  <div class="bottom-bar">
+    <nav class="tabbar" aria-label="요양보호사 앱 탭바">
+      <a href="c01-today.html" class="tab" aria-label="오늘">
+        <iconify-icon icon="fluent:home-24-filled"></iconify-icon>
+        <span class="tab-label">오늘</span>
+      </a>
+      <a href="c02-checklist.html" class="tab" aria-label="기록">
+        <iconify-icon icon="fluent:clipboard-task-list-ltr-24-filled"></iconify-icon>
+        <span class="tab-label">기록</span>
+      </a>
+      <a href="c03-sotong.html" class="tab" aria-label="소통">
+        <iconify-icon icon="fluent:chat-24-filled"></iconify-icon>
+        <span class="tab-label">소통</span>
+      </a>
+      <a href="c04-mypage.html" class="tab active" aria-current="page" aria-label="마이">
+        <iconify-icon icon="fluent:person-24-filled"></iconify-icon>
+        <span class="tab-label">마이</span>
+      </a>
+    </nav>
+    <button class="cg-sos" data-sos-bind aria-label="긴급 SOS · 3초 길게 누르면 즉시 발신">
+      <span class="cg-sos__ring" aria-hidden="true">
+        <svg class="sos-ring" viewBox="0 0 60 60"><circle cx="30" cy="30" r="27"/></svg>
+      </span>
+      <iconify-icon icon="fluent:warning-24-filled"></iconify-icon>
+    </button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script>
+    function toast(msg){
+      const el=document.getElementById('toast');
+      el.textContent=msg;el.classList.add('show');
+      clearTimeout(window.__t);window.__t=setTimeout(()=>el.classList.remove('show'),1800);
+    }
+  </script>
+  <div class="bottom-scrim" aria-hidden="true"></div>
+</body>
+</html>

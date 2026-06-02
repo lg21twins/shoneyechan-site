@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="ko" data-role="caregiver" data-platform="mobile">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#DCFCE7">
+  <title>하루안부 · 요양보호사 · 오늘</title>
+  <!-- Noto Sans SC: 중국어 폴백 (요양보호사 다국어 지원) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css">
+
+  <script src="../07_디자인/_app-theme.js"></script>
+  <link rel="stylesheet" href="../07_디자인/system/app.css">
+  <link rel="stylesheet" href="../07_디자인/system/components.css?v=20260523e">
+  <link rel="stylesheet" href="../07_디자인/system/home.css">
+  <link rel="stylesheet" href="caregiver.css">
+  <script src="../07_디자인/_iconify-icon.min.js"></script>
+  <script defer src="caregiver.js"></script>
+  <style>
+    /* ============================================================
+       c01 · 오늘 (요양보호사 홈)
+       v3.0 · 2026-04-19 · 역할 분리 + 뷰포트 압축
+       - c01 = "지금 이 순간 + 근무 상황" (담당 환자 목록은 c02 담당)
+       - 구조: 헤더 → 근무 스트립 → 주의 배너 → 히어로(지금) → AI 인수인계
+       - 본문 18px · 터치 48px (현장 사용성)
+       ============================================================ */
+    :root {
+      /* caregiver 전용 본문 상향 — 고령 보호사 배려 */
+      --text-body: 18px;
+      --size-touch-target: 48px;
+
+      /* 로컬 시맨틱 숏컷 */
+      --accent:        var(--color-accent);
+      --accent-soft:   var(--color-accent-soft);
+      --accent-strong: var(--color-accent-strong);
+      --danger:        var(--color-danger);
+      --danger-soft:   var(--color-danger-soft);
+      --warn:          var(--color-warning);
+      --warn-soft:     var(--color-warning-soft);
+      --t1:            var(--color-text-primary);
+      --t2:            var(--color-text-secondary);
+      --t3:            var(--color-text-tertiary);
+
+      /* 레이아웃 */
+      --safe-t: env(safe-area-inset-top, 0px); /* v3.2.4: 보호자앱처럼 단순 env() — 데스크톱 빈공간 제거 */
+      --safe-b: max(env(safe-area-inset-bottom, 0px), 20px);
+      --tab-h:  64px;
+      --tab-bot: 12px;
+      --page-pad: 20px; /* v3.2.4: 세 앱 본문 좌우 padding 통일 (audit doc §4.3) */
+    }
+
+    html { height: 100%; background: var(--clinical-canvas); font-size: 16px; }
+    body { height: 100%; color: var(--t1); overflow-x: hidden; font-size: var(--text-body); }
+
+    /* ---- 배경 (역할 그라디언트 + 은은한 orb) — v3.2.12: 토큰화 ---- */
+    .bg {
+      position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+      background: var(--clinical-bg-image);
+    }
+
+    .app {
+      max-width: 430px; margin: 0 auto; min-height: 100%;
+      position: relative; padding-bottom: calc(var(--safe-b) + var(--tab-h) + var(--tab-bot) + 32px);
+    }
+
+    /* ============ 헤더 · 컴팩트 ============ */
+    /* v3.2.5: 세 앱 헤더 통일 — top 6px / bottom 0 / row margin-bottom 24px (medical 기준) */
+    .header {
+      position: static;
+      padding: calc(var(--safe-t) + 6px) var(--page-pad) 0;
+      background: transparent;
+    }
+    /* v3.2.5: 세 앱 헤더 통일 — brand SVG 28px + 4px tap zone */
+    .logo { display: inline-flex; align-items: center; text-decoration: none; color: inherit; padding: 4px; margin: -4px; }
+    /* v3.2.5: 세 앱 헤더 통일 — 44×44 / 22px icon / 8×8 dot @ 10,10 (medical 기준) */
+    .icon-btn {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: rgba(255,255,255,.55);
+      border: .5px solid rgba(255,255,255,.55);
+      backdrop-filter: blur(12px) saturate(140%);
+      -webkit-backdrop-filter: blur(12px) saturate(140%);
+      display: inline-flex; align-items: center; justify-content: center;
+      cursor: pointer; text-decoration: none;
+      box-shadow: 0 1px 1px rgba(255,255,255,.6) inset, 0 4px 16px rgba(0,0,0,.06);
+      position: relative; transition: transform .1s;
+    }
+
+    /* ============ 근무 상태 스트립 (슬림) ============ */
+    .shift {
+      margin: 12px var(--page-pad) 0;
+      padding: 12px 14px;
+      display: flex; align-items: center; gap: 12px;
+      /* v3.2.8: 카드 베이스라인 토큰 (caregiver.css --cg-card-*) */
+      background: var(--cg-card-bg);
+      border: 0;
+      border-radius: var(--cg-card-radius);
+      box-shadow: var(--cg-card-shadow);
+      position: relative; z-index: 1;
+    }
+    .shift-ring { width: 44px; height: 44px; position: relative; flex-shrink: 0; }
+    .shift-ring svg { transform: rotate(-90deg); }
+    .shift-ring-val {
+      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: var(--accent-strong); letter-spacing: -.2px;
+    }
+    .shift-meta { flex: 1; min-width: 0; line-height: 1.35; }
+    .shift-main {
+      font-size: 14px; font-weight: 700; color: var(--t1); letter-spacing: -.2px;
+    }
+    .shift-sub {
+      font-size: 12px; font-weight: 600; color: var(--t2); margin-top: 2px;
+    }
+    .shift-sub b { color: var(--accent-strong); font-weight: 700; }
+
+    /* ============ 히어로 · 지금 할 것 ============ */
+    .hero-wrap { padding: 0 var(--page-pad); margin-top: 14px; position: relative; z-index: 1; }
+    .hero {
+      background: var(--cg-card-bg);
+      border: 0;
+      border-radius: var(--cg-card-radius);
+      padding: 18px;
+      box-shadow: var(--cg-card-shadow);
+      position: relative;
+    }
+    .hero-top { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .hero-time { font-size: 13px; font-weight: 700; color: var(--t2); letter-spacing: -.2px; }
+    .hero-next {
+      margin-left: auto; font-size: 12px; font-weight: 600; color: var(--t3);
+    }
+    .hero-next b { color: var(--t2); font-weight: 700; }
+    .hero-more {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: rgba(0,0,0,.04); border: 0; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center;
+      color: var(--t2); flex-shrink: 0;
+      transition: transform .1s;
+    }
+    .hero-more:active { transform: scale(.92); }
+    .hero-more iconify-icon { font-size: 15px; }
+
+    .hero-title {
+      margin: 0;
+      /* v3.2.4: letter-spacing -.6 통일, line-height 1.25 */
+      font-size: 22px; font-weight: 700; letter-spacing: -.6px;
+      color: var(--t1); line-height: 1.25;
+    }
+    .hero-title b { color: var(--accent-strong); }
+    .hero-sub {
+      margin: 2px 0 0;
+      font-size: 14px; font-weight: 600; color: var(--t2);
+      line-height: 1.35;
+    }
+    .hero-ok-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-top: 8px;
+      font-size: 13px; font-weight: 600; color: var(--t3);
+    }
+    .hero-ok-pill iconify-icon { font-size: 15px; color: var(--accent-strong); flex-shrink: 0; }
+    .hero-ok-pill b { font-weight: 700; color: var(--t1); }
+
+    .hero-actions { margin-top: 16px; }
+    .btn-primary {
+      width: 100%;
+      background: var(--accent);
+      color: var(--palette-white);
+      box-shadow: 0 3px 10px rgba(var(--brand-green-500-rgb), .22);
+    }
+
+    /* ============ AI 인수인계 · 접힘 카드 ============ */
+    .handover-wrap {
+      margin: 20px var(--page-pad) 0;
+      position: relative; z-index: 1;
+    }
+    .handover {
+      padding: 12px 14px;
+      background: var(--cg-card-bg);
+      border: 0;
+      border-radius: var(--cg-card-radius);
+      box-shadow: var(--cg-card-shadow);
+      cursor: pointer;
+    }
+    .handover-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .handover-label {
+      font-size: 15px; font-weight: 800; color: var(--t1);
+      letter-spacing: -.2px; text-transform: none;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .handover-label iconify-icon { font-size: 18px; color: var(--accent-strong); }
+    .handover-time {
+      font-size: 11px; font-weight: 700; color: var(--t3);
+    }
+    .handover-body {
+      display: flex; align-items: flex-start; gap: 10px;
+    }
+    .handover-toggle {
+      flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%;
+      background: var(--accent-soft);
+      display: inline-flex; align-items: center; justify-content: center;
+      color: var(--accent-strong);
+      transition: transform .2s;
+    }
+    .handover.open .handover-toggle { transform: rotate(180deg); }
+    .handover-toggle iconify-icon { font-size: 14px; }
+
+    .handover-preview {
+      flex: 1; min-width: 0;
+      font-size: 13px; font-weight: 500; color: var(--t2); line-height: 1.5;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .handover-preview b { color: var(--t1); font-weight: 700; }
+    .handover-preview .warn { color: var(--palette-amber-700); font-weight: 700; }
+    .handover.open .handover-preview {
+      display: block; -webkit-line-clamp: unset; overflow: visible;
+    }
+    .handover-full {
+      display: none; margin-top: 10px; padding-top: 10px;
+      border-top: .5px dashed rgba(0,0,0,.08);
+      font-size: 14px; color: var(--t2); line-height: 1.55;
+    }
+    .handover.open .handover-full { display: block; }
+    .handover-items { display: flex; flex-direction: column; gap: 8px; }
+    .handover-item { display: flex; gap: 8px; align-items: flex-start; }
+    .handover-item .nm {
+      flex-shrink: 0; font-size: 12px; font-weight: 700; color: var(--accent-strong);
+      background: var(--accent-soft); padding: 2px 8px; border-radius: 999px; height: 22px;
+      display: inline-flex; align-items: center;
+    }
+    .handover-item .tx { font-size: 14px; color: var(--t1); line-height: 1.5; }
+
+    /* ============ 관찰 카드 (보조 · 좌측 4px 악센트) ============ */
+    .obs-card {
+      margin: 12px var(--page-pad) 0;
+      padding: 11px 14px 10px;
+      display: flex; flex-direction: column; gap: 9px;
+      background: var(--cg-card-bg);
+      border: 0;
+      border-radius: var(--cg-card-radius);
+      box-shadow: var(--cg-card-shadow);
+      position: relative; z-index: 1;
+      cursor: pointer;
+    }
+    .obs-card:active { transform: scale(.995); }
+
+    /* 헤더 */
+    .obs-head {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .obs-ic {
+      width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: var(--color-warning-soft);
+      color: var(--palette-amber-700);
+    }
+    .obs-ic iconify-icon { font-size: 15px; }
+    .obs-title { flex: 1; min-width: 0; line-height: 1.35; }
+    .obs-name {
+      font-size: 13px; font-weight: 700; color: var(--t1);
+      letter-spacing: -.2px;
+    }
+    .obs-name b { color: var(--palette-amber-700); font-weight: 700; }
+    .obs-meta {
+      font-size: 11px; font-weight: 600; color: var(--t3); margin-top: 2px;
+    }
+    .obs-call-mini {
+      flex-shrink: 0; height: 28px; padding: 0 11px;
+      border: 0; border-radius: 999px;
+      background: var(--color-warning-soft);
+      color: var(--palette-amber-700);
+      font-family: inherit; font-size: 12px; font-weight: 700;
+      display: inline-flex; align-items: center; gap: 4px;
+      cursor: pointer; transition: transform .1s;
+    }
+    .obs-call-mini:active { transform: scale(.94); }
+    .obs-call-mini iconify-icon { font-size: 13px; }
+
+    /* 바이탈 박스 */
+    .obs-vitals {
+      display: grid; grid-template-columns: 1.35fr 1fr;
+      gap: 10px;
+      padding: 8px 11px;
+      background: var(--color-warning-soft);
+      border-radius: 10px;
+      align-items: stretch;
+    }
+    .obs-vital {
+      display: flex; flex-direction: column;
+      min-width: 0;
+    }
+    .ov-l {
+      font-size: 10px; font-weight: 700; color: var(--t3);
+      letter-spacing: .3px; text-transform: uppercase;
+    }
+    .ov-v {
+      font-size: 17px; font-weight: 700; color: var(--palette-amber-700);
+      letter-spacing: -.3px; margin-top: 2px;
+      line-height: 1.05;
+      font-variant-numeric: tabular-nums;
+      display: flex; align-items: baseline; gap: 3px;
+    }
+    .ov-v .u {
+      font-size: 10px; font-weight: 700; color: var(--palette-amber-700);
+      letter-spacing: 0;
+    }
+    .ov-spark {
+      width: 100%; height: 20px; margin-top: 4px;
+      display: block;
+    }
+    .ov-spark polyline {
+      fill: none; stroke: var(--palette-amber-600);
+      stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round;
+    }
+    .ov-spark circle.dot-last {
+      fill: var(--palette-amber-600);
+    }
+    .ov-spark .base {
+      stroke: rgba(var(--color-warning-rgb), .22); stroke-width: 1;
+      stroke-dasharray: 2 3;
+    }
+
+
+    /* ============ 담당 4명 상태 스트립 (보호자앱 .pill-timeline 톤) ============
+       - 각 행: 아바타 + (이름 + 4개 오늘 체크 도트) + 다음 할 일 한 줄
+       - 그린 단일 원천: done 도트만 --accent, 나머지는 중성/amber
+       - c02와 동일 환자 4명(박·최·김·이) 유지 */
+    .roster-wrap {
+      margin: 18px var(--page-pad) 0;
+      position: relative; z-index: 1;
+    }
+    .roster-head {
+      display: flex; align-items: baseline; justify-content: space-between;
+      margin-bottom: 8px; padding: 0 2px;
+    }
+    .roster-t {
+      font-size: 13px; font-weight: 700; color: var(--t1); letter-spacing: -.2px;
+    }
+    .roster-sub {
+      font-size: 11px; font-weight: 700; color: var(--t3);
+    }
+    .roster-list {
+      background: var(--cg-card-bg);
+      border: 0;
+      border-radius: var(--cg-card-radius);
+      box-shadow: var(--cg-card-shadow);
+      overflow: hidden;
+    }
+    .roster-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px;
+      border-bottom: .5px solid rgba(0,0,0,.05);
+      text-decoration: none; color: inherit;
+      cursor: pointer; transition: background .12s;
+    }
+    .roster-row:last-child { border-bottom: 0; }
+    .roster-row:active { background: rgba(0,0,0,.02); }
+    .rs-av {
+      width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+      background: rgba(0,0,0,.05);
+      color: var(--t2);
+      font-size: 12px; font-weight: 700;
+      display: inline-flex; align-items: center; justify-content: center;
+      letter-spacing: -.2px;
+    }
+    .rs-av.warn { background: rgba(var(--color-warning-rgb), .14); color: var(--palette-amber-700); }
+    .roster-body { flex: 1; min-width: 0; }
+    .roster-top {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      line-height: 1.25;
+    }
+    .rs-nm {
+      font-size: 13px; font-weight: 700; color: var(--t1); letter-spacing: -.2px;
+    }
+    .rs-nm .rm {
+      font-size: 11px; font-weight: 600; color: var(--t3); margin-left: 4px;
+    }
+    .rs-dots { display: flex; gap: 4px; flex-shrink: 0; align-items: center; }
+    .rd {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: rgba(0,0,0,.14);
+    }
+    .rd.done { background: var(--accent-strong); }
+    .rd.now {
+      background: var(--accent); box-shadow: 0 0 0 3px rgba(var(--brand-green-500-rgb), .22);
+    }
+    .rd.warn { background: var(--palette-amber-500); }
+    .rs-next {
+      margin-top: 3px;
+      font-size: 11px; font-weight: 600; color: var(--t3);
+      letter-spacing: -.1px; line-height: 1.35;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .rs-next iconify-icon { font-size: 11px; color: var(--t3); }
+    .rs-next b { color: var(--t2); font-weight: 700; }
+    .roster-row.warn .rs-next { color: var(--palette-amber-700); }
+    .roster-row.warn .rs-next iconify-icon { color: var(--palette-amber-700); }
+    .roster-row.warn .rs-next b { color: var(--palette-amber-700); font-weight: 700; }
+    .roster-row.now .rs-next b { color: var(--accent-strong); font-weight: 700; }
+    .rs-chev {
+      flex-shrink: 0; font-size: 15px; color: var(--t3);
+    }
+
+
+    /* ============ 탭바 + SOS ============ */
+    /* v3.2.7: .bottom-bar / .tabbar / .tab 로컬 정의 제거 — caregiver.css가 SoT (4-b 섹션) */
+
+    /* ============ 오버레이 + 시트 ============ */
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.36);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      display: none; align-items: flex-end; justify-content: center; z-index: 200;
+    }
+    .overlay.show { display: flex; }
+    .sheet {
+      background: rgba(250,253,251,.94);
+      backdrop-filter: blur(60px) saturate(140%);
+      -webkit-backdrop-filter: blur(60px) saturate(140%);
+      border-top: .5px solid rgba(255,255,255,.8);
+      border-radius: 26px 26px 0 0;
+      padding: 18px 22px calc(28px + env(safe-area-inset-bottom,0px));
+      width: 100%; max-width: 430px; max-height: 90vh; overflow-y: auto;
+    }
+    .sheet-ico {
+      width: 44px; height: 44px; border-radius: 14px; flex-shrink: 0;
+      display: inline-flex; align-items: center; justify-content: center; color: var(--palette-white);
+    }
+    .sheet-ico iconify-icon { font-size: 22px; }
+
+    .sheet-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px; border-radius: 12px;
+      background: rgba(0,0,0,.028);
+      margin-bottom: 7px;
+    }
+    .sheet-row-ico {
+      width: 34px; height: 34px; border-radius: 10px; background: var(--palette-white);
+      display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .sheet-row-ico iconify-icon { font-size: 17px; }
+    .sheet-row-text { flex: 1; min-width: 0; }
+    .sheet-row-label { font-size: 12px; font-weight: 600; color: var(--t3); }
+    .sheet-row-val { font-size: 14px; font-weight: 700; color: var(--t1); margin-top: 1px; }
+    .sheet-row-badge {
+      flex-shrink: 0; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px;
+    }
+
+    .sheet-cta {
+      display: flex; gap: 8px; margin-top: 14px;
+    }
+
+    /* v3.2.6: .sos-grid/.sos-card/.sos-hint 로컬 정의 제거 — SOS 유형 시트는 HaruCG.openSosTypeSheet가 .cg-sos-grid 등 caregiver.css 클래스로 렌더링 */
+
+    /* Toast — v15 d01과 동일 (bottom, 탭바 위) */
+    .toast {
+      position: fixed; left: 50%;
+      bottom: calc(var(--safe-b) + var(--tab-h) + var(--tab-bot) + 18px);
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(28,28,30,.92); color: var(--palette-white);
+      padding: 11px 20px; border-radius: 999px;
+      font-size: 14px; font-weight: 600;
+      opacity: 0; pointer-events: none; z-index: 300;
+      transition: .25s; white-space: nowrap;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* 등장 애니 */
+    @keyframes haru-fade-in-up {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .shift, .obs-card, .hero-wrap, .handover-wrap, .roster-wrap { animation: haru-fade-in-up var(--duration-slow, 350ms) var(--easing-standard) both; }
+    .roster-wrap  { animation-delay: .16s; }
+    .obs-card      { animation-delay: .04s; }
+    .hero-wrap     { animation-delay: .08s; }
+    .handover-wrap { animation-delay: .12s; }
+
+    /* 인라인 스타일 대체 (audit 정책: inline 0) */
+    .shift-svg-accent       { color: var(--accent-strong); }
+    .shift-ring-val--xs     { font-size: 10px; }
+    .text-amber-strong      { color: var(--palette-amber-700); }
+    .sheet-btn-row { display: flex; gap: 8px; }
+    .sheet-btn--warn { flex: 1; background: var(--color-warning-soft); color: var(--palette-amber-700); }
+    .sheet-btn--primary { flex: 1; }
+    .sheet-ico--accent { background: var(--color-accent-soft); color: var(--color-accent-strong); }
+    .sheet-row--btn {
+      width: 100%; border: 0; text-align: left;
+      font-family: inherit;
+      background: transparent; cursor: pointer;
+    }
+    .sheet-row-ico--accent  { color: var(--accent-strong); }
+    .sheet-row-ico--neutral { color: var(--t2); }
+    .sheet-row-label        { display: block; }
+    .sheet-row-val          { display: block; }
+  </style>
+</head>
+<body>
+
+  <h1 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">오늘</h1>
+
+  <div class="bg"></div>
+
+  <div class="app">
+
+    <!-- ============ 헤더 ============ -->
+    <header class="header">
+      <div class="top-nav">
+        <a class="logo" href="#" aria-label="하루안부">
+          <svg viewBox="0 0 512 512" fill="none">
+            <g transform="translate(50,50) scale(0.163)">
+              <path d="M2521.32 2506.66C1239.65 2657.48 1239.65 1895.6 1239.65 1279.34L2497.69 0C2518.68 494.198 2522.27 1157.92 1658.86 1262.48C2641.88 1314.25 2521.32 2101.84 2521.32 2506.66Z" fill="currentColor" class="shift-svg-accent"/>
+              <path d="M4.68 19.34C1286.35-131.48 1286.35 630.4 1286.35 1246.66L28.31 2526C7.32 2031.8 3.73 1368.08 867.14 1263.52C-115.88 1211.75 4.68 424.16 4.68 19.34Z" fill="currentColor" class="shift-svg-accent"/>
+            </g>
+          </svg>
+        </a>
+        <div class="top-actions">
+          <a href="c03-sotong.html#alerts" class="icon-btn" aria-label="알림 3건 · 소통 탭">
+            <iconify-icon icon="fluent:alert-24-filled"></iconify-icon>
+            <span class="notif-dot"></span>
+          </a>
+          <a href="c04-mypage.html" class="icon-btn" aria-label="마이페이지">
+            <iconify-icon icon="fluent:person-24-filled"></iconify-icon>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- ============ 근무 상태 스트립 (슬림) ============ -->
+    <section class="shift">
+      <div class="shift-ring" aria-label="오전 케어 5건 중 5건 완료">
+        <svg class="shift-ring__svg" width="44" height="44">
+          <circle cx="22" cy="22" r="17" stroke="rgba(34,197,94,.14)" stroke-width="5" fill="none"/>
+          <circle cx="22" cy="22" r="17" stroke="var(--accent)" stroke-width="5" fill="none"
+            stroke-linecap="round" stroke-dasharray="107" stroke-dashoffset="47"/>
+        </svg>
+        <div class="shift-ring-val shift-ring-val--xs">5/9</div>
+      </div>
+      <div class="shift-meta">
+        <div class="shift-main">오전 근무 · 07:00→15:00</div>
+        <div class="shift-sub">완료 <b>5</b> · 남은 <b>4</b> · 담당 <b>9</b>명 · 피크 08-10</div>
+      </div>
+    </section>
+
+    <!-- ============ 히어로 · 지금 할 것 ============ -->
+    <div class="hero-wrap">
+      <article class="hero">
+        <div class="hero-top">
+          <span class="hero-time">10:15</span>
+          <span class="hero-next">다음까지 <b>46분</b></span>
+          <button class="hero-more" onclick="openHeroMenu()" aria-label="더보기">
+            <iconify-icon icon="fluent:more-horizontal-24-filled"></iconify-icon>
+          </button>
+        </div>
+        <h2 class="hero-title"><b>박영자</b> 어르신 · 혈압 측정</h2>
+        <p class="hero-sub">2층 A-3호</p>
+        <span class="hero-ok-pill">
+          <iconify-icon icon="fluent:checkmark-circle-24-filled"></iconify-icon>
+          <b>측정 가능</b> · 혈압약 08:00 복용 후 2시간 경과
+        </span>
+        <div class="hero-actions">
+          <button class="btn btn-primary" onclick="location.href='c02-checklist.html'">
+            <iconify-icon icon="fluent:pen-24-filled"></iconify-icon>지금 기록 시작
+          </button>
+        </div>
+      </article>
+    </div>
+
+    <!-- ============ AI 인수인계 (근무 시작시 요약, 컴팩트) ============ -->
+    <div class="handover-wrap">
+      <section class="handover" id="handover" onclick="toggleHandover()">
+        <div class="handover-head">
+          <span class="handover-label">AI 인수인계 · 야간 → 주간</span>
+          <span class="handover-time">06:45</span>
+        </div>
+        <div class="handover-body">
+          <div class="handover-preview">
+            <b>박영자</b> 새벽 수면 불안 1회 · <span class="warn">이정숙 기침 증상 오전 확인</span> · 최명자 둔부 발적 관찰 — 체위 변경 2h 유지
+          </div>
+          <span class="handover-toggle" aria-label="펼치기"><iconify-icon icon="fluent:chevron-down-24-filled"></iconify-icon></span>
+        </div>
+        <div class="handover-full">
+          <div class="handover-items">
+            <div class="handover-item">
+              <span class="nm">박</span>
+              <span class="tx">새벽 2시 수면 불안 1회 있었으나 안정. 혈압·맥박 정상. 아침 혈압약 복용 확인.</span>
+            </div>
+            <div class="handover-item">
+              <span class="nm">이</span>
+              <span class="tx"><b class="text-amber-strong">마른 기침 3회 관찰</b>. 체온 36.9℃ 미열. 오전 중 상태 변화 시 간호사 호출.</span>
+            </div>
+            <div class="handover-item">
+              <span class="nm">최</span>
+              <span class="tx">오른쪽 둔부 발적 지속. 체위 변경 <b>2시간 주기 유지</b> · 피부 상태 사진 1회 필요.</span>
+            </div>
+            <div class="handover-item">
+              <span class="nm">김</span>
+              <span class="tx">이상 없음. 숙면 · 오전 산책 컨디션 양호.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============ 담당 4명 오늘 상태 ============ -->
+    <div class="roster-wrap">
+      <div class="roster-head">
+        <span class="roster-t">담당 4명 · 오늘</span>
+        <span class="roster-sub">5 완료 · 4 남음</span>
+      </div>
+      <div class="roster-list">
+        <a class="roster-row now" href="c02-checklist.html?pt=park">
+          <span class="rs-av">박</span>
+          <div class="roster-body">
+            <div class="roster-top">
+              <span class="rs-nm">박영자<span class="rm">A-3</span></span>
+              <span class="rs-dots">
+                <span class="rd done"></span>
+                <span class="rd done"></span>
+                <span class="rd now"></span>
+                <span class="rd"></span>
+              </span>
+            </div>
+            <div class="rs-next">
+              지금 · <b>혈압 측정</b> · 10:15
+            </div>
+          </div>
+          <iconify-icon icon="fluent:chevron-right-24-filled" class="rs-chev"></iconify-icon>
+        </a>
+        <a class="roster-row" href="c02-checklist.html?pt=choi">
+          <span class="rs-av">최</span>
+          <div class="roster-body">
+            <div class="roster-top">
+              <span class="rs-nm">최명자<span class="rm">B-1</span></span>
+              <span class="rs-dots">
+                <span class="rd done"></span>
+                <span class="rd done"></span>
+                <span class="rd"></span>
+                <span class="rd"></span>
+              </span>
+            </div>
+            <div class="rs-next">
+              <b>체위 변경</b> · 11:00
+            </div>
+          </div>
+          <iconify-icon icon="fluent:chevron-right-24-filled" class="rs-chev"></iconify-icon>
+        </a>
+        <a class="roster-row" href="c02-checklist.html?pt=kim">
+          <span class="rs-av">김</span>
+          <div class="roster-body">
+            <div class="roster-top">
+              <span class="rs-nm">김순자<span class="rm">B-2</span></span>
+              <span class="rs-dots">
+                <span class="rd done"></span>
+                <span class="rd"></span>
+                <span class="rd"></span>
+                <span class="rd"></span>
+              </span>
+            </div>
+            <div class="rs-next">
+              <b>복약</b> · 11:00
+            </div>
+          </div>
+          <iconify-icon icon="fluent:chevron-right-24-filled" class="rs-chev"></iconify-icon>
+        </a>
+        <a class="roster-row warn" href="c02-checklist.html?pt=lee">
+          <span class="rs-av warn">이</span>
+          <div class="roster-body">
+            <div class="roster-top">
+              <span class="rs-nm">이정숙<span class="rm">B-2</span></span>
+              <span class="rs-dots">
+                <span class="rd warn"></span>
+                <span class="rd"></span>
+                <span class="rd"></span>
+                <span class="rd"></span>
+              </span>
+            </div>
+            <div class="rs-next">
+              <iconify-icon icon="fluent:warning-24-filled"></iconify-icon>
+              체온 재측정 대기 · <b>미열 관찰</b>
+            </div>
+          </div>
+          <iconify-icon icon="fluent:chevron-right-24-filled" class="rs-chev"></iconify-icon>
+        </a>
+      </div>
+    </div>
+
+    <!-- ============ 관찰 카드 (보조 · audit doc §5.2.3: priority 아래로 배치) ============ -->
+    <section class="obs-card" onclick="openObsDetail()" aria-label="이정숙 어르신 미열 관찰 상세 보기" role="button" tabindex="0">
+      <div class="obs-head">
+        <span class="obs-ic"><iconify-icon icon="fluent:warning-24-filled"></iconify-icon></span>
+        <div class="obs-title">
+          <div class="obs-name"><b>이정숙</b> 어르신 · 미열 관찰</div>
+          <div class="obs-meta">2층 B-2호 · 마지막 체크 06:40</div>
+        </div>
+        <button class="obs-call-mini" onclick="event.stopPropagation();callNurse('이정숙 미열')" aria-label="간호사 호출">
+          <iconify-icon icon="fluent:call-24-filled"></iconify-icon>호출
+        </button>
+      </div>
+      <div class="obs-vitals">
+        <div class="obs-vital">
+          <div class="ov-l">체온 · 최근 4회</div>
+          <div class="ov-v">37.4<span class="u">°C</span></div>
+          <svg class="ov-spark" viewBox="0 0 120 20" preserveAspectRatio="none" aria-hidden="true">
+            <line class="base" x1="0" y1="13" x2="120" y2="13"/>
+            <polyline points="10,14 43,13 77,11 110,5"/>
+            <circle class="dot-last" cx="110" cy="5" r="2.4"/>
+          </svg>
+        </div>
+        <div class="obs-vital">
+          <div class="ov-l">기침</div>
+          <div class="ov-v">3<span class="u">회 · 오전</span></div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ============ 하단 바 ============ -->
+  <div class="bottom-bar">
+    <nav class="tabbar" aria-label="요양보호사 앱 탭바">
+      <a href="c01-today.html" class="tab active" aria-current="page" aria-label="오늘">
+        <iconify-icon icon="fluent:home-24-filled"></iconify-icon>
+        <span class="tab-label">오늘</span>
+      </a>
+      <a href="c02-checklist.html" class="tab" aria-label="기록">
+        <iconify-icon icon="fluent:clipboard-task-list-ltr-24-filled"></iconify-icon>
+        <span class="tab-label">기록</span>
+      </a>
+      <a href="c03-sotong.html" class="tab" aria-label="소통">
+        <iconify-icon icon="fluent:chat-24-filled"></iconify-icon>
+        <span class="tab-label">소통</span>
+      </a>
+      <a href="c04-mypage.html" class="tab" aria-label="마이">
+        <iconify-icon icon="fluent:person-24-filled"></iconify-icon>
+        <span class="tab-label">마이</span>
+      </a>
+    </nav>
+    <!-- v3.2.6: caregiver.js HaruCG.installSOS() 자동 바인딩에 맞춰 cg-sos 표준 마크업으로 통일 -->
+    <button class="cg-sos" data-sos-bind aria-label="긴급 SOS · 3초 길게 누르면 즉시 발신">
+      <span class="cg-sos__ring" aria-hidden="true">
+        <svg class="sos-ring" viewBox="0 0 60 60">
+          <circle cx="30" cy="30" r="27"/>
+        </svg>
+      </span>
+      <iconify-icon icon="fluent:warning-24-filled"></iconify-icon>
+    </button>
+  </div>
+
+  <!-- ============ 오버레이 (화면 자체 sheet) ============ -->
+  <div class="overlay" id="overlay" onclick="if(event.target===this)closeSheet()">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div id="sheetContent"></div>
+    </div>
+  </div>
+  <div class="toast" id="toastEl"></div>
+
+  <!-- ============ HaruCG 공유 오버레이 (SOS countdown 등) ============ -->
+  <div class="cg-overlay" id="cgOverlay">
+    <div class="cg-sheet">
+      <div class="cg-sheet__handle"></div>
+      <div id="cgSheetContent"></div>
+    </div>
+  </div>
+  <div class="cg-toast" id="cgToast"></div>
+
+  <script>
+
+    /* ---- 인수인계 접힘 ---- */
+    function toggleHandover() {
+      document.getElementById('handover').classList.toggle('open');
+    }
+
+    /* ---- 관찰 카드 detail (이정숙 미열) — toast-only 폐기, 실제 detail sheet ---- */
+    function openObsDetail() {
+      if (!window.HaruCG) { toast('이정숙 어르신 상세'); return; }
+      HaruCG.openSheet(
+        '<div class="cg-sheet__head">' +
+          '<div class="cg-sheet__ico cg-sheet__ico--warn">' +
+            '<iconify-icon icon="fluent:warning-24-filled"></iconify-icon>' +
+          '</div>' +
+          '<div>' +
+            '<div class="cg-sheet__ttl">이정숙 어르신 · 미열 관찰</div>' +
+            '<div class="cg-sheet__sub">2층 B-2호 · 마지막 체크 06:40 · 단계 <b>관찰</b></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="cg-sheet__body">' +
+          '<div class="cg-row">' +
+            '<span class="cg-row__ico cg-row__ico--warn"><iconify-icon icon="fluent:temperature-24-filled"></iconify-icon></span>' +
+            '<div class="cg-row__body">' +
+              '<div class="cg-row__t">체온 37.4℃ · 4회 측정</div>' +
+              '<div class="cg-row__d">06:00 36.9 → 06:20 37.1 → 06:40 37.4 (상승 추세)</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="cg-row">' +
+            '<span class="cg-row__ico cg-row__ico--warn"><iconify-icon icon="fluent:lungs-24-filled"></iconify-icon></span>' +
+            '<div class="cg-row__body">' +
+              '<div class="cg-row__t">기침 3회 · 오전</div>' +
+              '<div class="cg-row__d">마른 기침. 가래 소리는 없음</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="cg-row">' +
+            '<span class="cg-row__ico"><iconify-icon icon="fluent:lightbulb-24-filled"></iconify-icon></span>' +
+            '<div class="cg-row__body">' +
+              '<div class="cg-row__t">다음 행동</div>' +
+              '<div class="cg-row__d">10:30 체온 재측정 · 38℃ 이상 시 간호사 호출</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="cg-sheet__cta">' +
+          '<button class="btn sheet-btn--warn" onclick="HaruCG.closeSheet();callNurse(\'미열 관찰\')"><iconify-icon icon="fluent:call-24-filled"></iconify-icon>간호사 호출</button>' +
+          '<button class="btn btn-primary sheet-btn--primary" onclick="HaruCG.closeSheet();location.href=\'c02-checklist.html?pt=lee\'"><iconify-icon icon="fluent:pen-24-filled"></iconify-icon>기록 시작</button>' +
+        '</div>',
+        { variant: 'warn' }
+      );
+    }
+    function callNurse(reason) {
+      if (window.HaruCG) HaruCG.toast('간호사 호출 · 김영미 선생님 (' + reason + ')');
+      else toast('간호사 호출 · 김영미 선생님');
+    }
+
+    /* ---- 히어로 더보기 (완료 · 연기 · 상세) ---- */
+    function openHeroMenu() {
+      document.getElementById('sheetContent').innerHTML = `
+        <div class="sheet-head">
+          <div class="sheet-ico sheet-ico--accent">
+            <iconify-icon icon="fluent:heart-pulse-24-filled"></iconify-icon>
+          </div>
+          <div>
+            <div class="sheet-ttl">박영자 어르신 · 혈압 측정</div>
+            <div class="sheet-sub">10:15 · 2층 A-3호</div>
+          </div>
+        </div>
+        <button class="sheet-row sheet-row--btn" onclick="toast('박영자 · 혈압 측정 완료 처리');closeSheet()">
+          <span class="sheet-row-ico sheet-row-ico--accent"><iconify-icon icon="fluent:checkmark-24-filled"></iconify-icon></span>
+          <span class="sheet-row-text">
+            <span class="sheet-row-label">완료 처리</span>
+            <span class="sheet-row-val">따로 측정 없이 완료로 표시</span>
+          </span>
+        </button>
+        <button class="sheet-row sheet-row--btn" onclick="toast('10:30으로 연기');closeSheet()">
+          <span class="sheet-row-ico sheet-row-ico--neutral"><iconify-icon icon="fluent:clock-24-filled"></iconify-icon></span>
+          <span class="sheet-row-text">
+            <span class="sheet-row-label">10:30으로 연기</span>
+            <span class="sheet-row-val">다음 측정 슬롯으로 미룸</span>
+          </span>
+        </button>
+        <button class="sheet-row sheet-row--btn" onclick="toast('박영자 어르신 상세');closeSheet()">
+          <span class="sheet-row-ico sheet-row-ico--neutral"><iconify-icon icon="fluent:person-24-filled"></iconify-icon></span>
+          <span class="sheet-row-text">
+            <span class="sheet-row-label">어르신 상세</span>
+            <span class="sheet-row-val">복약 · 식사 · 기록 보기</span>
+          </span>
+        </button>`;
+      document.getElementById('overlay').classList.add('show');
+    }
+
+    /* v3.2.6: 자체 SOS 구현 제거. caregiver.js HaruCG.installSOS()가
+       .cg-sos[data-sos-bind] 버튼을 자동 바인딩한다. (탭=유형 시트, 3초 hold=1초 카운트다운→발신) */
+
+    function closeSheet()  { document.getElementById('overlay').classList.remove('show'); }
+    function toast(m) {
+      const t = document.getElementById('toastEl');
+      t.textContent = m; t.classList.add('show');
+      clearTimeout(t._x); t._x = setTimeout(() => t.classList.remove('show'), 2600);
+    }
+  </script>
+  <div class="bottom-scrim" aria-hidden="true"></div>
+</body>
+</html>

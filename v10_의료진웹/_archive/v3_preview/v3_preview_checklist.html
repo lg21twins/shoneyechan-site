@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>v3 Preview — 케어 체크리스트 + 진행률 트래커</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --green:#47B881;--green-bg:#F0FAF4;--green-border:#C3E8D3;
+  --red:#E53E3E;--red-bg:#FFF5F5;--red-border:#FED7D7;
+  --yellow:#D97706;--yellow-bg:#FFFBEB;--yellow-border:#FDE68A;
+  --ink:#111111;--ink2:#374151;--ink3:#6B7280;--ink4:#9CA3AF;
+  --border:#E4E6EB;--surface:#F4F5F7;--white:#FFFFFF;
+  --font:'Pretendard Variable',Pretendard,-apple-system,sans-serif;
+}
+body{font-family:var(--font);background:var(--surface);color:var(--ink);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;padding:32px;}
+
+/* 전체 레이아웃 */
+.layout{display:grid;grid-template-columns:1fr 260px;gap:16px;align-items:start;}
+
+/* 왼쪽 — 체크리스트 */
+.card{background:var(--white);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+
+.card-header{
+  padding:12px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.card-title{font-size:13px;font-weight:700;color:var(--ink2);display:flex;align-items:center;gap:6px;}
+.title-dot{width:6px;height:6px;border-radius:50%;background:var(--green);}
+
+/* 카테고리 필터 */
+.cat-bar{display:flex;gap:6px;padding:12px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.cat-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:5px 12px;border-radius:4px;font-size:12px;font-weight:600;
+  color:var(--ink3);background:var(--surface);border:1px solid var(--border);
+  cursor:pointer;font-family:var(--font);
+}
+.cat-btn.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+.cat-count{font-size:10px;font-weight:700;opacity:.7;}
+
+/* 환자 섹션 */
+.pt-section{border-bottom:1px solid var(--border);}
+.pt-section:last-child{border-bottom:none;}
+
+.pt-header{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 16px;cursor:pointer;
+  transition:background .12s;
+}
+.pt-header:hover{background:var(--surface);}
+
+.pt-av{
+  width:34px;height:34px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;flex-shrink:0;
+}
+.pt-av.critical{background:var(--red-bg);color:var(--red);}
+.pt-av.caution {background:var(--yellow-bg);color:var(--yellow);}
+.pt-av.stable  {background:var(--green-bg);color:var(--green);}
+
+.pt-name{font-size:13px;font-weight:700;color:var(--ink2);}
+.pt-room{font-size:11px;color:var(--ink4);margin-top:1px;}
+
+.pt-prog-wrap{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.pt-prog-bar{width:60px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.pt-prog-fill{height:100%;border-radius:2px;background:var(--green);}
+.pt-prog-fill.warn{background:var(--yellow);}
+.pt-prog-cnt{font-size:11px;font-weight:700;color:var(--ink3);min-width:28px;text-align:right;}
+
+.pt-chev{width:16px;height:16px;color:var(--ink4);transition:transform .2s;margin-left:4px;flex-shrink:0;}
+.pt-header.open .pt-chev{transform:rotate(180deg);}
+
+.pt-body{padding:6px 14px 12px;display:flex;flex-direction:column;gap:5px;}
+
+/* 체크 아이템 */
+.ck{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:9px 12px;border-radius:6px;
+  background:var(--surface);border:1px solid var(--border);
+  cursor:pointer;transition:background .12s;
+}
+.ck:hover{background:#ECEEF1;}
+.ck.done{opacity:.5;}
+
+.ck-box{
+  width:18px;height:18px;border-radius:4px;flex-shrink:0;margin-top:1px;
+  display:flex;align-items:center;justify-content:center;
+  border:1.5px solid var(--border);background:var(--white);
+  transition:all .15s;
+}
+.ck.done .ck-box{background:var(--green);border-color:var(--green);}
+.ck-check{display:none;width:10px;height:10px;color:#fff;}
+.ck.done .ck-check{display:block;}
+
+.ck-label{font-size:12.5px;font-weight:600;color:var(--ink2);flex:1;}
+.ck.done .ck-label{text-decoration:line-through;color:var(--ink4);font-weight:400;}
+.ck-sub{font-size:11px;color:var(--ink4);margin-top:2px;}
+
+.ck-right{margin-left:auto;display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.ck-pri{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;}
+.ck-pri.high{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border);}
+.ck-pri.mid {background:var(--yellow-bg);color:var(--yellow);border:1px solid var(--yellow-border);}
+.ck-pri.low {background:var(--surface);color:var(--ink3);border:1px solid var(--border);}
+.ck-time{font-size:10px;color:var(--ink4);}
+
+/* ── 오른쪽 — 진행률 트래커 (과제 등록 모달 스타일) ── */
+.tracker{background:var(--white);border:1px solid var(--border);border-radius:8px;overflow:hidden;position:sticky;top:32px;}
+
+.tracker-header{padding:14px 16px;border-bottom:1px solid var(--border);}
+.tracker-title{font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px;}
+.tracker-sub{font-size:12px;color:var(--ink4);}
+
+.tracker-body{padding:14px 16px;display:flex;flex-direction:column;gap:0;}
+
+.tr-item{display:flex;gap:12px;align-items:flex-start;padding-bottom:16px;position:relative;}
+.tr-item:last-child{padding-bottom:0;}
+.tr-item:last-child .tr-line{display:none;}
+
+.tr-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+.tr-circle{
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;flex-shrink:0;
+  border:2px solid var(--border);background:var(--white);color:var(--ink4);
+}
+.tr-circle.done   {background:var(--green);border-color:var(--green);color:#fff;}
+.tr-circle.active {background:var(--ink);border-color:var(--ink);color:#fff;}
+.tr-line{width:1.5px;flex:1;background:var(--border);margin-top:4px;min-height:12px;}
+.tr-line.done{background:var(--green);}
+
+.tr-info{flex:1;padding-top:4px;}
+.tr-name{font-size:12.5px;font-weight:700;color:var(--ink4);}
+.tr-item.done-item .tr-name{color:var(--green);}
+.tr-item.active-item .tr-name{color:var(--ink);font-weight:800;}
+.tr-detail{font-size:11px;color:var(--ink4);margin-top:2px;line-height:1.4;}
+.tr-item.active-item .tr-detail{color:var(--ink3);}
+
+.tr-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;margin-top:4px;}
+.tr-badge.done  {background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);}
+.tr-badge.active{background:var(--ink);color:#fff;}
+.tr-badge.pend  {background:var(--surface);color:var(--ink3);border:1px solid var(--border);}
+
+/* 요약 박스 */
+.tracker-summary{
+  margin:0 16px 16px;padding:12px;
+  background:var(--surface);border:1px solid var(--border);border-radius:6px;
+}
+.ts-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.ts-row:last-child{margin-bottom:0;}
+.ts-label{font-size:11px;color:var(--ink3);}
+.ts-val  {font-size:12px;font-weight:700;color:var(--ink2);}
+.ts-val.green{color:var(--green);}
+.ts-val.red  {color:var(--red);}
+
+.progress-ring-wrap{
+  display:flex;align-items:center;justify-content:center;
+  padding:16px 16px 8px;flex-direction:column;gap:6px;
+}
+.ring-label{font-size:11px;color:var(--ink3);font-weight:600;}
+svg.ring{overflow:visible;}
+.ring-track{fill:none;stroke:var(--border);stroke-width:6;}
+.ring-fill {fill:none;stroke:var(--green);stroke-width:6;stroke-linecap:round;
+  stroke-dasharray:157;stroke-dashoffset:50;transform:rotate(-90deg);transform-origin:center;}
+.ring-text-val{font-size:18px;font-weight:800;fill:var(--ink);font-family:var(--font);}
+.ring-text-sub{font-size:9px;fill:var(--ink3);font-family:var(--font);}
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- 왼쪽: 체크리스트 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <span class="title-dot"></span>
+        케어 체크리스트
+      </div>
+      <span style="font-size:12px;color:var(--ink3);">2026.04.18 오전 근무</span>
+    </div>
+
+    <!-- 카테고리 필터 -->
+    <div class="cat-bar">
+      <button class="cat-btn active">전체 <span class="cat-count">42</span></button>
+      <button class="cat-btn">위생케어 <span class="cat-count">12</span></button>
+      <button class="cat-btn">영양·식사 <span class="cat-count">8</span></button>
+      <button class="cat-btn">바이탈 <span class="cat-count">10</span></button>
+      <button class="cat-btn">투약 <span class="cat-count">7</span></button>
+      <button class="cat-btn">활동·재활 <span class="cat-count">5</span></button>
+    </div>
+
+    <!-- 환자 1 — 완료 다수 -->
+    <div class="pt-section">
+      <div class="pt-header open">
+        <div class="pt-av stable">이</div>
+        <div>
+          <div class="pt-name">이순자</div>
+          <div class="pt-room">201호 · 78세 · 여</div>
+        </div>
+        <div class="pt-prog-wrap">
+          <div class="pt-prog-bar"><div class="pt-prog-fill" style="width:80%"></div></div>
+          <span class="pt-prog-cnt">4 / 5</span>
+        </div>
+        <svg class="pt-chev open" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+        </svg>
+      </div>
+      <div class="pt-body">
+        <div class="ck done">
+          <div class="ck-box">
+            <svg class="ck-check" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+          </div>
+          <div style="flex:1">
+            <div class="ck-label">세면 및 구강위생</div>
+            <div class="ck-sub">06:30 완료 · 김코디</div>
+          </div>
+          <div class="ck-right"><span class="ck-time">06:30</span></div>
+        </div>
+        <div class="ck done">
+          <div class="ck-box">
+            <svg class="ck-check" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+          </div>
+          <div style="flex:1">
+            <div class="ck-label">아침 투약 확인</div>
+            <div class="ck-sub">혈압약, 당뇨약 복용 완료</div>
+          </div>
+          <div class="ck-right"><span class="ck-time">07:10</span></div>
+        </div>
+        <div class="ck done">
+          <div class="ck-box">
+            <svg class="ck-check" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+          </div>
+          <div style="flex:1">
+            <div class="ck-label">바이탈 측정</div>
+            <div class="ck-sub">혈압 118/74 · 체온 36.4 · 맥박 78</div>
+          </div>
+          <div class="ck-right"><span class="ck-time">08:40</span></div>
+        </div>
+        <div class="ck done">
+          <div class="ck-box">
+            <svg class="ck-check" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+          </div>
+          <div style="flex:1">
+            <div class="ck-label">욕창 예방 체위 변경</div>
+            <div class="ck-sub">2시간 단위 완료</div>
+          </div>
+          <div class="ck-right"><span class="ck-time">10:00</span></div>
+        </div>
+        <div class="ck">
+          <div class="ck-box"></div>
+          <div style="flex:1">
+            <div class="ck-label">상처 드레싱</div>
+            <div class="ck-sub">우측 발목 욕창 — 진행 중</div>
+          </div>
+          <div class="ck-right">
+            <span class="ck-pri high">긴급</span>
+            <span class="ck-time">10:30</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 환자 2 — 주의 -->
+    <div class="pt-section">
+      <div class="pt-header open">
+        <div class="pt-av caution">박</div>
+        <div>
+          <div class="pt-name">박철수</div>
+          <div class="pt-room">205호 · 82세 · 남</div>
+        </div>
+        <div class="pt-prog-wrap">
+          <div class="pt-prog-bar"><div class="pt-prog-fill warn" style="width:40%"></div></div>
+          <span class="pt-prog-cnt">2 / 5</span>
+        </div>
+        <svg class="pt-chev open" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+        </svg>
+      </div>
+      <div class="pt-body">
+        <div class="ck done">
+          <div class="ck-box">
+            <svg class="ck-check" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+          </div>
+          <div style="flex:1">
+            <div class="ck-label">세면 및 구강위생</div>
+            <div class="ck-sub">06:45 완료</div>
+          </div>
+          <div class="ck-right"><span class="ck-time">06:45</span></div>
+        </div>
+        <div class="ck done">
+          <div class="ck-box">
+            <svg class="ck-check" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+          </div>
+          <div style="flex:1">
+            <div class="ck-label">바이탈 측정</div>
+            <div class="ck-sub" style="color:var(--red)">혈압 168/96 — 이상 수치 기록됨</div>
+          </div>
+          <div class="ck-right"><span class="ck-time">08:50</span></div>
+        </div>
+        <div class="ck">
+          <div class="ck-box"></div>
+          <div style="flex:1">
+            <div class="ck-label">아침 투약</div>
+            <div class="ck-sub">혈압 이상으로 투약 보류 중 — 의사 지시 대기</div>
+          </div>
+          <div class="ck-right">
+            <span class="ck-pri high">보류</span>
+          </div>
+        </div>
+        <div class="ck">
+          <div class="ck-box"></div>
+          <div style="flex:1">
+            <div class="ck-label">아침 식사 체크</div>
+            <div class="ck-sub">섭취율 기록 필요</div>
+          </div>
+          <div class="ck-right">
+            <span class="ck-pri mid">중요</span>
+          </div>
+        </div>
+        <div class="ck">
+          <div class="ck-box"></div>
+          <div style="flex:1">
+            <div class="ck-label">재혈압 측정</div>
+            <div class="ck-sub">30분 후 재측정 예정</div>
+          </div>
+          <div class="ck-right">
+            <span class="ck-pri high">긴급</span>
+            <span class="ck-time">10:30</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 환자 3 — 접혀있는 상태 -->
+    <div class="pt-section">
+      <div class="pt-header">
+        <div class="pt-av stable">김</div>
+        <div>
+          <div class="pt-name">김영희</div>
+          <div class="pt-room">208호 · 75세 · 여</div>
+        </div>
+        <div class="pt-prog-wrap">
+          <div class="pt-prog-bar"><div class="pt-prog-fill" style="width:100%"></div></div>
+          <span class="pt-prog-cnt" style="color:var(--green)">5 / 5</span>
+        </div>
+        <svg class="pt-chev" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+        </svg>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 오른쪽: 진행률 트래커 -->
+  <div class="tracker">
+    <div class="tracker-header">
+      <div class="tracker-title">PROGRESS</div>
+      <div class="tracker-sub">오늘 케어 진행 현황</div>
+    </div>
+
+    <!-- 도넛 링 -->
+    <div class="progress-ring-wrap">
+      <svg class="ring" width="80" height="80" viewBox="0 0 56 56">
+        <circle class="ring-track" cx="28" cy="28" r="22"/>
+        <circle class="ring-fill" cx="28" cy="28" r="22"/>
+        <text class="ring-text-val" x="28" y="31" text-anchor="middle">68%</text>
+      </svg>
+      <span class="ring-label">전체 완료율</span>
+    </div>
+
+    <!-- 요약 -->
+    <div class="tracker-summary">
+      <div class="ts-row">
+        <span class="ts-label">완료</span>
+        <span class="ts-val green">29건</span>
+      </div>
+      <div class="ts-row">
+        <span class="ts-label">미완료</span>
+        <span class="ts-val">13건</span>
+      </div>
+      <div class="ts-row">
+        <span class="ts-label">긴급</span>
+        <span class="ts-val red">3건</span>
+      </div>
+      <div class="ts-row">
+        <span class="ts-label">보류</span>
+        <span class="ts-val" style="color:var(--yellow)">2건</span>
+      </div>
+    </div>
+
+    <!-- 단계 트래커 -->
+    <div class="tracker-body">
+
+      <div class="tr-item done-item">
+        <div class="tr-left">
+          <div class="tr-circle done">
+            <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+          </div>
+          <div class="tr-line done"></div>
+        </div>
+        <div class="tr-info">
+          <div class="tr-name">01. 아침 위생케어</div>
+          <div class="tr-detail">세면, 구강위생 — 25명</div>
+          <span class="tr-badge done">완료</span>
+        </div>
+      </div>
+
+      <div class="tr-item done-item">
+        <div class="tr-left">
+          <div class="tr-circle done">
+            <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+          </div>
+          <div class="tr-line done"></div>
+        </div>
+        <div class="tr-info">
+          <div class="tr-name">02. 아침 투약</div>
+          <div class="tr-detail">23명 완료 · 2명 보류</div>
+          <span class="tr-badge done">완료</span>
+        </div>
+      </div>
+
+      <div class="tr-item done-item">
+        <div class="tr-left">
+          <div class="tr-circle done">
+            <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+          </div>
+          <div class="tr-line done"></div>
+        </div>
+        <div class="tr-info">
+          <div class="tr-name">03. 오전 바이탈</div>
+          <div class="tr-detail">이상 2건 기록 — 205호, 201호</div>
+          <span class="tr-badge done">완료</span>
+        </div>
+      </div>
+
+      <div class="tr-item active-item">
+        <div class="tr-left">
+          <div class="tr-circle active">04</div>
+          <div class="tr-line"></div>
+        </div>
+        <div class="tr-info">
+          <div class="tr-name">04. 처치 및 드레싱</div>
+          <div class="tr-detail">201호 상처 드레싱 진행 중</div>
+          <span class="tr-badge active">진행중</span>
+        </div>
+      </div>
+
+      <div class="tr-item">
+        <div class="tr-left">
+          <div class="tr-circle">05</div>
+          <div class="tr-line"></div>
+        </div>
+        <div class="tr-info">
+          <div class="tr-name">05. 점심 투약</div>
+          <div class="tr-detail">12:00 예정</div>
+          <span class="tr-badge pend">예정</span>
+        </div>
+      </div>
+
+      <div class="tr-item">
+        <div class="tr-left">
+          <div class="tr-circle">06</div>
+          <div class="tr-line"></div>
+        </div>
+        <div class="tr-info">
+          <div class="tr-name">06. 인수인계 작성</div>
+          <div class="tr-detail">14:30 교대 전 완료</div>
+          <span class="tr-badge pend">예정</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

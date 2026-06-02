@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ko" data-role="medical" data-platform="mobile">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#F4FAF6">
+  <title>SBAR 위계 비교 · A/B/C</title>
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css">
+  <script src="../07_디자인/_app-theme.js"></script>
+  <link rel="stylesheet" href="./_shared.css?v=20260525p">
+  <script src="../07_디자인/_iconify-icon.min.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{font-size:16px;background:#F4FAF6;}
+    body{color:var(--t1);font-family:var(--font-family-base);letter-spacing:-.2px;-webkit-font-smoothing:antialiased;padding-bottom:60px;}
+    .bg{position:fixed;inset:0;z-index:0;pointer-events:none;
+      background:radial-gradient(720px 540px at 50% -10%, rgba(34,197,94,.10), transparent 70%),
+        linear-gradient(180deg,#EAF6EE 0%,#F0F8F3 35%,#F4FAF6 100%);}
+    .app{max-width:430px;margin:0 auto;position:relative;padding:calc(var(--safe-t) + 18px) var(--pad) 0;}
+    .page-title{font-size:20px;font-weight:800;color:var(--t1);letter-spacing:-.4px;margin-bottom:6px;}
+    .page-sub{font-size:13px;color:var(--t3);margin-bottom:24px;}
+    .opt-head{margin:32px 0 12px;display:flex;align-items:baseline;gap:8px;}
+    .opt-tag{
+      display:inline-flex;align-items:center;justify-content:center;
+      width:26px;height:26px;border-radius:8px;
+      background:var(--accent);color:#fff;font-size:13px;font-weight:800;
+    }
+    .opt-name{font-size:16px;font-weight:700;color:var(--t1);}
+    .opt-desc{font-size:12px;color:var(--t3);margin:-6px 0 14px;line-height:1.5;}
+
+    /* ============== 공통 ============== */
+    .card{
+      background:#fff;border-radius:24px;
+      box-shadow:0 8px 24px rgba(0,0,0,.06), 0 1px 3px rgba(0,0,0,.04);
+      overflow:hidden;
+    }
+    .risk-pill{
+      display:inline-flex;align-items:center;gap:4px;
+      font-size:10.5px;font-weight:700;letter-spacing:.3px;
+      padding:3px 8px;border-radius:999px;text-transform:uppercase;
+    }
+    .risk-pill iconify-icon{font-size:12px;}
+    .risk-danger{background:var(--danger-soft);color:var(--palette-red-700);}
+    .risk-warn{background:var(--warn-soft);color:var(--palette-amber-700);}
+    .edit-btn{
+      flex-shrink:0;width:32px;height:32px;border-radius:10px;
+      background:#F4F6F8;border:0;cursor:pointer;
+      display:inline-flex;align-items:center;justify-content:center;
+    }
+    .edit-btn iconify-icon{font-size:15px;color:var(--t2);}
+
+    /* ============== A · 좌측 컬러 레일 ============== */
+    .a-row{
+      position:relative;padding:20px 22px 20px 26px;
+      border-bottom:1px solid rgba(0,0,0,.05);
+      display:flex;align-items:flex-start;gap:14px;
+    }
+    .a-row:last-child{border-bottom:0;}
+    .a-row::before{
+      content:'';position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:0 3px 3px 0;
+      background:rgba(0,0,0,.08);
+    }
+    .a-row.danger::before{background:var(--danger);}
+    .a-row.warn::before{background:#F59E0B;}
+    .a-tag{
+      width:34px;height:34px;border-radius:10px;flex-shrink:0;
+      display:inline-flex;align-items:center;justify-content:center;
+      font-size:14px;font-weight:800;letter-spacing:-.2px;
+      background:#F4F4F5;color:#3F3F46;
+    }
+    .a-row.danger .a-tag{background:var(--danger-soft);color:var(--palette-red-700);}
+    .a-row.warn .a-tag{background:var(--warn-soft);color:var(--palette-amber-700);}
+    .a-body{flex:1;min-width:0;line-height:1.5;}
+    .a-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;}
+    .a-label{font-size:11px;font-weight:700;color:var(--t3);letter-spacing:.4px;text-transform:uppercase;}
+    .a-text{font-size:14px;font-weight:500;color:var(--t1);line-height:1.6;}
+    .a-text b{font-weight:700;color:var(--t1);}
+
+    /* ============== B · 키-밸류 임상 표 ============== */
+    .b-row{
+      padding:18px 22px;
+      border-bottom:1px solid rgba(0,0,0,.05);
+    }
+    .b-row:last-child{border-bottom:0;}
+    .b-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+    .b-tag{
+      width:30px;height:30px;border-radius:8px;flex-shrink:0;
+      display:inline-flex;align-items:center;justify-content:center;
+      font-size:13px;font-weight:800;
+      background:#F4F4F5;color:#3F3F46;
+    }
+    .b-row.danger .b-tag{background:var(--danger-soft);color:var(--palette-red-700);}
+    .b-row.warn .b-tag{background:var(--warn-soft);color:var(--palette-amber-700);}
+    .b-label{
+      flex:1;font-size:11px;font-weight:700;color:var(--t2);
+      letter-spacing:.4px;text-transform:uppercase;
+    }
+    .kv{
+      display:flex;align-items:flex-start;gap:14px;
+      padding:8px 0;border-top:1px solid rgba(0,0,0,.05);
+    }
+    .kv:first-of-type{border-top:0;}
+    .kv-k{
+      flex:0 0 64px;font-size:12px;font-weight:600;color:var(--t3);
+      padding-top:1px;
+    }
+    .kv-v{flex:1;font-size:14px;font-weight:500;color:var(--t1);line-height:1.55;}
+    .kv-v b{font-weight:700;}
+    .b-prose{font-size:14px;font-weight:500;color:var(--t1);line-height:1.6;}
+    .b-prose b{font-weight:700;}
+
+    /* ============== C · 헤드라인 + 보조 접기 ============== */
+    .c-row{
+      padding:18px 22px;
+      border-bottom:1px solid rgba(0,0,0,.05);
+    }
+    .c-row:last-child{border-bottom:0;}
+    .c-head{display:flex;align-items:center;gap:10px;}
+    .c-tag{
+      width:30px;height:30px;border-radius:8px;flex-shrink:0;
+      display:inline-flex;align-items:center;justify-content:center;
+      font-size:13px;font-weight:800;
+      background:#F4F4F5;color:#3F3F46;
+    }
+    .c-row.danger .c-tag{background:var(--danger-soft);color:var(--palette-red-700);}
+    .c-row.warn .c-tag{background:var(--warn-soft);color:var(--palette-amber-700);}
+    .c-label{flex:1;font-size:11px;font-weight:700;color:var(--t2);
+      letter-spacing:.4px;text-transform:uppercase;}
+    .c-count{font-size:12px;font-weight:600;color:var(--t3);}
+    .c-chev{color:var(--t3);}
+    .c-chev iconify-icon{font-size:18px;}
+    .c-headline{
+      margin:10px 0 8px;font-size:17px;font-weight:700;letter-spacing:-.3px;
+      line-height:1.35;color:var(--t1);
+    }
+    .c-row.danger .c-headline{color:var(--palette-red-700);}
+    .c-row.warn .c-headline{color:#B45309;}
+    .c-body{font-size:13.5px;font-weight:500;color:var(--t2);line-height:1.6;}
+    .c-body b{color:var(--t1);font-weight:700;}
+    .c-divider{height:1px;background:rgba(0,0,0,.06);margin:8px 0 10px;}
+
+    /* ============== D · B+C 하이브리드 ============== */
+    /* 위급 (펼친) 행 — 무겁게: 큰 태그 + 큰 헤드라인 + 충분한 패딩 */
+    .d-row{
+      padding:24px 22px 22px;
+      border-bottom:1px solid rgba(0,0,0,.08);
+    }
+    .d-row:last-child{border-bottom:0;}
+    .d-head{display:flex;align-items:center;gap:12px;}
+    .d-tag{
+      width:36px;height:36px;border-radius:10px;flex-shrink:0;
+      display:inline-flex;align-items:center;justify-content:center;
+      font-size:15px;font-weight:800;letter-spacing:-.3px;
+      background:#F4F4F5;color:#3F3F46;
+    }
+    .d-row.danger .d-tag{background:var(--danger-soft);color:var(--palette-red-700);}
+    .d-row.warn .d-tag{background:var(--warn-soft);color:var(--palette-amber-700);}
+    .d-label{flex:1;font-size:12px;font-weight:700;color:var(--t1);
+      letter-spacing:.5px;text-transform:uppercase;}
+    .d-chev{color:var(--t3);transition:transform .2s;}
+    .d-chev iconify-icon{font-size:18px;}
+    .d-headline{
+      margin:14px 0 12px;font-size:19px;font-weight:800;letter-spacing:-.4px;
+      line-height:1.3;color:var(--t1);
+    }
+    .d-row.danger .d-headline{color:var(--palette-red-700);}
+    .d-row.warn .d-headline{color:#B45309;}
+    .d-divider{height:1px;background:rgba(0,0,0,.06);margin:0 0 4px;}
+
+    /* 비위급 (접힌) 행 — 압축·디머, 배경 없음 */
+    .d-row.collapsed{
+      padding:10px 22px;cursor:pointer;
+    }
+    .d-row.collapsed .d-head{gap:10px;}
+    .d-row.collapsed .d-tag{
+      width:22px;height:22px;border-radius:6px;font-size:10px;font-weight:700;
+      background:transparent;color:#B8BCC4;border:1px solid #E5E7EB;
+    }
+    .d-row.collapsed .d-label{
+      font-size:10.5px;font-weight:600;color:#B8BCC4;letter-spacing:.4px;
+    }
+    .d-row.collapsed .d-count{
+      font-size:11px;font-weight:500;color:#B8BCC4;
+      max-width:170px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    }
+    .d-row.collapsed .d-chev{transform:rotate(-90deg);color:#B8BCC4;}
+    .d-row.collapsed .d-chev iconify-icon{font-size:13px;}
+    .d-row.collapsed .d-detail{display:none;}
+
+    .d-count{font-size:12px;font-weight:600;color:var(--t3);}
+    .d-kv{
+      display:flex;align-items:flex-start;gap:14px;
+      padding:7px 0;border-top:1px solid rgba(0,0,0,.05);
+    }
+    .d-kv:first-of-type{border-top:0;}
+    .d-kv-k{
+      flex:0 0 60px;font-size:11.5px;font-weight:600;color:var(--t3);
+      padding-top:2px;letter-spacing:.2px;
+    }
+    .d-kv-v{flex:1;font-size:14px;font-weight:500;color:var(--t1);line-height:1.55;}
+    .d-kv-v b{font-weight:700;}
+    .d-prose{font-size:14px;font-weight:500;color:var(--t1);line-height:1.6;margin-top:10px;}
+    .d-prose b{font-weight:700;}
+    .d-kv{
+      display:flex;align-items:flex-start;gap:14px;
+      padding:7px 0;border-top:1px solid rgba(0,0,0,.05);
+    }
+    .d-kv:first-of-type{border-top:0;}
+    .d-kv-k{
+      flex:0 0 60px;font-size:11.5px;font-weight:600;color:var(--t3);
+      padding-top:2px;letter-spacing:.2px;
+    }
+    .d-kv-v{flex:1;font-size:14px;font-weight:500;color:var(--t1);line-height:1.55;}
+    .d-kv-v b{font-weight:700;}
+    .d-prose{font-size:14px;font-weight:500;color:var(--t1);line-height:1.6;margin-top:10px;}
+    .d-prose b{font-weight:700;}
+  </style>
+</head>
+<body>
+  <div class="bg" aria-hidden="true"></div>
+  <div class="app">
+
+    <div class="page-title">SBAR 위계 비교</div>
+    <div class="page-sub">동일 데이터 · 3가지 위계 패턴 · 그라데이션 0</div>
+
+    <!-- ============== OPTION A ============== -->
+    <div class="opt-head">
+      <span class="opt-tag">A</span>
+      <span class="opt-name">좌측 컬러 레일 + 정제 행</span>
+    </div>
+    <div class="opt-desc">Linear+Alan. 위험도는 좌측 3px 컬러 레일로만 표현. 그라데이션·배경 채움 0.</div>
+    <div class="card">
+      <div class="a-row danger">
+        <span class="a-tag">S</span>
+        <div class="a-body">
+          <div class="a-head">
+            <span class="a-label">Situation · 상황</span>
+            <span class="risk-pill risk-danger"><iconify-icon icon="fluent:warning-24-filled"></iconify-icon>위험</span>
+          </div>
+          <div class="a-text"><b>최명자(82F · 2층 B-2호)</b> 14:02 혈압 180/110. 24시간 내 수축기 170+ 3회 측정. 이상훈 촉탁의 보고 완료, 암로디핀 5→10mg 증량 처방.</div>
+        </div>
+        <button class="edit-btn" aria-label="편집"><iconify-icon icon="fluent:edit-24-filled"></iconify-icon></button>
+      </div>
+      <div class="a-row">
+        <span class="a-tag">B</span>
+        <div class="a-body">
+          <div class="a-head"><span class="a-label">Background · 배경</span></div>
+          <div class="a-text">고혈압 · 당뇨 기저질환. 입소 전부터 혈압 변동 큼. 이번 주 평균 수축기 165. 보호자 14:30 통화 완료.</div>
+        </div>
+        <button class="edit-btn" aria-label="편집"><iconify-icon icon="fluent:edit-24-filled"></iconify-icon></button>
+      </div>
+      <div class="a-row warn">
+        <span class="a-tag">A</span>
+        <div class="a-body">
+          <div class="a-head">
+            <span class="a-label">Assessment · 평가</span>
+            <span class="risk-pill risk-warn"><iconify-icon icon="fluent:alert-urgent-24-filled"></iconify-icon>주의</span>
+          </div>
+          <div class="a-text">현재 의식 명료, 두통·어지럼 호소 없음. 증량 처방 첫날, <b>16시·20시 재측정 필요</b>. 야간 낙상 주의.</div>
+        </div>
+        <button class="edit-btn" aria-label="편집"><iconify-icon icon="fluent:edit-24-filled"></iconify-icon></button>
+      </div>
+      <div class="a-row">
+        <span class="a-tag">R</span>
+        <div class="a-body">
+          <div class="a-head"><span class="a-label">Recommendation · 권고</span></div>
+          <div class="a-text">1. 16시·20시 혈압 측정 &nbsp; 2. 수축기 160+ 시 즉시 의사 호출 &nbsp; 3. 침상 주변 정돈, 수면등 ON &nbsp; 4. 보호자에게 저녁 상태 공유</div>
+        </div>
+        <button class="edit-btn" aria-label="편집"><iconify-icon icon="fluent:edit-24-filled"></iconify-icon></button>
+      </div>
+    </div>
+
+    <!-- ============== OPTION B ============== -->
+    <div class="opt-head">
+      <span class="opt-tag" style="background:#0EA5E9">B</span>
+      <span class="opt-name">키-밸류 임상 표</span>
+    </div>
+    <div class="opt-desc">MyFitnessPal. S/A는 라벨·값 행으로 쪼개 스캔 속도 최대화. B/R은 산문.</div>
+    <div class="card">
+      <div class="b-row danger">
+        <div class="b-head">
+          <span class="b-tag">S</span>
+          <span class="b-label">Situation · 상황</span>
+          <span class="risk-pill risk-danger"><iconify-icon icon="fluent:warning-24-filled"></iconify-icon>위험</span>
+          <button class="edit-btn" aria-label="편집"><iconify-icon icon="fluent:edit-24-filled"></iconify-icon></button>
+        </div>
+        <div class="kv"><div class="kv-k">환자</div><div class="kv-v"><b>최명자</b> 82F · 2층 B-2호</div></div>
+        <div class="kv"><div class="kv-k">측정</div><div class="kv-v"><b>혈압 180/110</b> · 14:02</div></div>
+        <div class="kv"><div class="kv-k">패턴</div><div class="kv-v">24h 내 수축기 170+ <b>3회</b></div></div>
+        <div class="kv"><div class="kv-k">보고</div><div class="kv-v">이상훈 촉탁의 보고 완료</div></div>
+        <div class="kv"><div class="kv-k">처방</div><div class="kv-v">암로디핀 <b>5→10mg</b> 증량</div></div>
+      </div>
+      <div class="b-row">
+        <div class="b-head">
+          <span class="b-tag">B</span>
+          <span class="b-label">Background · 배경</span>
+          <button class="edit-btn" aria-label="편집"><iconify-icon icon="fluent:edit-24-filled"></iconify-icon></button>
+        </div>
+        <div class="b-prose">고혈압·당뇨 기저질환. 입소 전부터 혈압 변동 큼. <b>이번 주 평균 수축기 165</b>. 보호자 14:30 통화 완료.</div>
+      </div>
+      <div class="b-row warn">
+        <div class="b-head">
+          <span class="b-tag">A</span>
+          <span class="b-label">Assessment · 평가</span>
+          <span class="risk-pill risk-warn"><iconify-icon icon="fluent:alert-urgent-24-filled"></iconify-icon>주의</span>
+          <button class="edit-btn" aria-label="편집"><iconify-icon icon="fluent:edit-24-filled"></iconify-icon></button>
+        </div>
+        <div class="kv"><div class="kv-k">의식</div><div class="kv-v">명료, 호소 없음</div></div>
+        <div class="kv"><div class="kv-k">리스크</div><div class="kv-v">증량 첫날 · 야간 낙상</div></div>
+        <div class="kv"><div class="kv-k">다음</div><div class="kv-v"><b>16시·20시 재측정</b></div></div>
+      </div>
+      <div class="b-row">
+        <div class="b-head">
+          <span class="b-tag">R</span>
+          <span class="b-label">Recommendation · 권고</span>
+          <button class="edit-btn" aria-label="편집"><iconify-icon icon="fluent:edit-24-filled"></iconify-icon></button>
+        </div>
+        <div class="kv"><div class="kv-k">1</div><div class="kv-v">16시·20시 혈압 측정</div></div>
+        <div class="kv"><div class="kv-k">2</div><div class="kv-v">수축기 <b>160+</b> 시 즉시 의사 호출</div></div>
+        <div class="kv"><div class="kv-k">3</div><div class="kv-v">침상 주변 정돈, 수면등 ON</div></div>
+        <div class="kv"><div class="kv-k">4</div><div class="kv-v">보호자에게 저녁 상태 공유</div></div>
+      </div>
+    </div>
+
+    <!-- ============== OPTION C ============== -->
+    <div class="opt-head">
+      <span class="opt-tag" style="background:#F59E0B">C</span>
+      <span class="opt-name">헤드라인 + 보조 접기</span>
+    </div>
+    <div class="opt-desc">Tonal+Me+. 위험행은 굵은 헤드라인 1줄로 인지 부담 ↓, 부수 정보는 본문. 비위험행은 접힘.</div>
+    <div class="card">
+      <div class="c-row danger">
+        <div class="c-head">
+          <span class="c-tag">S</span>
+          <span class="c-label">Situation · 상황</span>
+          <span class="risk-pill risk-danger"><iconify-icon icon="fluent:warning-24-filled"></iconify-icon>위험</span>
+          <button class="edit-btn" aria-label="편집"><iconify-icon icon="fluent:edit-24-filled"></iconify-icon></button>
+        </div>
+        <div class="c-headline">혈압 180/110 · 24h 내 수축기 170+ 3회</div>
+        <div class="c-divider"></div>
+        <div class="c-body"><b>최명자(82F · 2층 B-2호)</b> · 14:02 측정 · 이상훈 촉탁의 보고 완료 · 암로디핀 <b>5→10mg</b> 증량 처방.</div>
+      </div>
+      <div class="c-row" role="button" tabindex="0" onclick="this.classList.toggle('open')">
+        <div class="c-head">
+          <span class="c-tag">B</span>
+          <span class="c-label">Background · 배경</span>
+          <span class="c-count">3건</span>
+          <span class="c-chev"><iconify-icon icon="fluent:chevron-down-24-filled"></iconify-icon></span>
+        </div>
+      </div>
+      <div class="c-row warn">
+        <div class="c-head">
+          <span class="c-tag">A</span>
+          <span class="c-label">Assessment · 평가</span>
+          <span class="risk-pill risk-warn"><iconify-icon icon="fluent:alert-urgent-24-filled"></iconify-icon>주의</span>
+          <button class="edit-btn" aria-label="편집"><iconify-icon icon="fluent:edit-24-filled"></iconify-icon></button>
+        </div>
+        <div class="c-headline">16시·20시 재측정 필요</div>
+        <div class="c-divider"></div>
+        <div class="c-body">의식 명료, 두통·어지럼 호소 없음. 증량 처방 첫날. 야간 낙상 주의.</div>
+      </div>
+      <div class="c-row" role="button" tabindex="0" onclick="this.classList.toggle('open')">
+        <div class="c-head">
+          <span class="c-tag">R</span>
+          <span class="c-label">Recommendation · 권고</span>
+          <span class="c-count">4건</span>
+          <span class="c-chev"><iconify-icon icon="fluent:chevron-down-24-filled"></iconify-icon></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============== OPTION D · B+C 하이브리드 ============== -->
+    <div class="opt-head">
+      <span class="opt-tag" style="background:linear-gradient(135deg,#0EA5E9,#F59E0B)">D</span>
+      <span class="opt-name">B+C 하이브리드</span>
+    </div>
+    <div class="opt-desc">위급 행(S·A): 굵은 헤드라인(C) + 디바이더 + 키-밸류 표(B). 비위급 행(B·R): 기본 접힘, 탭하면 표/번호 행으로 펼침.</div>
+    <div class="card">
+
+      <div class="d-row danger">
+        <div class="d-head">
+          <span class="d-tag">S</span>
+          <span class="d-label">Situation · 상황</span>
+          <span class="risk-pill risk-danger"><iconify-icon icon="fluent:warning-24-filled"></iconify-icon>위험</span>
+          <button class="edit-btn" aria-label="편집"><iconify-icon icon="fluent:edit-24-filled"></iconify-icon></button>
+        </div>
+        <div class="d-headline">혈압 180/110 · 24h 내 수축기 170+ 3회</div>
+        <div class="d-divider"></div>
+        <div class="d-detail">
+          <div class="d-kv"><div class="d-kv-k">환자</div><div class="d-kv-v"><b>최명자</b> 82F · 2층 B-2호</div></div>
+          <div class="d-kv"><div class="d-kv-k">측정</div><div class="d-kv-v"><b>180/110</b> · 14:02</div></div>
+          <div class="d-kv"><div class="d-kv-k">보고</div><div class="d-kv-v">이상훈 촉탁의 보고 완료</div></div>
+          <div class="d-kv"><div class="d-kv-k">처방</div><div class="d-kv-v">암로디핀 <b>5→10mg</b> 증량</div></div>
+        </div>
+      </div>
+
+      <div class="d-row collapsed" role="button" tabindex="0" onclick="this.classList.toggle('collapsed')">
+        <div class="d-head">
+          <span class="d-tag">B</span>
+          <span class="d-label">Background · 배경</span>
+          <span class="d-count">기저질환 · 보호자 통화</span>
+          <span class="d-chev"><iconify-icon icon="fluent:chevron-down-24-filled"></iconify-icon></span>
+        </div>
+        <div class="d-detail">
+          <div class="d-prose">고혈압·당뇨 기저질환. 입소 전부터 혈압 변동 큼. <b>이번 주 평균 수축기 165</b>. 보호자 14:30 통화 완료.</div>
+        </div>
+      </div>
+
+      <div class="d-row warn">
+        <div class="d-head">
+          <span class="d-tag">A</span>
+          <span class="d-label">Assessment · 평가</span>
+          <span class="risk-pill risk-warn"><iconify-icon icon="fluent:alert-urgent-24-filled"></iconify-icon>주의</span>
+          <button class="edit-btn" aria-label="편집"><iconify-icon icon="fluent:edit-24-filled"></iconify-icon></button>
+        </div>
+        <div class="d-headline">16시·20시 재측정 필요</div>
+        <div class="d-divider"></div>
+        <div class="d-detail">
+          <div class="d-kv"><div class="d-kv-k">의식</div><div class="d-kv-v">명료, 호소 없음</div></div>
+          <div class="d-kv"><div class="d-kv-k">리스크</div><div class="d-kv-v">증량 첫날 · 야간 낙상</div></div>
+          <div class="d-kv"><div class="d-kv-k">다음</div><div class="d-kv-v"><b>16시·20시 재측정</b></div></div>
+        </div>
+      </div>
+
+      <div class="d-row collapsed" role="button" tabindex="0" onclick="this.classList.toggle('collapsed')">
+        <div class="d-head">
+          <span class="d-tag">R</span>
+          <span class="d-label">Recommendation · 권고</span>
+          <span class="d-count">4건</span>
+          <span class="d-chev"><iconify-icon icon="fluent:chevron-down-24-filled"></iconify-icon></span>
+        </div>
+        <div class="d-detail">
+          <div class="d-kv"><div class="d-kv-k">1</div><div class="d-kv-v">16시·20시 혈압 측정</div></div>
+          <div class="d-kv"><div class="d-kv-k">2</div><div class="d-kv-v">수축기 <b>160+</b> 시 즉시 의사 호출</div></div>
+          <div class="d-kv"><div class="d-kv-k">3</div><div class="d-kv-v">침상 주변 정돈, 수면등 ON</div></div>
+          <div class="d-kv"><div class="d-kv-k">4</div><div class="d-kv-v">보호자에게 저녁 상태 공유</div></div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</body>
+</html>

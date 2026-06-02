@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="ko" data-role="caregiver" data-platform="mobile">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#F4FAF6">
+  <title>하루안부 · 요양보호사 · 소통</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap">
+
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css">
+  <script src="../07_디자인/_app-theme.js"></script>
+  <link rel="stylesheet" href="../07_디자인/system/app.css">
+  <link rel="stylesheet" href="../07_디자인/system/components.css?v=20260523e">
+  <link rel="stylesheet" href="caregiver.css">
+  <script src="../07_디자인/_iconify-icon.min.js"></script>
+  <script defer src="caregiver.js"></script>
+
+  <style>
+    /* ============================================================
+       c03 · 소통 — 보호자앱 g03-sotong 베이스 + 요양보호사 특화 기능
+       v4.0 · 2026-05-17
+       - 흰 surface 카드 / 좌측 컬러 레일 제거 / 타이포 위계
+       - 인수인계 · 보호자 공유 · 빠른 보고 · SOS · AI 인수인계 유지
+       ============================================================ */
+    /* 배경 통일 — c01/c02/c04와 동일한 그린 톤 */
+    html { background: var(--clinical-canvas); }
+    [data-platform="mobile"] .app-shell {
+      max-width: 430px; margin: 0 auto;
+      background: transparent !important;
+    }
+    body { background: var(--clinical-canvas); }
+    .bg {
+      position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+      background: var(--clinical-bg-image);
+    }
+    .app-shell { position: relative; }
+
+    /* 본문 padding 하단: 탭바 + SOS 여유 */
+    .app-main {
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 96px);
+    }
+
+    /* ============ 미확인 요약 (summary-bar) — d03-inbox 패턴 통일 ============ */
+    .summary-bar {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-4) var(--space-5);
+      background: var(--color-accent); /* v3.2.8: 솔리드 그린 */
+      border-radius: var(--radius-card);
+      cursor: pointer;
+      text-decoration: none; color: var(--palette-white);
+    }
+    .summary-bar__dot {
+      width: 8px; height: 8px; border-radius: var(--radius-pill);
+      background: var(--palette-white);
+      flex-shrink: 0;
+      animation: haru-pulse 2s ease-in-out infinite;
+    }
+    .summary-bar__text { font-size: var(--text-callout); font-weight: var(--weight-semibold); flex: 1; line-height: 1.4; color: var(--palette-white); letter-spacing: -.2px; }
+    .summary-bar__text b { color: var(--palette-white); font-weight: 800; font-size: 15px; }
+    .summary-bar iconify-icon { color: rgba(255,255,255,.8); font-size: var(--size-icon-sm); }
+
+    /* ============ 액션 카드 공통 (인수인계 / 보호자 공유) ============ */
+    .act-card {
+      padding: var(--space-5);
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-1);
+    }
+    .act-card__head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: var(--space-4);
+    }
+    .act-card__title {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      font-size: var(--text-callout); font-weight: var(--weight-bold);
+      color: var(--color-text-primary);
+    }
+    .act-card__title iconify-icon { font-size: var(--size-icon-sm); color: var(--color-accent); }
+    .act-card__meta {
+      font-size: var(--text-mini); font-weight: var(--weight-semibold);
+      color: var(--color-text-tertiary);
+    }
+    .act-card__meta b { color: var(--color-text-primary); font-weight: var(--weight-bold); }
+
+    /* ============ 인수인계 체크 ============ */
+    .hand-checks {
+      display: flex; flex-wrap: wrap; gap: var(--space-2);
+      margin-bottom: var(--space-4);
+    }
+    .hc {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px 6px 7px;
+      border: 0; border-radius: var(--radius-pill);
+      font-family: inherit; font-size: var(--text-mini); font-weight: var(--weight-bold);
+      background: var(--color-bg-canvas); color: var(--color-text-secondary);
+      cursor: pointer; transition: var(--motion-micro) var(--easing-standard);
+    }
+    .hc:active { transform: scale(.97); }
+    .hc__dot {
+      width: 16px; height: 16px; border-radius: var(--radius-pill);
+      display: inline-flex; align-items: center; justify-content: center;
+      background: var(--color-text-tertiary); color: var(--color-accent-on);
+    }
+    .hc__dot iconify-icon { font-size: 11px; }
+    .hc.is-done { background: var(--color-bg-canvas); color: var(--color-text-secondary); }
+    .hc.is-done .hc__dot { background: var(--color-accent); }
+    .hc.is-todo { background: var(--color-warning-soft); color: var(--palette-amber-700, var(--palette-amber-700)); }
+    .hc.is-todo .hc__dot { background: var(--palette-amber-600, var(--palette-amber-600)); }
+
+    .act-cta {
+      width: 100%; height: 44px;
+      border: 0; border-radius: var(--radius-card);
+      font-family: inherit; font-size: var(--text-callout); font-weight: var(--weight-bold);
+      display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+      cursor: pointer; transition: var(--motion-micro) var(--easing-standard);
+    }
+    .act-cta:active { transform: scale(.98); }
+    .act-cta--warn  { background: var(--color-warning-soft); color: var(--palette-amber-700, var(--palette-amber-700)); }
+    .act-cta--primary {
+      background: var(--color-accent); color: var(--color-accent-on);
+      box-shadow: 0 1px 2px rgba(0,0,0,.06);
+    }
+    .act-cta iconify-icon { font-size: var(--size-icon-sm); }
+
+    /* ============ 필터 칩 row ============ */
+    .filter-row {
+      display: flex; gap: var(--space-2);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding-right: var(--space-5);
+      mask-image: linear-gradient(90deg, black 88%, transparent 100%);
+      -webkit-mask-image: linear-gradient(90deg, black 88%, transparent 100%);
+    }
+
+    /* ============ 섹션 라벨 ============ */
+    .sec-label {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-3) var(--space-1) var(--space-2);
+      cursor: pointer;
+    }
+    .sec-label__text {
+      font-size: var(--text-mini); font-weight: var(--weight-bold);
+      color: var(--color-text-secondary); letter-spacing: 0.2px;
+    }
+    .sec-label__chevron {
+      margin-left: auto; color: var(--color-text-tertiary);
+      transition: transform var(--motion-transition) var(--easing-standard);
+    }
+    .sec-label.is-collapsed .sec-label__chevron { transform: rotate(-90deg); }
+
+    .msg-list {
+      display: flex; flex-direction: column; gap: var(--space-2);
+      overflow: hidden;
+      transition: max-height var(--motion-transition) var(--easing-standard),
+                  opacity var(--motion-micro) var(--easing-standard);
+    }
+    .msg-list.is-collapsed { max-height: 0 !important; opacity: 0; }
+
+    /* ============ 메시지 카드 ============ */
+    .msg-item {
+      display: flex; align-items: center; gap: var(--space-4);
+      padding: var(--space-4) var(--space-5);
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-1);
+      text-decoration: none; color: inherit;
+      transition: var(--motion-micro) var(--easing-standard);
+      cursor: pointer;
+    }
+    .msg-item:active { transform: scale(0.98); }
+    .msg-item.is-unread { border-color: rgba(var(--color-accent-rgb), 0.18); }
+
+    .av {
+      width: 44px; height: 44px; border-radius: var(--radius-pill);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: var(--weight-bold); color: var(--color-accent-on);
+      flex-shrink: 0; position: relative; overflow: hidden;
+    }
+    .av img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+    /* 사람 아바타 — 역할별 단색 */
+    .av--nurse  { background: var(--brand-green-500, var(--brand-green-500)); }
+    .av--guard  { background: var(--brand-blue-500); }
+    .av--mgr    { background: var(--avatar-manager); }
+    .av--ai     { background: var(--color-accent); }
+    /* 시스템 아이콘 아바타 — soft tint + colored icon */
+    .av--system { background: var(--color-bg-canvas); color: var(--color-text-secondary); border: 1px solid var(--color-border-subtle); }
+    .av--system.is-crit     { background: var(--color-danger-soft);  color: var(--color-danger);      border-color: transparent; }
+    .av--system.is-warn     { background: var(--color-warning-soft); color: var(--palette-amber-700, var(--palette-amber-700)); border-color: transparent; }
+    .av--system.is-info     { background: var(--color-info-soft);    color: var(--color-info);        border-color: transparent; }
+    .av--system.is-care     { background: var(--color-success-soft); color: var(--brand-green-700, var(--brand-green-600)); border-color: transparent; }
+    .av--online::after {
+      content: ''; position: absolute; bottom: 1px; right: 1px;
+      width: 11px; height: 11px; border-radius: var(--radius-pill);
+      background: var(--color-success);
+      border: 2.5px solid var(--color-bg-surface);
+    }
+
+    .msg-body { flex: 1; min-width: 0; }
+    .msg-name-row { display: flex; align-items: center; gap: var(--space-2); margin-bottom: 2px; }
+    .msg-name { font-size: var(--text-callout); font-weight: var(--weight-bold); white-space: nowrap; }
+    .msg-preview {
+      font-size: var(--text-caption); color: var(--color-text-secondary);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .msg-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+    .msg-time { font-size: var(--text-mini); color: var(--color-text-tertiary); font-weight: var(--weight-medium); }
+    .msg-badge {
+      background: var(--color-accent); color: var(--color-accent-on);
+      font-size: 11px; font-weight: var(--weight-bold);
+      border-radius: var(--radius-pill);
+      padding: 1px 7px; min-width: 20px; text-align: center; line-height: 18px;
+    }
+    .msg-badge.is-danger { background: var(--color-danger); }
+    .msg-badge.is-warn   { background: var(--palette-amber-600, var(--palette-amber-600)); }
+
+    /* 카테고리 라벨 — Soft-fill pill */
+    .msg-name-row .badge {
+      height: 16px;
+      padding: 0 7px;
+      border-radius: 999px;
+      font-size: 10.5px; font-weight: 700;
+      line-height: 1;
+      display: inline-flex; align-items: center;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+    /* 역할 라벨은 중성 그레이로 통일 — 아바타가 이미 역할을 색으로 인코딩 */
+    .msg-name-row .badge--info,
+    .msg-name-row .badge--success,
+    .msg-name-row .badge--mgr,
+    .msg-name-row .badge--guard   { background: var(--color-bg-canvas); color: var(--color-text-secondary); }
+    /* 의미 있는 경고/위험만 컬러 유지 */
+    .msg-name-row .badge--warning { background: var(--color-warning-soft); color: var(--palette-amber-700, var(--palette-amber-700)); }
+    .msg-name-row .badge--critical{ background: var(--color-danger-soft);  color: var(--color-danger);  }
+
+    /* msg-cta는 system/components.css?v=20260523e 표준 사용 (v3.2.14) */
+
+    .stack { padding-top: var(--space-5); }
+
+    /* 진입 애니메이션 */
+    .sec-label, .msg-item, .act-card, .summary-bar {
+      animation: haru-fade-in-up var(--motion-enter) var(--easing-standard) both;
+    }
+    .summary-bar { animation-delay: 60ms; }
+    .act-card.is-handover { animation-delay: 120ms; }
+    .act-card.is-share    { animation-delay: 180ms; }
+    .sec-label { animation-delay: 260ms; }
+    .msg-list > .msg-item:nth-child(1) { animation-delay: 300ms; }
+    .msg-list > .msg-item:nth-child(2) { animation-delay: 340ms; }
+    .msg-list > .msg-item:nth-child(3) { animation-delay: 380ms; }
+    .msg-list > .msg-item:nth-child(4) { animation-delay: 420ms; }
+    .msg-list > .msg-item:nth-child(n+5) { animation-delay: 460ms; }
+    @media (prefers-reduced-motion: reduce) {
+      .sec-label, .msg-item, .act-card, .summary-bar, .filter-row { animation: none !important; }
+    }
+
+    /* ============ 빠른 보고 시트 ============ */
+    .overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,.28);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      display: none; align-items: flex-end; justify-content: center;
+    }
+    .overlay.show { display: flex; }
+    .sheet {
+      background: var(--color-bg-surface);
+      border-top: .5px solid var(--color-border-subtle);
+      border-radius: 26px 26px 0 0;
+      padding: 16px 20px calc(28px + env(safe-area-inset-bottom, 0px));
+      width: 100%; max-width: 430px; max-height: 90vh; overflow-y: auto;
+      animation: haru-fade-in-up var(--duration-slow, 350ms) var(--easing-standard) both;
+    }
+    @keyframes haru-fade-in-up {
+      from { transform: translateY(8px); opacity: 0; }
+      to   { transform: translateY(0); opacity: 1; }
+    }
+    .sh-ic {
+      width: 40px; height: 40px; border-radius: 12px;
+      background: var(--color-accent-soft); color: var(--color-accent);
+      display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .sh-ic iconify-icon { font-size: 20px; }
+    .sh-ttl { font-size: 17px; font-weight: 700; letter-spacing: -.3px; line-height: 1.25; color: var(--color-text-primary); }
+    .sh-sub { font-size: 12.5px; color: var(--color-text-secondary); margin-top: 2px; font-weight: 600; }
+
+    .sh-sec {
+      font-size: 11px; font-weight: 700; color: var(--color-text-secondary);
+      letter-spacing: .4px; text-transform: uppercase;
+      margin: 14px 0 8px;
+    }
+    .pick-row {
+      display: flex; gap: 6px;
+      overflow-x: auto; scrollbar-width: none;
+    }
+    .pick-row::-webkit-scrollbar { display: none; }
+    .pick {
+      flex-shrink: 0; display: inline-flex; align-items: center; gap: 7px;
+      padding: 7px 11px;
+      background: var(--color-bg-canvas);
+      border: 1.5px solid transparent;
+      border-radius: 999px;
+      cursor: pointer; transition: all .15s;
+    }
+    .pick.is-active {
+      background: var(--color-accent-soft);
+      border-color: var(--color-accent);
+    }
+    .pick .mini-av {
+      width: 22px; height: 22px; border-radius: 50%;
+      font-size: 10px; font-weight: 700;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: var(--color-border-subtle); color: var(--color-text-primary);
+    }
+    .pick .nm { font-size: 12.5px; font-weight: 700; color: var(--color-text-primary); }
+    .pick.is-active .nm { color: var(--color-accent); }
+
+    .tx {
+      width: 100%; min-height: 88px; padding: 13px;
+      background: var(--color-bg-canvas);
+      border: 1.5px solid var(--color-border-subtle);
+      border-radius: 14px;
+      font-family: inherit; font-size: 15px; color: var(--color-text-primary);
+      resize: none; outline: none; margin-top: 6px;
+      line-height: 1.55;
+    }
+    .tx:focus { border-color: var(--color-accent); background: var(--color-bg-surface); }
+
+    .cta-row { display: flex; gap: 8px; margin-top: 14px; }
+    .cta-btn {
+      flex: 1; height: 50px; border-radius: 14px;
+      border: none; font-family: inherit;
+      font-size: 15.5px; font-weight: 700; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .cta-primary {
+      background: var(--color-accent);
+      color: var(--color-accent-on);
+      box-shadow: 0 1px 2px rgba(0,0,0,.06);
+    }
+    .cta-soft { background: var(--color-bg-canvas); color: var(--color-text-primary); }
+
+    /* ============ 토스트 ============ */
+    .toast {
+      position: fixed; top: 80px; left: 50%;
+      transform: translateX(-50%) translateY(-8px);
+      background: rgba(28,28,30,.92); color: var(--palette-white);
+      padding: 11px 22px; border-radius: 999px;
+      font-size: 14px; font-weight: 600;
+      box-shadow: 0 8px 24px rgba(0,0,0,.18);
+      z-index: 300; opacity: 0; pointer-events: none;
+      transition: opacity .22s, transform .22s;
+      white-space: nowrap;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ============ 탭바 + SOS ============ */
+    /* v3.2.7: .bottom-bar / .tabbar / .tab 로컬 정의 제거 — caregiver.css가 SoT (4-b 섹션) */
+    .sos-fab {
+      width: 64px; height: 64px; flex-shrink: 0;
+      border-radius: 50%;
+      background: var(--color-danger);
+      border: none;
+      box-shadow: 0 6px 18px rgba(var(--color-danger-rgb), .35);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; position: relative;
+    }
+    .sos-fab:active { transform: scale(.92); }
+    .sos-fab iconify-icon { font-size: 26px; color: var(--palette-white); }
+
+    /* 헤더 — v15 d03-inbox와 통일된 구조 (.header > .top-nav, padding 작게) */
+    .header{padding:calc(var(--safe-t) + 6px) var(--page-pad) 0;position:static;}
+    .top-nav .h-left{width:44px;height:44px;}
+    .top-nav .icon-btn{grid-column:3;justify-self:end;}
+
+    /* Inline 대체 (audit 정책: inline 0) */
+    .av iconify-icon                { font-size: var(--size-icon-sm); }
+    .cta-btn iconify-icon.cta-icon  { font-size: 18px; }
+    .sh-btn { flex: 1; height: 48px; border-radius: 14px; border: 0; font: inherit; }
+    .sh-btn--soft    { background: var(--color-bg-canvas); color: var(--color-text-secondary); font-weight: 600; }
+    .sh-btn--primary { background: var(--color-accent); color: var(--palette-white); font-weight: 700; }
+
+</style>
+</head>
+<body>
+
+<div class="bg" aria-hidden="true"></div>
+<div class="app-shell">
+
+  <header class="header">
+    <div class="top-nav">
+      <span class="h-left" aria-hidden="true"></span>
+      <div class="title-block">
+        <h1 class="h-name">소통</h1>
+      </div>
+      <button class="icon-btn" type="button" aria-label="빠른 보고" onclick="openReport()">
+        <iconify-icon icon="fluent:compose-24-filled"></iconify-icon>
+      </button>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <div class="stack stack-loose">
+
+      <!-- 미확인 요약 -->
+      <a href="#unread" class="summary-bar">
+        <span class="summary-bar__dot"></span>
+        <span class="summary-bar__text">읽지 않은 메시지 <b>4건</b> · 이정숙 어르신 미열 관찰 중</span>
+        <iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon>
+      </a>
+
+      <!-- 인수인계 체크 카드 (요양보호사 특화) -->
+      <section class="act-card is-handover" aria-label="야간→주간 인수인계">
+        <div class="act-card__head">
+          <span class="act-card__title">
+            <iconify-icon icon="fluent:handshake-24-filled"></iconify-icon>야간 → 주간 인수인계
+          </span>
+          <span class="act-card__meta hand-summary"><b>4</b>/5 확인</span>
+        </div>
+        <div class="hand-checks">
+          <button class="hc is-done" onclick="toast('낙상 위험 · 이정숙 확인 완료')">
+            <span class="hc__dot"><iconify-icon icon="fluent:checkmark-16-filled"></iconify-icon></span>
+            낙상 위험
+          </button>
+          <button class="hc is-done" onclick="toast('복약 상태 · 전원 아침약 복용 완료')">
+            <span class="hc__dot"><iconify-icon icon="fluent:checkmark-16-filled"></iconify-icon></span>
+            복약
+          </button>
+          <button class="hc is-done" onclick="toast('통증 호소 없음')">
+            <span class="hc__dot"><iconify-icon icon="fluent:checkmark-16-filled"></iconify-icon></span>
+            통증
+          </button>
+          <button class="hc is-done" onclick="toast('배회 · 폭력 경향 없음')">
+            <span class="hc__dot"><iconify-icon icon="fluent:checkmark-16-filled"></iconify-icon></span>
+            배회·폭력
+          </button>
+          <button class="hc is-todo" onclick="openHandoverTodo()">
+            <span class="hc__dot"><iconify-icon icon="fluent:alert-16-filled"></iconify-icon></span>
+            가족 통보
+          </button>
+        </div>
+        <button class="act-cta act-cta--warn" onclick="openHandoverTodo()">
+          미확인 항목 확인하기
+          <iconify-icon icon="fluent:arrow-right-24-filled"></iconify-icon>
+        </button>
+      </section>
+
+      <!-- 필터 칩 (3분류) -->
+      <div class="filter-row" role="tablist">
+        <button class="chip is-active" type="button" onclick="filterMsg('all',this)" aria-pressed="true">전체 9</button>
+        <button class="chip" type="button" onclick="filterMsg('msg',this)">메시지 5</button>
+        <button class="chip" type="button" onclick="filterMsg('alert',this)">알림·리마인더 4</button>
+      </div>
+
+      <!-- 읽지 않음 -->
+      <section id="unread">
+        <div class="sec-label" onclick="toggleSection(this)">
+          <span class="sec-label__text">읽지 않음</span>
+          <iconify-icon icon="fluent:chevron-down-24-filled" class="sec-label__chevron"></iconify-icon>
+        </div>
+        <div class="msg-list">
+
+          <!-- 이상감지: 미열 (업무성 액션) -->
+          <div class="msg-item is-unread is-action" data-type="alert" data-cat="alert">
+            <div class="av av--system is-crit"><iconify-icon icon="fluent:heart-pulse-24-filled"></iconify-icon></div>
+            <div class="msg-body">
+              <div class="msg-name-row">
+                <span class="msg-name">이정숙 어르신 · 미열</span>
+                <span class="badge badge--critical">이상감지</span>
+              </div>
+              <div class="msg-preview">체온 37.4°C — 평소보다 0.8도 높음. 마른기침 3회 동반</div>
+              <div class="msg-actions">
+                <button type="button" class="msg-cta" onclick="openAlertDetail('fever')">상세 보기</button>
+                <button type="button" class="msg-cta msg-cta--secondary" onclick="toast('간호사 호출됨')">간호사 호출</button>
+              </div>
+            </div>
+            <div class="msg-meta">
+              <span class="msg-time">10:05</span>
+              <span class="msg-badge is-danger">!</span>
+            </div>
+          </div>
+
+          <!-- 간호사 대화 -->
+          <a class="msg-item is-unread" data-type="nurse" data-cat="msg" onclick="toast('김서연 간호사 대화')">
+            <div class="av av--nurse av--online">김</div>
+            <div class="msg-body">
+              <div class="msg-name-row">
+                <span class="msg-name">김서연 간호사</span>
+                <span class="badge badge--success">근무 중</span>
+              </div>
+              <div class="msg-preview">이정숙 어르신 확인하러 갑니다. 5분 후 도착할게요</div>
+            </div>
+            <div class="msg-meta">
+              <span class="msg-time">10:08</span>
+              <span class="msg-badge">2</span>
+            </div>
+          </a>
+
+          <!-- 보호자(가족) 대화 -->
+          <a class="msg-item is-unread" data-type="guard" data-cat="msg" onclick="toast('박영자 보호자 대화')">
+            <div class="av av--guard">박</div>
+            <div class="msg-body">
+              <div class="msg-name-row">
+                <span class="msg-name">박영자 어르신 보호자</span>
+                <span class="badge badge--guard">가족</span>
+              </div>
+              <div class="msg-preview">어머니 오늘 혈압은 괜찮으신가요? 걱정되어서요</div>
+            </div>
+            <div class="msg-meta">
+              <span class="msg-time">09:42</span>
+              <span class="msg-badge">1</span>
+            </div>
+          </a>
+
+          <!-- AI 인수인계 -->
+          <a class="msg-item is-unread" data-type="ai" data-cat="msg" onclick="toast('AI 인수인계 전체 보기')">
+            <div class="av av--ai">
+              <svg width="22" height="22" viewBox="0 0 2526 2526" fill="#fff" aria-hidden="true">
+                <path d="M2521.32 2506.66C1239.65 2657.48 1239.65 1895.6 1239.65 1279.34L2497.69 0C2518.68 494.198 2522.27 1157.92 1658.86 1262.48C2641.88 1314.25 2521.32 2101.84 2521.32 2506.66Z"/>
+                <path d="M4.677 19.335C1286.35-131.481 1286.35 630.399 1286.35 1246.66L28.315 2526C7.322 2031.8 3.73 1368.08 867.143 1263.52C-115.881 1211.75 4.677 424.157 4.677 19.335Z"/>
+              </svg>
+            </div>
+            <div class="msg-body">
+              <div class="msg-name-row">
+                <span class="msg-name">AI 인수인계 · 야간 → 주간</span>
+                <span class="badge badge--info">AI</span>
+              </div>
+              <div class="msg-preview">새벽 중 특이사항 1건 · 박영자 어르신 수면 불안</div>
+            </div>
+            <div class="msg-meta">
+              <span class="msg-time">06:45</span>
+              <span class="msg-badge">1</span>
+            </div>
+          </a>
+
+        </div>
+      </section>
+
+      <!-- 오늘 -->
+      <section>
+        <div class="sec-label is-collapsed" onclick="toggleSection(this)">
+          <span class="sec-label__text">오늘</span>
+          <iconify-icon icon="fluent:chevron-down-24-filled" class="sec-label__chevron"></iconify-icon>
+        </div>
+        <div class="msg-list is-collapsed">
+
+          <!-- 센터장 공지 -->
+          <a class="msg-item" data-type="mgr" data-cat="msg" onclick="toast('센터 공지')">
+            <div class="av av--mgr">윤</div>
+            <div class="msg-body">
+              <div class="msg-name-row">
+                <span class="msg-name">김윤아 센터장</span>
+                <span class="badge badge--mgr">관리</span>
+              </div>
+              <div class="msg-preview">이번 주 서비스 제공기록지 제출 확인 부탁드려요</div>
+            </div>
+            <div class="msg-meta"><span class="msg-time">09:15</span></div>
+          </a>
+
+          <!-- 체위 변경 리마인더 -->
+          <div class="msg-item is-action" data-type="alert" data-cat="alert">
+            <div class="av av--system is-warn"><iconify-icon icon="fluent:clock-alarm-24-filled"></iconify-icon></div>
+            <div class="msg-body">
+              <div class="msg-name-row">
+                <span class="msg-name">최명자 어르신 체위 변경</span>
+                <span class="badge badge--warning">리마인더</span>
+              </div>
+              <div class="msg-preview">오른쪽 → 왼쪽 체위 변경 30분 후 예정</div>
+              <div class="msg-actions">
+                <button type="button" class="msg-cta" onclick="openAlertDetail('rotate')">상세 보기</button>
+              </div>
+            </div>
+            <div class="msg-meta"><span class="msg-time">09:00</span></div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 이전 -->
+      <section>
+        <div class="sec-label is-collapsed" onclick="toggleSection(this)">
+          <span class="sec-label__text">이전</span>
+          <iconify-icon icon="fluent:chevron-down-24-filled" class="sec-label__chevron"></iconify-icon>
+        </div>
+        <div class="msg-list is-collapsed">
+          <a class="msg-item" data-type="nurse" data-cat="msg" onclick="toast('이해진 간호사')">
+            <div class="av av--nurse">이</div>
+            <div class="msg-body">
+              <div class="msg-name-row">
+                <span class="msg-name">이해진 간호사</span>
+                <span class="badge badge--success">야간</span>
+              </div>
+              <div class="msg-preview">야간 인수인계 전달드립니다 · 박영자 어르신 안정</div>
+            </div>
+            <div class="msg-meta"><span class="msg-time">06:45</span></div>
+          </a>
+
+          <a class="msg-item" data-type="guard" data-cat="msg" onclick="toast('최명자 보호자')">
+            <div class="av av--guard">최</div>
+            <div class="msg-body">
+              <div class="msg-name-row">
+                <span class="msg-name">최명자 어르신 보호자</span>
+                <span class="badge badge--guard">가족</span>
+              </div>
+              <div class="msg-preview">산책 사진 너무 감사해요. 어머니 기분 좋아 보이네요</div>
+            </div>
+            <div class="msg-meta"><span class="msg-time">어제</span></a>
+          </a>
+
+          <a class="msg-item" data-type="ai" data-cat="msg" onclick="toast('AI 업무 가이드')">
+            <div class="av av--system">
+              <iconify-icon icon="fluent:chat-bubbles-question-24-filled"></iconify-icon>
+            </div>
+            <div class="msg-body">
+              <div class="msg-name-row">
+                <span class="msg-name">AI 업무 가이드</span>
+              </div>
+              <div class="msg-preview">모르는 케어 상황·매뉴얼 질문은 언제든지</div>
+            </div>
+            <div class="msg-meta"><span class="msg-time">어제</span></div>
+          </a>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- 탭바 + SOS (요양보호사 특화) -->
+  <div class="bottom-bar">
+    <nav class="tabbar" aria-label="요양보호사 앱 탭바">
+      <a href="c01-today.html" class="tab" aria-label="오늘">
+        <iconify-icon icon="fluent:home-24-filled"></iconify-icon>
+        <span class="tab-label">오늘</span>
+      </a>
+      <a href="c02-checklist.html" class="tab" aria-label="기록">
+        <iconify-icon icon="fluent:clipboard-task-list-ltr-24-filled"></iconify-icon>
+        <span class="tab-label">기록</span>
+      </a>
+      <a href="c03-sotong.html" class="tab active" aria-current="page" aria-label="소통">
+        <iconify-icon icon="fluent:chat-24-filled"></iconify-icon>
+        <span class="tab-label">소통</span>
+      </a>
+      <a href="c04-mypage.html" class="tab" aria-label="마이">
+        <iconify-icon icon="fluent:person-24-filled"></iconify-icon>
+        <span class="tab-label">마이</span>
+      </a>
+    </nav>
+    <button class="cg-sos" data-sos-bind aria-label="긴급 SOS · 3초 길게 누르면 즉시 발신">
+      <span class="cg-sos__ring" aria-hidden="true">
+        <svg class="sos-ring" viewBox="0 0 60 60"><circle cx="30" cy="30" r="27"/></svg>
+      </span>
+      <iconify-icon icon="fluent:warning-24-filled"></iconify-icon>
+    </button>
+  </div>
+
+</div>
+
+<!-- 빠른 보고 시트 (요양보호사 특화) -->
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeSheet()">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div class="sh-ic"><iconify-icon icon="fluent:send-24-filled"></iconify-icon></div>
+      <div>
+        <div class="sh-ttl">간호사에게 빠른 보고</div>
+        <div class="sh-sub">환자 → 템플릿 → 한줄 메모</div>
+      </div>
+    </div>
+
+    <div class="sh-sec">1. 환자 선택</div>
+    <div class="pick-row" id="pickPt">
+      <div class="pick" data-k="park" onclick="togPick(this,'pickPt')">
+        <span class="mini-av">박</span><span class="nm">박영자</span>
+      </div>
+      <div class="pick" data-k="choi" onclick="togPick(this,'pickPt')">
+        <span class="mini-av">최</span><span class="nm">최명자</span>
+      </div>
+      <div class="pick is-active" data-k="lee" onclick="togPick(this,'pickPt')">
+        <span class="mini-av">이</span><span class="nm">이정숙</span>
+      </div>
+    </div>
+
+    <div class="sh-sec">2. 상황 템플릿</div>
+    <div class="pick-row" id="pickTpl">
+      <div class="pick" data-k="fall" onclick="togPick(this,'pickTpl')"><span class="nm">낙상</span></div>
+      <div class="pick is-active" data-k="fever" onclick="togPick(this,'pickTpl')"><span class="nm">발열·미열</span></div>
+      <div class="pick" data-k="meal" onclick="togPick(this,'pickTpl')"><span class="nm">식사 저하</span></div>
+      <div class="pick" data-k="skin" onclick="togPick(this,'pickTpl')"><span class="nm">피부 이상</span></div>
+      <div class="pick" data-k="mood" onclick="togPick(this,'pickTpl')"><span class="nm">행동 변화</span></div>
+    </div>
+
+    <div class="sh-sec">3. 한줄 메모 (음성 가능)</div>
+    <textarea class="tx" id="tx" placeholder="간단히 적어주세요. 음성 입력도 가능합니다." aria-label="간단히 적어주세요. 음성 입력도 가능합니다.">체온 37.4°C · 아침부터 마른기침 3회 · 식사량 60%로 저조</textarea>
+
+    <div class="cta-row">
+      <button class="cta-btn cta-soft" onclick="closeSheet()">취소</button>
+      <button class="cta-btn cta-primary" onclick="sendReport()">
+        <iconify-icon icon="fluent:send-24-filled" class="cta-icon"></iconify-icon>간호사에게 전송
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toastEl"></div>
+
+<!-- HaruCG 공유 오버레이 (detail sheets · SOS countdown) -->
+<div class="cg-overlay" id="cgOverlay">
+  <div class="cg-sheet">
+    <div class="cg-sheet__handle"></div>
+    <div id="cgSheetContent"></div>
+  </div>
+</div>
+<div class="cg-toast" id="cgToast"></div>
+
+<script>
+  /* ============ 섹션 토글 (보호자앱 패턴) ============ */
+  function toggleSection(label){
+    var list = label.nextElementSibling;
+    if(!list) return;
+    var isCollapsed = label.classList.contains('is-collapsed');
+    if(isCollapsed){
+      label.classList.remove('is-collapsed');
+      list.classList.remove('is-collapsed');
+      list.style.maxHeight = list.scrollHeight + 'px';
+      setTimeout(function(){ list.style.maxHeight = 'none'; }, 250);
+    } else {
+      list.style.maxHeight = list.scrollHeight + 'px';
+      list.offsetHeight;
+      label.classList.add('is-collapsed');
+      list.classList.add('is-collapsed');
+      list.style.maxHeight = '0';
+    }
+  }
+
+  /* ============ 필터 (3분류) ============ */
+  function filterMsg(type, btn){
+    document.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('is-active'); c.setAttribute('aria-pressed','false'); });
+    btn.classList.add('is-active'); btn.setAttribute('aria-pressed','true');
+    document.querySelectorAll('.msg-item').forEach(function(item){
+      var cat = item.getAttribute('data-cat');
+      if(type === 'all'){ item.style.display = ''; return; }
+      item.style.display = cat === type ? '' : 'none';
+    });
+  }
+
+  /* ============ 빠른 보고 시트 ============ */
+  function togPick(el, groupId) {
+    document.getElementById(groupId).querySelectorAll('.pick').forEach(function(x) {
+      x.classList.remove('is-active');
+    });
+    el.classList.add('is-active');
+  }
+  function openReport() { document.getElementById('overlay').classList.add('show'); }
+  function closeSheet() { document.getElementById('overlay').classList.remove('show'); }
+  function sendReport() { closeSheet(); toast('간호사에게 보고 전송됨'); }
+
+  function toast(m) {
+    var t = document.getElementById('toastEl');
+    t.textContent = m;
+    t.classList.add('show');
+    clearTimeout(t._x);
+    t._x = setTimeout(function() { t.classList.remove('show'); }, 2400);
+  }
+
+  /* ============ Detail 시트 (HaruCG 공유 오버레이 이용) ============ */
+  function openHandoverTodo() {
+    if (!window.HaruCG) { toast('이정숙 미열 → 가족 통보 필요'); return; }
+    HaruCG.openSheet(
+      '<div class="cg-sheet__head">' +
+        '<div class="cg-sheet__ico cg-sheet__ico--warn">' +
+          '<iconify-icon icon="fluent:person-warning-24-filled"></iconify-icon>' +
+        '</div>' +
+        '<div>' +
+          '<div class="cg-sheet__ttl">미확인 인수인계 · 가족 통보</div>' +
+          '<div class="cg-sheet__sub">이정숙 어르신 · 미열 관찰</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="cg-sheet__body">' +
+        '<div class="cg-row">' +
+          '<span class="cg-row__ico cg-row__ico--warn"><iconify-icon icon="fluent:temperature-24-filled"></iconify-icon></span>' +
+          '<div class="cg-row__body"><div class="cg-row__t">관찰 사유</div><div class="cg-row__d">체온 37.4℃ · 마른 기침 3회</div></div>' +
+        '</div>' +
+        '<div class="cg-row">' +
+          '<span class="cg-row__ico"><iconify-icon icon="fluent:lightbulb-24-filled"></iconify-icon></span>' +
+          '<div class="cg-row__body"><div class="cg-row__t">추천 문구</div><div class="cg-row__d">"오늘 아침 미열이 있어 관찰 중입니다. 점심 전 재측정 결과 공유드릴게요."</div></div>' +
+        '</div>' +
+        '<div class="cg-row">' +
+          '<span class="cg-row__ico"><iconify-icon icon="fluent:people-24-filled"></iconify-icon></span>' +
+          '<div class="cg-row__body"><div class="cg-row__t">전송 대상</div><div class="cg-row__d">보호자 (이정숙 따님 · 010-****-1234)</div></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="cg-sheet__cta">' +
+        '<button class="cta-btn cta-soft sh-btn sh-btn--soft" onclick="HaruCG.closeSheet()">취소</button>' +
+        '<button class="cta-btn cta-primary sh-btn sh-btn--primary" onclick="confirmHandover()"><iconify-icon icon="fluent:checkmark-24-filled"></iconify-icon> 확인 처리 + 전송</button>' +
+      '</div>',
+      { variant: 'warn' }
+    );
+  }
+  function confirmHandover() {
+    HaruCG.closeSheet();
+    var todo = document.querySelector('.hc.is-todo');
+    if (todo) { todo.classList.remove('is-todo'); todo.classList.add('is-done'); }
+    var summary = document.querySelector('.hand-summary');
+    if (summary) summary.innerHTML = '<b>5</b>/5 확인 완료';
+    HaruCG.toast('가족 통보 전송 완료 · 인수인계 5/5');
+  }
+
+  function openAlertDetail(kind) {
+    if (!window.HaruCG) { toast('알림 상세'); return; }
+    var data = {
+      fever: {
+        title: '이상감지 · 미열 관찰',
+        sub: '이정숙 어르신 · 2층 B-2호',
+        rows: [
+          ['fluent:temperature-24-filled', '발생 시각', '06:40'],
+          ['fluent:warning-24-filled', '관찰 값', '체온 37.4℃ · 기침 3회'],
+          ['fluent:lightbulb-24-filled', '다음 행동', '10:30 재측정 · 38℃ 이상 시 간호사 호출']
+        ],
+        ctaLink: 'c02-checklist.html?pt=lee'
+      },
+      rotate: {
+        title: '체위 변경 리마인더',
+        sub: '최명자 어르신 · A-7호 · 다음 11:00',
+        rows: [
+          ['fluent:clock-24-filled', '주기', '2시간 (10:30 마지막)'],
+          ['fluent:warning-24-filled', '주의', '오른쪽 둔부 발적 지속'],
+          ['fluent:lightbulb-24-filled', '권장', '오른쪽 → 왼쪽 측위 30분 → 등받이']
+        ],
+        ctaLink: 'c02-checklist.html?pt=choi'
+      }
+    };
+    var d = data[kind] || data.fever;
+    HaruCG.openSheet(
+      '<div class="cg-sheet__head">' +
+        '<div class="cg-sheet__ico cg-sheet__ico--warn"><iconify-icon icon="fluent:alert-24-filled"></iconify-icon></div>' +
+        '<div><div class="cg-sheet__ttl">' + d.title + '</div><div class="cg-sheet__sub">' + d.sub + '</div></div>' +
+      '</div>' +
+      '<div class="cg-sheet__body">' +
+        d.rows.map(function(r){
+          return '<div class="cg-row">' +
+            '<span class="cg-row__ico cg-row__ico--warn"><iconify-icon icon="' + r[0] + '"></iconify-icon></span>' +
+            '<div class="cg-row__body"><div class="cg-row__t">' + r[1] + '</div><div class="cg-row__d">' + r[2] + '</div></div>' +
+          '</div>';
+        }).join('') +
+      '</div>' +
+      '<div class="cg-sheet__cta">' +
+        '<button class="cta-btn cta-soft sh-btn sh-btn--soft" onclick="HaruCG.closeSheet();HaruCG.toast(\'간호사 호출됨\')">간호사 호출</button>' +
+        '<button class="cta-btn cta-primary sh-btn sh-btn--primary" onclick="HaruCG.closeSheet();location.href=\'' + d.ctaLink + '\'"><iconify-icon icon="fluent:pen-24-filled"></iconify-icon> 기록 시작</button>' +
+      '</div>',
+      { variant: 'warn' }
+    );
+  }
+
+</script>
+  <div class="bottom-scrim" aria-hidden="true"></div>
+</body>
+</html>
