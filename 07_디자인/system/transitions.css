@@ -1,0 +1,86 @@
+/* ============================================================
+   하루안부 · Page Transitions (v3.2.8)
+   ----------------------------------------------------------------
+   모든 앱(보호자/요양보호사/환자/의료진/온보딩)에서
+   페이지 간 이동 시 부드러운 페이드+슬라이드 전환을 제공한다.
+   _app-theme.js 가 자동으로 <head>에 주입한다 — HTML 수정 불필요.
+
+   기준: v11_보호자앱 fade-in 모션 (haru-fade-in-up, motion-enter, easing-standard)
+
+   - Chrome 126+ / Safari TP : @view-transition (cross-document)
+   - 그 외 브라우저          : body 진입 페이드인(fallback)
+   ============================================================ */
+
+/* ---- Cross-document View Transitions (Chrome 126+) ---------- */
+@view-transition {
+  navigation: auto;
+}
+
+@keyframes haru-vt-out {
+  to { opacity: 0; transform: translateY(-4px); }
+}
+@keyframes haru-vt-in {
+  from { opacity: 0; transform: translateY(8px); }
+}
+
+::view-transition-old(root) {
+  animation: haru-vt-out 180ms cubic-bezier(0.2, 0, 0, 1) both;
+}
+::view-transition-new(root) {
+  animation: haru-vt-in 280ms cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+/* ---- Fallback: 진입 페이드(View Transition 미지원 브라우저) ---- */
+@keyframes haru-page-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+html.haru-page-enter body {
+  animation: haru-page-enter 320ms cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+/* 모션 줄이기 환경 — 전환 비활성화 */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+  html.haru-page-enter body {
+    animation: none !important;
+  }
+}
+
+
+/* ============================================================
+   v3.2.13 — 3앱 공통 표준 애니메이션 keyframes
+   (보호자/요양보호사/의료진 동일 등장·라이브·링)
+   ============================================================ */
+
+/* 페이지·카드 등장 — staggered delay와 함께 사용 가능 */
+@keyframes haru-fade-in-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* 라이브·알림 dot 펄스 (그린 — 임상) */
+@keyframes haru-pulse {
+  0%   { box-shadow: 0 0 0 0   rgba(var(--brand-green-500-rgb), .5); }
+  70%  { box-shadow: 0 0 0 10px rgba(var(--brand-green-500-rgb), 0); }
+  100% { box-shadow: 0 0 0 0   rgba(var(--brand-green-500-rgb), 0); }
+}
+
+/* GPS · 위치 ring (확장 → 페이드아웃) */
+@keyframes haru-ring {
+  0%   { transform: scale(.9);  opacity: .5; }
+  100% { transform: scale(1.5); opacity: 0;  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

@@ -1,0 +1,265 @@
+/* ============================================================
+   하루안부 · 공용 홈 컴포넌트 (Mobile Home Skeleton)
+   ------------------------------------------------------------
+   v0.1 · 2026.05.11 · audit doc CODEX_HOME_UNIFICATION_AUDIT_20260511 §6
+   세 모바일 홈(보호자·요양보호사·의료진)이 같은 위치에 같은 의미의
+   요소를 두고 역할별 내용만 바꾸도록 하는 공통 클래스.
+
+   사용:
+     1) tokens.css → system/app.css → system/components.css → home.css 순서
+     2) 기존 화면의 .bottom-bar / .tabbar / .ai-fab 등과 충돌하지 않도록
+        모든 클래스에 .home- prefix를 둠. 점진적 마이그레이션 기반.
+   ============================================================ */
+
+
+/* ------------------------------------------------------------
+   1. 공용 레이아웃 토큰 (홈 전용)
+   세 화면이 각각 정의하던 --tab-h/--tab-bot/--pad/--page-pad를
+   하나의 source로 묶음. 화면에서는 var(--home-*)만 참조.
+   ------------------------------------------------------------ */
+
+:root {
+  --home-max-width: 430px;
+  --home-page-x: 20px;
+  --home-header-hit: 48px;
+  --home-bottom-height: 64px;
+  --home-bottom-gap: 10px;
+  --home-bottom-inset-x: 16px;
+  --home-bottom-inset-bottom: 12px;
+  --home-card-radius: 20px;
+  --home-card-padding: 18px;
+  --home-section-gap: 24px;
+}
+
+
+/* ------------------------------------------------------------
+   2. 헤더 (.home-header)
+   ------------------------------------------------------------ */
+
+.home-icon-button {
+  width: var(--home-header-hit);
+  height: var(--home-header-hit);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.55);
+  border: 0.5px solid rgba(255, 255, 255, 0.55);
+  box-shadow:
+    0 1px 1px rgba(255, 255, 255, 0.6) inset,
+    0 4px 16px rgba(0, 0, 0, 0.06);
+  color: var(--color-accent, currentColor);
+  position: relative;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+.home-icon-button:active { transform: scale(0.93); }
+.home-icon-button iconify-icon { font-size: 20px; }
+
+.home-icon-button__dot {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-danger, #FF3B30);
+  border: 1.5px solid rgba(255, 255, 255, 0.7);
+}
+
+
+/* ------------------------------------------------------------
+   3. Priority Card (.home-priority)
+   세 홈의 "첫 카드" 자리. variant로 의미 분기.
+   ------------------------------------------------------------ */
+
+.home-priority {
+  display: block;
+  margin-top: var(--home-section-gap);
+  padding: var(--space-6, 24px);
+  border-radius: var(--space-7, 24px);
+  background: #fff;
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.06),
+    0 1px 3px rgba(0, 0, 0, 0.03);
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+  z-index: 1;
+  transition: transform 0.12s;
+}
+.home-priority:active { transform: scale(0.99); }
+
+/* --safe: 보호자 — 오늘 안심 상태 */
+.home-priority--safe {
+  background: var(--color-info-soft, #EFF6FF);
+  border: 1.5px solid rgba(var(--color-accent-rgb, 44, 122, 252), 0.15);
+}
+
+/* --task: 요양보호사 — 지금 할 일 */
+.home-priority--task {
+  background: var(--color-success-soft, #F0FDF4);
+  border: 1.5px solid rgba(var(--brand-green-500-rgb), 0.18);
+}
+
+/* --alert: 의료진 — 즉시 보고 환자 */
+.home-priority--alert {
+  background: #FFF5F5;
+  border: 1.5px solid rgba(227, 43, 37, 0.15);
+  box-shadow:
+    0 12px 32px rgba(227, 43, 37, 0.10),
+    0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+
+/* ------------------------------------------------------------
+   4. Primary Action 버튼 (.home-primary-action)
+   Priority Card 안 또는 바로 아래에 두는 명시적 CTA.
+   ------------------------------------------------------------ */
+
+.home-primary-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  height: 48px;
+  border: 0;
+  border-radius: 14px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  color: #fff;
+  background: var(--color-accent, #2C7AFC);
+  box-shadow: 0 6px 16px rgba(var(--color-accent-rgb, 44, 122, 252), 0.28);
+  cursor: pointer;
+  transition: transform 0.12s;
+  text-decoration: none;
+}
+.home-primary-action:active { transform: scale(0.98); }
+.home-primary-action iconify-icon { font-size: 18px; }
+
+.home-primary-action--danger {
+  background: var(--color-danger);
+  box-shadow: 0 6px 16px rgba(227, 43, 37, 0.28);
+}
+
+.home-primary-action--success {
+  background: var(--color-accent);
+  box-shadow: 0 6px 16px rgba(var(--brand-green-500-rgb), 0.28);
+}
+
+
+/* ------------------------------------------------------------
+   5. 하단 영역 (.home-bottom)
+   세 앱이 같은 위치·같은 규격을 공유.
+   ------------------------------------------------------------ */
+
+.home-bottom {
+  position: fixed;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + var(--home-bottom-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - calc(var(--home-bottom-inset-x) * 2));
+  max-width: 398px;
+  display: flex;
+  align-items: center;
+  gap: var(--home-bottom-gap);
+  z-index: 40;
+}
+
+.home-tabbar {
+  flex: 1;
+  min-width: 0;
+  height: var(--home-bottom-height);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 999px;
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  display: flex;
+  align-items: stretch;
+  justify-content: space-around;
+  padding: 0 10px;
+}
+
+.home-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px 4px;
+  border-radius: 999px;
+  color: rgba(28, 28, 30, 0.45);
+  text-decoration: none;
+  transition: all 0.18s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.home-tab.is-active,
+.home-tab[aria-current="page"] { color: var(--color-accent, #2C7AFC); }
+.home-tab iconify-icon { font-size: 22px; }
+.home-tab__label { font-size: 10px; font-weight: 600; letter-spacing: -0.1px; }
+
+.home-fab {
+  flex-shrink: 0;
+  width: var(--home-bottom-height);
+  height: var(--home-bottom-height);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.12s;
+  padding: 0;
+  font: inherit;
+}
+.home-fab:active { transform: scale(0.92); }
+.home-fab iconify-icon { font-size: 28px; }
+
+/* AI FAB (보호자) */
+.home-fab--ai {
+  background: rgba(210, 225, 250, 0.55);
+}
+.home-fab--ai iconify-icon { color: var(--color-accent, #2C7AFC); }
+
+/* SOS FAB (요양보호사·의료진) */
+.home-fab--sos {
+  background: var(--color-danger);
+  color: #fff;
+  border-color: rgba(227, 43, 37, 0.35);
+  box-shadow:
+    0 6px 20px rgba(227, 43, 37, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+.home-fab--sos iconify-icon { color: #fff; }
+
+
+/* ------------------------------------------------------------
+   6. 접근성·동작 감소
+   ------------------------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+  .home-icon-button,
+  .home-priority,
+  .home-primary-action,
+  .home-fab,
+  .home-tab { transition: none; }
+}

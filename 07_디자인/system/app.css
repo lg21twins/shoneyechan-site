@@ -1,0 +1,190 @@
+/* ============================================================
+   하루안부 · App Shell & Page Layout
+   ============================================================
+   v3.1 · 2026.05.10
+   tokens.css를 먼저 import한 뒤 이 파일을 import 한다.
+   리셋·앱 셸·페이지 레이아웃·헤더 영역의 공통 룰만 둔다.
+   컴포넌트(버튼·카드·탭바 등)는 components.css 참조.
+   ============================================================ */
+
+
+/* ------------------------------------------------------------
+   1. 추가 리셋 (tokens.css의 box-sizing 외 보강)
+   ------------------------------------------------------------ */
+
+/* OS 다크 모드에서도 라이트만 운영 (v3.2.8 다크 제거 정책) —
+   color-scheme + body 배경을 명시하지 않으면 모바일 셸(430px) 바깥이
+   UA 기본 다크 배경으로 새어 나온다. */
+html { color-scheme: light; }
+body { background: var(--color-bg-canvas); }
+
+h1, h2, h3, h4, h5, h6, p, ul, ol, li {
+  margin: 0;
+  padding: 0;
+}
+ul, ol {
+  list-style: none;
+}
+button {
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+input, textarea, select {
+  font-family: inherit;
+  -webkit-appearance: none;
+  appearance: none;
+}
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+
+/* ------------------------------------------------------------
+   2. 페이지 셸 — 모바일 PWA
+   ------------------------------------------------------------ */
+
+/* .app-shell: 모바일 앱 전체 컨테이너 (data-platform="mobile") */
+[data-platform="mobile"] .app-shell {
+  min-height: 100dvh;
+  background: var(--color-bg-role-gradient, var(--color-bg-canvas));
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* .app-main: 헤더와 탭바 사이의 본문 영역 */
+.app-main {
+  flex: 1;
+  padding: 0 var(--space-page-margin);
+  /* 탭바 가림 방지: 탭바 56px + 16px 인셋 + safe-area + 24px 여유 */
+  padding-bottom: calc(var(--size-tab-bar) + var(--space-5) + env(safe-area-inset-bottom) + var(--space-7));
+}
+
+/* .app-section: 본문 안 섹션 묶음 */
+.app-section + .app-section {
+  margin-top: var(--space-stack-section);
+}
+.app-section__title {
+  font-size: var(--text-headline);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-stack-default);
+}
+
+
+/* ------------------------------------------------------------
+   3. 페이지 셸 — 웹 (의료진)
+   ------------------------------------------------------------ */
+
+[data-platform="web"] .app-shell {
+  min-height: 100dvh;
+  background: var(--color-bg-canvas);
+  display: grid;
+  grid-template-columns: var(--size-sidebar-width, 240px) 1fr;
+  grid-template-rows: var(--size-topbar-height, 64px) 1fr;
+  grid-template-areas:
+    "sidebar header"
+    "sidebar main";
+}
+[data-platform="web"] .app-shell__sidebar { grid-area: sidebar; }
+[data-platform="web"] .app-shell__header  { grid-area: header; }
+[data-platform="web"] .app-shell__main    { grid-area: main; padding: var(--space-7); overflow-y: auto; }
+
+@media (max-width: 1023px) {
+  [data-platform="web"] .app-shell {
+    grid-template-columns: 64px 1fr;
+  }
+}
+@media (max-width: 767px) {
+  [data-platform="web"] .app-shell {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "header"
+      "main";
+  }
+  [data-platform="web"] .app-shell__sidebar {
+    position: fixed;
+    left: 0; top: 0;
+    width: var(--size-sidebar-width, 240px);
+    height: 100vh;
+    transform: translateX(-100%);
+    transition: transform var(--motion-transition) var(--easing-standard);
+    z-index: var(--z-modal);
+  }
+  [data-platform="web"] .app-shell__sidebar.is-open {
+    transform: translateX(0);
+  }
+}
+
+
+/* ------------------------------------------------------------
+   4. 콘텐츠 폭 제한 (웹)
+   ------------------------------------------------------------ */
+
+.content-narrow {
+  max-width: 720px;
+  margin: 0 auto;
+}
+.content-default {
+  max-width: var(--size-content-max, 1280px);
+  margin: 0 auto;
+}
+
+
+/* ------------------------------------------------------------
+   5. 안전 영역 (notch / home indicator)
+   ------------------------------------------------------------ */
+
+.safe-top    { padding-top:    env(safe-area-inset-top); }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+.safe-left   { padding-left:   env(safe-area-inset-left); }
+.safe-right  { padding-right:  env(safe-area-inset-right); }
+
+
+/* ------------------------------------------------------------
+   6. 유틸리티 (자주 쓰는 레이아웃 셋)
+   ------------------------------------------------------------ */
+
+.stack { display: flex; flex-direction: column; gap: var(--space-stack-default); }
+.stack-tight  { display: flex; flex-direction: column; gap: var(--space-stack-tight); }
+.stack-loose  { display: flex; flex-direction: column; gap: var(--space-stack-loose); }
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-inline-default);
+}
+.row-loose { display: flex; align-items: center; gap: var(--space-inline-loose); flex-wrap: wrap; }
+.spacer { flex: 1; }
+.center { display: flex; align-items: center; justify-content: center; }
+
+
+/* ------------------------------------------------------------
+   7. 페이드인 — 카드 진입 기본
+   ------------------------------------------------------------ */
+
+@keyframes haru-fade-in-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-in {
+  animation: haru-fade-in-up var(--motion-enter) var(--easing-standard) both;
+}
+.fade-in--d1 { animation-delay: 50ms; }
+.fade-in--d2 { animation-delay: 100ms; }
+.fade-in--d3 { animation-delay: 150ms; }
+.fade-in--d4 { animation-delay: 200ms; }
+.fade-in--d5 { animation-delay: 250ms; }
+.fade-in--d6 { animation-delay: 300ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-in,
+  .fade-in--d1, .fade-in--d2, .fade-in--d3,
+  .fade-in--d4, .fade-in--d5, .fade-in--d6 {
+    animation: none;
+  }
+}
+
+
+/* 끝 — 컴포넌트는 components.css 참조 */
