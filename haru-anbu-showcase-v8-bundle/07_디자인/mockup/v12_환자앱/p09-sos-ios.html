@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>하루안부 · 긴급 (iOS 26 Alert)</title>
+  <link rel="preload" as="style" crossorigin
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+  <link rel="stylesheet" crossorigin
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.3.0/dist/iconify-icon.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      /* iOS 26 system tokens (alert) */
+      --label-primary:   #000000;
+      --label-secondary: rgba(60,60,67,.6);
+      --fill-tertiary:   rgba(118,118,128,.12);
+      --fill-tertiary-press: rgba(118,118,128,.22);
+      --bg-card:         rgba(245,245,245,.6); /* fill on top of blur */
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont,
+                   'SF Pro', 'SF Pro Text', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* 시연용 백드롭 (Figma 데모 라이트 라벤더와 동일 톤) */
+    .scene {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: #F6F0FF;
+    }
+
+    /* ══════════════════════════════════
+       iOS 26 Permission Alert
+       ── width: 300, radius: 34
+       ── outer padding: 14, gap 10
+    ══════════════════════════════════ */
+    .alert {
+      position: relative;
+      width: 300px;
+      max-width: 100%;
+      padding: 14px;
+      border-radius: 34px;
+      background: var(--bg-card);
+      backdrop-filter: blur(40px) saturate(180%);
+      -webkit-backdrop-filter: blur(40px) saturate(180%);
+      box-shadow:
+        0 30px 60px rgba(0,0,0,.18),
+        0 2px 0 rgba(255,255,255,.6) inset;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      animation: alert-in .35s cubic-bezier(.2,.9,.25,1.15);
+    }
+    @keyframes alert-in {
+      from { opacity: 0; transform: scale(.94); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    /* ── App Icon (뒤: 하루안부 브랜드 블루 / 앞: SOS Red 뱃지) ── */
+    .app-icon {
+      position: relative;
+      width: 72px;
+      height: 72px;
+    }
+    .icon-main {
+      position: absolute;
+      top: 0; left: 0;
+      width: 64px; height: 64px;
+      border-radius: 15px;
+      background: #2C7AFC; /* 하루안부 브랜드 블루 */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 16px rgba(44,122,252,.28);
+    }
+    .icon-main svg { width: 36px; height: 36px; display: block; }
+
+    .icon-badge {
+      position: absolute;
+      top: 40px; left: 40px;
+      width: 32px; height: 32px;
+      border-radius: 9px;
+      background: #E32B25; /* DS: --color-danger (Rivian Alarm) */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 3px 8px rgba(227,43,37,.35);
+    }
+
+    /* ── Text Stack ── */
+    .text-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 8px 8px 24px;
+    }
+    .a-title {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 22px;
+      letter-spacing: -0.43px;
+      color: var(--label-primary);
+    }
+    .a-desc {
+      font-size: 17px;
+      font-weight: 400;
+      line-height: 22px;
+      letter-spacing: -0.43px;
+      color: var(--label-secondary);
+    }
+
+    /* ── Buttons Stack ── */
+    .btn-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+    }
+    .btn {
+      width: 100%;
+      border: 0;
+      cursor: pointer;
+      background: var(--fill-tertiary);
+      padding: 14px 20px;
+      border-radius: 1000px;
+      font-family: inherit;
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 22px;
+      letter-spacing: -0.43px;
+      color: var(--label-primary);
+      text-align: center;
+      text-decoration: none;
+      display: block;
+      transition: background .12s, transform .08s;
+    }
+    .btn:active { background: var(--fill-tertiary-press); transform: scale(.985); }
+  </style>
+</head>
+<body>
+
+<div class="scene">
+
+  <div class="alert" role="alertdialog" aria-labelledby="aTitle" aria-describedby="aDesc">
+
+    <div class="app-icon" aria-label="하루안부 긴급 알림">
+      <div class="icon-main">
+        <svg viewBox="0 0 2526 2526" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M2521.32 2506.66C1239.65 2657.48 1239.65 1895.6 1239.65 1279.34L2497.69 0.000170058C2518.68 494.198 2522.27 1157.92 1658.86 1262.48C2641.88 1314.25 2521.32 2101.84 2521.32 2506.66Z" fill="#ffffff"/>
+          <path d="M4.6772 19.3353C1286.35 -131.481 1286.35 630.399 1286.35 1246.66L28.3145 2526C7.32194 2031.8 3.73014 1368.08 867.143 1263.52C-115.881 1211.75 4.6772 424.157 4.6772 19.3353Z" fill="#ffffff"/>
+        </svg>
+      </div>
+      <div class="icon-badge" aria-hidden="true">
+        <iconify-icon icon="fluent:alert-urgent-24-filled" width="18" style="color:#fff"></iconify-icon>
+      </div>
+    </div>
+
+    <div class="text-stack">
+      <p class="a-title" id="aTitle">긴급 도움을 요청할까요?</p>
+      <p class="a-desc" id="aDesc">119에 자동으로 연락하고, 가족(민지·서연·태우)에게 현재 위치를 공유합니다.</p>
+    </div>
+
+    <div class="btn-stack">
+      <button class="btn" id="cancelBtn" type="button">실수예요, 취소</button>
+      <button class="btn" id="sendBtn" type="button">지금 보내기</button>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+(function () {
+  document.getElementById('cancelBtn').addEventListener('click', function () {
+    location.href = 'p01-today.html';
+  });
+  document.getElementById('sendBtn').addEventListener('click', function () {
+    location.href = 'p03-call.html';
+  });
+})();
+</script>
+
+</body>
+</html>
