@@ -1,0 +1,13 @@
+# macOS
+.DS_Store
+
+# Temporary and backup files
+*.bak
+*~
+*.tmp
+*_backup*
+
+# VS Code
+.vscode/
+
+# Archive folder is intentionally kept, do not ignore
