@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>새 음원 하나하나 확인</title>
+<style>
+  :root{ --blue:#2C7AFC; --ink:#1A1D23; --mute:#8A9099; --line:#E9ECF0; --paper:#F6F8FA; --warn:#E32B25; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Pretendard Variable',Pretendard,-apple-system,sans-serif;background:#fff;color:var(--ink);line-height:1.5;padding:28px 22px 140px}
+  .wrap{max-width:1040px;margin:0 auto}
+  h1{font-size:20px;font-weight:700}
+  .hint{font-size:13px;background:var(--paper);border-radius:10px;padding:12px 15px;margin:12px 0 20px}
+  .hint b{color:var(--blue)}
+  .cols{display:flex;gap:26px;align-items:flex-start}
+  .col{flex:1;min-width:0}
+  .col h2{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin-bottom:10px;position:sticky;top:0;background:#fff;padding:6px 0}
+  .clip{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:10px;background:var(--paper);margin-bottom:8px}
+  .clip .n{font-weight:700;font-size:14px;width:62px;flex-shrink:0}
+  .clip button{font:inherit;font-size:13px;font-weight:700;color:#fff;background:var(--blue);border:none;border-radius:7px;padding:7px 13px;cursor:pointer}
+  .clip button.playing{background:var(--ink)}
+  .clip .d{font-size:12px;color:var(--mute);margin-left:auto}
+  .ln{display:flex;gap:10px;padding:9px 11px;border-radius:9px;margin-bottom:6px}
+  .ln .i{font-weight:700;font-size:13px;color:var(--blue);width:22px;flex-shrink:0;text-align:right}
+  .ln .x{font-size:14px;word-break:keep-all}
+  .ln .tag{font-size:11px;font-weight:700;color:var(--mute);display:block}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>새 음원 하나하나 확인</h1>
+  <div class="hint">
+    왼쪽 클립을 ▶ 들어보고, 오른쪽 21개 대본 중 어느 줄인지 맞춰보세요. <b>빠진 4개</b>가 어느 줄인지 알려주시면 확정합니다.<br>
+    (길이 추정: 1~11번·19~21번은 일치 / 빠진 4개는 <b>12~18번 5앱 구간</b>에 몰려 있음)
+  </div>
+  <div class="cols">
+    <div class="col">
+      <h2>녹음된 클립 17개 (다운로드 순서)</h2>
+      <div id="clips"></div>
+    </div>
+    <div class="col">
+      <h2>대본 — 네잎클로버 21줄</h2>
+      <div id="lines"></div>
+    </div>
+  </div>
+</div>
+<script>
+const DUR = [9.2,7.8,3.2,5.7,13.5,8.7,4.6,8.9,6.3,9.7,11.9,5.4,4.3,3.9,3.6,5.9,2.3];
+const LINES = [
+ ["인사","안녕하세요. 저는 네잎클로버입니다. 하루안부 안에서 일하는 이 팀의 에이아이예요. 우리가 만든 하루를, 제가 직접 안내하겠습니다."],
+ ["Hero","하루안부. 환자, 케어팀, 보호자. 흩어진 세 시선을, 하루의 안부 한 줄로 잇는 케어 플랫폼입니다."],
+ ["Overview","세 시선을, 다섯 개의 화면으로 연결합니다."],
+ ["Problem","잘 계십니다… 아마도? 부모님 안부는, 매일 아침 가장 무거운 질문입니다."],
+ ["Problem 통계","한국은 세계에서 가장 빠르게 늙어가는 나라입니다. 육십오 세 이상 일인 가구가 이백십사만 명, 노인 빈곤율은 오이씨디 일 위. 그런데 연결되는 방식은, 아직 전화 한 통뿐입니다."],
+ ["App-preview","그래서 저는, 하루안부 하나에 모았습니다. 음성 안부, 복약 알림, 긴급 호출, 활동 리포트까지 한곳에서 움직입니다."],
+ ["Direction","방향은 하나입니다. 흩어진 세 시선을, 한 하루로 잇습니다."],
+ ["Design 로고","디자인도 같은 약속을 따릅니다. 로고의 두 곡선은, 보호자와 환자, 그 사이를 잇는 케어팀이 한 점에서 만나는 모습이에요."],
+ ["Color","보호자는 블루, 케어팀은 그린, 환자는 오렌지. 누구의 정보인지, 색으로 바로 보입니다."],
+ ["Persona","같은 하루가, 세 시점에서 다릅니다. 보호자는 안심을 받고, 어르신은 버튼 하나로 안부를 전하고, 케어팀은 기록하는 순간 그게 곧 안부가 됩니다."],
+ ["Service","어떤 화면을 열어도, 여섯 기능이 함께 작동합니다. 자동 리포트, 안심지수, 그리고 새벽 에스오에스는 평균 삼 분 안에 연결됩니다."],
+ ["Flagship","그중 넷은 특히 자신 있습니다. 매일 아침 어제를 정리하고, 기록은 곧장 가족에게 닿고, 한국어 워크플로우가 모국어로 동작하고, 데스크와 회진이 한 데이터에서 만납니다."],
+ ["보호자","보호자에게는, 매일 아침 먼저 전해집니다. 어제의 부모님이, 한 카드로 도착합니다."],
+ ["환자","어르신에게는, 글자는 크게 터치는 넓게. 누구나 오 초면 도움을 청합니다."],
+ ["요양보호사","요양보호사에게는, 현장에서 십 초면 오늘 기록이 끝납니다."],
+ ["다국어","한국어로 만든 이 화면이, 모국어로 그대로 동작합니다."],
+ ["의료진 앱","의사에게는, 병동을 걸으며 처치부터 인계까지. 기록은 한 손으로 끝납니다."],
+ ["의료진 웹","간호사에게는, 전체 환자를 한 화면에. 봐야 할 환자를, 먼저 보여드립니다."],
+ ["라이브 마무리","지금 보시는 다섯 화면 모두, 실제로 작동합니다."],
+ ["Closing 1","매일 잊지 않고 안부를 묻는 마음. 그 마음을 한 화면에 옮긴 것이, 하루안부입니다."],
+ ["Closing 2","오늘 하루도, 안녕하셨습니다."],
+];
+const clips=document.getElementById('clips');
+let cur=null;
+DUR.forEach((d,i)=>{
+  const n=String(i+1).padStart(2,'0');
+  const row=document.createElement('div'); row.className='clip';
+  row.innerHTML=`<span class="n">new-${n}</span><button data-c="${n}">▶ 재생</button><span class="d">${d.toFixed(1)}초</span>`;
+  clips.appendChild(row);
+});
+document.querySelectorAll('.clip button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    if(cur){ cur.a.pause(); cur.b.classList.remove('playing'); cur.b.textContent='▶ 재생'; }
+    if(cur && cur.b===b){ cur=null; return; }
+    const a=new Audio(`audio/clover_new/new-${b.dataset.c}.mp3`);
+    cur={a,b}; b.classList.add('playing'); b.textContent='■ 정지'; a.play().catch(()=>{});
+    a.onended=()=>{ b.classList.remove('playing'); b.textContent='▶ 재생'; cur=null; };
+  });
+});
+const lines=document.getElementById('lines');
+LINES.forEach((l,i)=>{
+  const row=document.createElement('div'); row.className='ln';
+  row.innerHTML=`<span class="i">${i+1}</span><span class="x"><span class="tag">${l[0]}</span>${l[1]}</span>`;
+  lines.appendChild(row);
+});
+</script>
+</body>
+</html>

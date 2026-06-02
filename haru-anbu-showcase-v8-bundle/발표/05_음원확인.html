@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>네잎클로버 음원 확인 — 빠진 대사 찾기</title>
+<style>
+  :root{ --blue:#2C7AFC; --ink:#1A1D23; --mute:#8A9099; --line:#ECEEF1; --paper:#F7F8FA; --warn:#E32B25; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;background:#fff;color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:900px;margin:0 auto;padding:40px 24px 120px}
+  h1{font-size:22px;font-weight:700;letter-spacing:-.02em}
+  .hint{font-size:14px;color:var(--ink);margin-top:14px;padding:14px 16px;background:var(--paper);border-radius:10px}
+  .hint b{color:var(--blue)}
+  .row{display:flex;gap:16px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
+  .pos{flex-shrink:0;width:34px;text-align:center;font-size:14px;font-weight:700;color:var(--mute);font-feature-settings:"tnum" 1}
+  .mid{flex:1;min-width:0}
+  .tag{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin-bottom:4px}
+  .text{font-size:15px;letter-spacing:-.01em;word-break:keep-all}
+  audio{flex-shrink:0;width:260px;height:36px}
+  .noaudio{flex-shrink:0;width:260px;font-size:13px;color:var(--warn);font-weight:600;text-align:center}
+  .toolbar{display:flex;gap:10px;margin:20px 0 4px}
+  .btn{font:inherit;font-size:14px;font-weight:600;color:#fff;background:var(--blue);border:none;border-radius:9px;padding:9px 16px;cursor:pointer}
+  .btn.sec{color:var(--ink);background:var(--paper)}
+  .playing{background:rgba(44,122,252,.07)}
+  .playing .pos{color:var(--blue)}
+  @media (max-width:680px){ .row{flex-wrap:wrap} audio,.noaudio{width:100%} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>네잎클로버 음원 확인 — 빠진 대사 찾기</h1>
+  <div class="hint">
+    네잎클로버 대사 <b>21개</b> 전부 음원이 연결됐습니다. (빠졌던 4번 Problem 포함, 대본 순서대로 매핑 완료)<br>
+    위에서부터 ▶ 들으면서 음성과 텍스트가 일치하는지 최종 확인하세요. 총 길이 약 <b>3분 10초</b>.
+  </div>
+  <div class="toolbar">
+    <button class="btn" id="playAll">위에서부터 순서대로 재생</button>
+    <button class="btn sec" id="stopAll">정지</button>
+  </div>
+  <div id="list"></div>
+</div>
+<script>
+// 대본 순서 = 네잎클로버 21개 대사 (01_발표대본 v8 기준)
+const LINES = [
+  ["인사","안녕하세요. 저는 네잎클로버입니다. '노인과 바다' 팀에 더해진, 이 팀의 에이아이 멤버예요. 하루안부 안에서 직접 일하는 제가, 우리가 만든 하루를 처음부터 안내해 드리겠습니다."],
+  ["Hero","하루안부. 환자, 케어팀, 보호자. 흩어진 세 시선을, 하루의 안부 한 줄로 잇는 케어 플랫폼입니다."],
+  ["Overview","세 시선을 잇는 케어 커뮤니케이션 플랫폼. 요양 현장의 세 시선을, 다섯 개의 화면으로 연결합니다."],
+  ["Problem","잘 계십니다… 아마도? 부모님 안부는, 매일 아침 가장 무거운 질문입니다."],
+  ["Problem 통계","전화 한 통으로는, 그 누구도 진짜로 안심할 수 없습니다. 프랑스가 백오십사 년, 미국이 팔십팔 년. 육십오세 이상 일인 가구는 이백십사만 명입니다. 한국은 초고령사회로 가는 데 단 이십사 년. 노인 빈곤율은 오이씨디 일위입니다. 그런데 연결되는 방식은, 아직 전화 한 통에 머물러 있습니다."],
+  ["App-preview","그 답을, 저는 하루안부 하나에 모았습니다. 음성 안부부터 복약 알림, 긴급 호출, 활동 리포트까지. 흩어져 있던 것들이 한곳에서 움직입니다."],
+  ["Direction","방향은 하나입니다. 흩어진 세 시선을, 한 하루로 잇습니다."],
+  ["Design 로고","디자인도 같은 약속을 따릅니다. 로고의 두 곡선은, 멀리 있는 보호자와 가까이 있는 환자, 그 사이를 잇는 케어팀이 한 점에서 만나는 모습입니다."],
+  ["Color","네. 보호자는 블루, 케어팀은 그린, 환자는 오렌지. 같은 화면 안에서도, 누구의 정보인지 색으로 바로 보입니다."],
+  ["Persona","같은 하루가, 세 시점에서 이렇게 다릅니다. 보호자는 멀리 있어도 안심을 받습니다. 어르신은 버튼 하나로 안부를 전합니다. 케어팀은 기록하는 순간, 그것이 곧 하루의 안부가 됩니다."],
+  ["Service","어떤 화면을 열어도, 여섯 가지 핵심 기능이 함께 작동합니다. 자동 일일 리포트, 그리고 에이아이 안심지수. 새벽 에스오에스는, 평균 삼 분 안에 연결됩니다."],
+  ["Flagship","그중 넷은 특히 자신 있습니다. 매일 아침, 어제를 정리합니다. 기록하는 순간, 가족에게 닿습니다. 한국어로 만든 워크플로우가, 모국어로 그대로 동작합니다. 데스크와 회진이, 같은 데이터 위에서 만납니다."],
+  ["앱 01 보호자","보호자에게는, 매일 아침 먼저 전해집니다. 어제의 부모님을 제가 한 카드로 정리해, 출근길 오 초면 보시게 합니다."],
+  ["앱 02 환자","어르신에게는, 글자는 크게, 터치는 넓게. 누구나 오 초 안에 도움을 청합니다."],
+  ["앱 03 요양보호사","요양보호사에게는, 현장에서 십 초면 오늘 기록이 끝납니다. 여덟 단계 스텝퍼로, 한 환자 회진이 한 흐름에 마무리됩니다."],
+  ["다국어","한국어로 만든 이 워크플로우가, 모국어로 그대로 동작합니다."],
+  ["앱 04 의료진 앱","의사에게는, 병동을 걸으면서 처치부터 인계까지. 에스오에스가 울리면 이 초 안에 위치와 바이탈이 잡힙니다. 회진 기록은 한 손으로 끝납니다."],
+  ["앱 05 의료진 웹","간호사에게는, 전체 환자를 한 화면에. 제가 이상 신호를 중요도 순으로 정렬합니다. 가장 먼저 봐야 할 환자를, 먼저 보여드립니다."],
+  ["라이브 마무리","지금 보고 계신 다섯 화면 모두, 같은 데이터 위에서 실제로 작동합니다."],
+  ["Closing 1","매일 잊지 않고 안부를 묻는 마음. 그 마음을 한 화면 위로 옮겨 적은 것이, 곧 하루안부입니다."],
+  ["Closing 2","오늘 하루도, 안녕하셨습니다."],
+];
+const list = document.getElementById('list');
+const audios = [];
+LINES.forEach((l,i)=>{
+  const pos = i+1;
+  const row = document.createElement('div'); row.className='row';
+  const hasAudio = pos <= 21; // 21개 전부 연결됨
+  const src = `audio/clover/clover-${String(pos).padStart(2,'0')}.mp3?v=fade05`;
+  row.innerHTML =
+    `<div class="pos">${pos}</div>`+
+    `<div class="mid"><div class="tag">${l[0]}</div><div class="text"></div></div>`+
+    (hasAudio
+      ? `<audio controls preload="none" src="${src}"></audio>`
+      : `<div class="noaudio">음원 없음 (21번째)</div>`);
+  row.querySelector('.text').textContent = l[1];
+  list.appendChild(row);
+  if(hasAudio){
+    const a = row.querySelector('audio');
+    audios.push(a);
+    a.addEventListener('play', ()=>{ audios.forEach(x=>{ if(x!==a) x.pause(); }); document.querySelectorAll('.row').forEach(r=>r.classList.remove('playing')); row.classList.add('playing'); });
+    a.addEventListener('ended', ()=>row.classList.remove('playing'));
+  }
+});
+// 순서대로 자동 재생
+let seq = -1;
+function playSeq(i){
+  seq = i;
+  if(i>=audios.length){ return; }
+  const a = audios[i];
+  a.currentTime = 0;
+  a.play();
+  a.onended = ()=>{ playSeq(i+1); };
+}
+document.getElementById('playAll').addEventListener('click', ()=>playSeq(0));
+document.getElementById('stopAll').addEventListener('click', ()=>{
+  audios.forEach(a=>{ a.pause(); a.onended=null; });
+  document.querySelectorAll('.row').forEach(r=>r.classList.remove('playing'));
+});
+</script>
+</body>
+</html>

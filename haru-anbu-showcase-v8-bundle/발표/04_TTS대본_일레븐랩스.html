@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>하루안부 발표 — TTS 복붙용</title>
+<style>
+  :root{ --blue:#2C7AFC; --ink:#1A1D23; --mute:#8A9099; --line:#ECEEF1; --paper:#F7F8FA; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;background:#fff;color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:760px;margin:0 auto;padding:48px 24px 120px}
+  header{margin-bottom:32px}
+  h1{font-size:24px;font-weight:700;letter-spacing:-.02em}
+  .sub{font-size:14px;color:var(--mute);margin-top:8px}
+  .hint{font-size:13px;color:var(--mute);margin-top:16px;padding:12px 16px;background:var(--paper);border-radius:10px}
+  .row{display:flex;gap:14px;align-items:flex-start;padding:18px 0;border-bottom:1px solid var(--line)}
+  .meta{flex-shrink:0;width:88px;padding-top:2px}
+  .num{font-size:12px;color:var(--mute);font-feature-settings:"tnum" 1}
+  .who{display:inline-block;font-size:12px;font-weight:600;margin-top:3px;padding:2px 8px;border-radius:999px}
+  .who.clover{color:#fff;background:var(--blue)}
+  .who.shon{color:#fff;background:var(--ink)}
+  .body{flex:1;min-width:0}
+  .text{font-size:16px;letter-spacing:-.01em;white-space:pre-wrap;word-break:keep-all}
+  .copy{margin-top:10px;font:inherit;font-size:13px;font-weight:600;color:var(--blue);background:none;border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer;transition:background .12s,color .12s}
+  .copy:hover{background:var(--paper)}
+  .copy.done{color:#fff;background:var(--blue);border-color:var(--blue)}
+  .grp{margin:36px 0 6px;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>하루안부 발표 — TTS 복붙용</h1>
+    <p class="sub">나(Shon) ↔ 네잎클로버 대화. 일레븐랩스에 붙여넣어 음원 추출.</p>
+    <div class="hint">화자별로 다른 보이스 권장 · 약어는 한국어 발음 표기(에스오에스/에이아이/오이씨디) · 숫자 풀어 읽기 적용. 각 줄의 <b>복사</b>를 눌러 바로 붙여넣으세요.</div>
+  </header>
+  <div id="list"></div>
+</div>
+<script>
+const LINES = [
+ ["01","clover","네잎클로버","안녕하세요. 저는 네잎클로버입니다. 하루안부 안에서 일하는 이 팀의 에이아이예요. 우리가 만든 하루를, 제가 직접 안내하겠습니다."],
+ ["00","shon","Shon","안녕하세요. 저희는 '노인과 바다 그리고 네잎클로버' 팀입니다. 오늘 발표는 저희 팀의 한 멤버가 맡습니다. 사람이 아니라, 에이아이예요."],
+ ["03","shon","Shon","네, 우리 팀 네잎클로버예요. 그럼 시작해 줄래요?"],
+ ["04","clover","네잎클로버","하루안부. 환자, 케어팀, 보호자. 흩어진 세 시선을, 하루의 안부 한 줄로 잇는 케어 플랫폼입니다."],
+ ["05","clover","네잎클로버","세 시선을, 다섯 개의 화면으로 연결합니다."],
+ ["06","shon","Shon","왜 필요했는지부터 볼까요?"],
+ ["07","clover","네잎클로버","잘 계십니다… 아마도? 부모님 안부는, 매일 아침 가장 무거운 질문입니다."],
+ ["08","shon","Shon","전화 끊고 늘 따라붙는 그 마음이죠."],
+ ["09","clover","네잎클로버","한국은 세계에서 가장 빠르게 늙어가는 나라입니다. 육십오 세 이상 일인 가구가 이백십사만 명, 노인 빈곤율은 오이씨디 일 위. 그런데 연결되는 방식은, 아직 전화 한 통뿐입니다."],
+ ["10","clover","네잎클로버","그래서 저는, 하루안부 하나에 모았습니다. 음성 안부, 복약 알림, 긴급 호출, 활동 리포트까지 한곳에서 움직입니다."],
+ ["11","clover","네잎클로버","방향은 하나입니다. 흩어진 세 시선을, 한 하루로 잇습니다."],
+ ["12","clover","네잎클로버","디자인도 같은 약속을 따릅니다. 로고의 두 곡선은, 보호자와 환자, 그 사이를 잇는 케어팀이 한 점에서 만나는 모습이에요."],
+ ["13","shon","Shon","세 색으로 나뉘네요?"],
+ ["14","clover","네잎클로버","보호자는 블루, 케어팀은 그린, 환자는 오렌지. 누구의 정보인지, 색으로 바로 보입니다."],
+ ["15","clover","네잎클로버","같은 하루가, 세 시점에서 다릅니다. 보호자는 안심을 받고, 어르신은 버튼 하나로 안부를 전하고, 케어팀은 기록하는 순간 그게 곧 안부가 됩니다."],
+ ["16","clover","네잎클로버","어떤 화면을 열어도, 여섯 기능이 함께 작동합니다. 자동 리포트, 안심지수, 그리고 새벽 에스오에스는 평균 삼 분 안에 연결됩니다."],
+ ["17","clover","네잎클로버","그중 넷은 특히 자신 있습니다. 매일 아침 어제를 정리하고, 기록은 곧장 가족에게 닿고, 한국어 워크플로우가 모국어로 동작하고, 데스크와 회진이 한 데이터에서 만납니다."],
+ ["18","clover","네잎클로버","보호자에게는, 매일 아침 먼저 전해집니다. 어제의 부모님이, 한 카드로 도착합니다."],
+ ["19","shon","Shon","떨어져 사는 자식한텐, 이 한 카드가 크죠."],
+ ["20","clover","네잎클로버","어르신에게는, 글자는 크게 터치는 넓게. 누구나 오 초면 도움을 청합니다."],
+ ["21","clover","네잎클로버","요양보호사에게는, 현장에서 십 초면 오늘 기록이 끝납니다."],
+ ["22","shon","Shon","외국인 요양보호사도 많잖아요?"],
+ ["23","clover","네잎클로버","한국어로 만든 이 화면이, 모국어로 그대로 동작합니다."],
+ ["24","clover","네잎클로버","의사에게는, 병동을 걸으며 처치부터 인계까지. 기록은 한 손으로 끝납니다."],
+ ["25","clover","네잎클로버","간호사에게는, 전체 환자를 한 화면에. 봐야 할 환자를, 먼저 보여드립니다."],
+ ["26","shon","Shon","데스크가 훨씬 가벼워지겠네요."],
+ ["27","shon","Shon","이게 다 모형이 아니에요. 지금 직접 만지면, 진짜 열립니다."],
+ ["28","clover","네잎클로버","지금 보시는 다섯 화면 모두, 실제로 작동합니다."],
+ ["29","clover","네잎클로버","매일 잊지 않고 안부를 묻는 마음. 그 마음을 한 화면에 옮긴 것이, 하루안부입니다."],
+ ["30","clover","네잎클로버","오늘 하루도, 안녕하셨습니다."],
+ ["31","shon","Shon","저희 '노인과 바다 그리고 네잎클로버'였습니다. 감사합니다."],
+];
+// 발화 순서대로 정렬 (00 인트로가 맨 앞)
+LINES.sort((a,b)=>a[0].localeCompare(b[0]));
+const list = document.getElementById('list');
+LINES.forEach((l,i)=>{
+  const [num,cls,who,text]=l;
+  const row=document.createElement('div'); row.className='row';
+  row.innerHTML=`<div class="meta"><div class="num">${String(i+1).padStart(2,'0')}</div><div class="who ${cls}">${who}</div></div>`+
+    `<div class="body"><div class="text"></div><button class="copy">복사</button></div>`;
+  const broken=text.replace(/([.?!])\s+/g,'$1\n');
+  row.querySelector('.text').textContent=broken;
+  const btn=row.querySelector('.copy');
+  btn.addEventListener('click',()=>{
+    navigator.clipboard.writeText(broken).then(()=>{
+      btn.textContent='복사됨'; btn.classList.add('done');
+      setTimeout(()=>{btn.textContent='복사'; btn.classList.remove('done');},1200);
+    });
+  });
+  list.appendChild(row);
+});
+</script>
+</body>
+</html>
