@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="ko" data-role="guardian" data-platform="mobile">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#EFF6FF">
+  <title>하루안부 · 보호자 홈 (v3.1 파일럿)</title>
+
+  <!-- v3.1 디자인 시스템 — 토큰 → 앱 셸 → 컴포넌트 -->
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css">
+
+  <script src="../07_디자인/_app-theme.js"></script>  <link rel="stylesheet" href="../07_디자인/system/app.css">
+  <link rel="stylesheet" href="../07_디자인/system/components.css">
+  <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.3.0/dist/iconify-icon.min.js"></script>
+
+  <!-- 페이지 전용 스타일 — 시멘틱 토큰만 사용 -->
+  <style>
+    /* 보호자 홈 2x2 그리드 */
+    .home-summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-4);
+    }
+    .home-summary .card {
+      padding: var(--space-5);
+    }
+    .home-summary__label {
+      font-size: var(--text-caption);
+      color: var(--color-text-secondary);
+    }
+    .home-summary__value {
+      font-size: var(--text-title);
+      font-weight: var(--weight-semibold);
+      color: var(--color-text-primary);
+      margin-top: var(--space-2);
+    }
+
+    /* AI 리포트 카드 — glass 예외 적용 (4곳 한정 중 하나) */
+    .ai-card {
+      background: var(--color-bg-glass);
+      backdrop-filter: blur(var(--blur-card));
+      -webkit-backdrop-filter: blur(var(--blur-card));
+      border: 1px solid rgba(var(--color-accent-rgb), 0.20);
+      border-radius: var(--radius-card-lg);
+      box-shadow: var(--shadow-glass);
+      padding: var(--card-padding);
+    }
+    .ai-card__head {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      margin-bottom: var(--space-3);
+    }
+    .ai-card__head img { width: 18px; height: 18px; }
+    .ai-card__eyebrow {
+      font-size: var(--font-11);
+      font-weight: var(--weight-semibold);
+      color: var(--color-accent);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .ai-card__title {
+      font-size: var(--text-headline);
+      font-weight: var(--weight-semibold);
+      color: var(--color-text-primary);
+      line-height: var(--leading-normal);
+      margin-bottom: var(--space-4);
+    }
+    .ai-card__more {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      font: var(--weight-semibold) var(--text-callout) var(--font-family-base);
+      color: var(--color-accent);
+      text-decoration: none;
+    }
+
+    /* 문의 카드 (action) */
+    .ask-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+    .ask-row__text { flex: 1; }
+    .ask-row__title { font-weight: var(--weight-semibold); font-size: var(--text-callout); }
+    .ask-row__hint { font-size: var(--text-caption); color: var(--color-text-secondary); margin-top: 2px; }
+
+    /* 섹션 간격 */
+    .home-stack {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-stack-loose);
+      padding-top: var(--space-5);
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- 모바일 헤더 -->
+  <header class="header-mobile">
+    <button class="header-mobile__left" aria-label="메뉴">
+      <iconify-icon icon="fluent:line-horizontal-3-24-filled"></iconify-icon>
+    </button>
+    <h1 class="header-mobile__title">오늘 · 5월 10일</h1>
+    <button class="header-mobile__right" aria-label="알림">
+      <iconify-icon icon="fluent:alert-24-filled"></iconify-icon>
+    </button>
+  </header>
+
+  <!-- 본문 -->
+  <main class="app-main">
+    <div class="home-stack">
+
+      <!-- 1순위 강조: card-hero (화면당 1개) -->
+      <section class="card-hero fade-in fade-in--d1" aria-label="오늘의 안부 상태">
+        <div class="card-hero__eyebrow">오늘의 안부</div>
+        <div class="card-hero__title">안정적이세요</div>
+        <div class="card-hero__desc">식사 정상 · 투약 완료 · 활동 보통. 어머님은 평소처럼 잘 지내고 계세요.</div>
+      </section>
+
+      <!-- 2x2 요약 — card-default (flat) -->
+      <section class="home-summary fade-in fade-in--d2" aria-label="오늘 요약">
+        <div class="card">
+          <div class="home-summary__label">식사</div>
+          <div class="home-summary__value">2/3</div>
+          <span class="badge badge--success" style="margin-top: var(--space-3);">정상</span>
+        </div>
+        <div class="card">
+          <div class="home-summary__label">투약</div>
+          <div class="home-summary__value">3/3</div>
+          <span class="badge badge--success" style="margin-top: var(--space-3);">완료</span>
+        </div>
+        <div class="card">
+          <div class="home-summary__label">수면 / 기분</div>
+          <div class="home-summary__value">좋음</div>
+          <span class="badge badge--success" style="margin-top: var(--space-3);">안정</span>
+        </div>
+        <div class="card">
+          <div class="home-summary__label">활동</div>
+          <div class="home-summary__value">30분</div>
+          <span class="badge badge--warning" style="margin-top: var(--space-3);">짧음</span>
+        </div>
+      </section>
+
+      <!-- AI 리포트 — glass 예외 (4곳 중 하나) -->
+      <section class="ai-card fade-in fade-in--d3" aria-label="AI 안부 리포트">
+        <div class="ai-card__head">
+          <img src="../07_디자인/logo/brand-system/01_심볼단독.svg" alt="">
+          <span class="ai-card__eyebrow">AI 안부 리포트 · 저녁 7시</span>
+        </div>
+        <p class="ai-card__title">"오늘은 식사·투약 모두 잘 하셨고, 오후에 짧은 산책 활동에 참여하셨습니다."</p>
+        <a href="g02-ai-report.html" class="ai-card__more">
+          자세히 보기
+          <iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon>
+        </a>
+      </section>
+
+      <!-- 문의 카드 — card-action -->
+      <button class="card-action fade-in fade-in--d4" aria-label="궁금한 점 남기기">
+        <div class="ask-row">
+          <iconify-icon icon="fluent:chat-24-filled" style="color: var(--color-accent); font-size: var(--size-icon-md);"></iconify-icon>
+          <div class="ask-row__text">
+            <div class="ask-row__title">궁금한 점 남기기</div>
+            <div class="ask-row__hint">간호사가 근무 시간에 답변드려요</div>
+          </div>
+          <iconify-icon icon="fluent:chevron-right-24-filled" style="color: var(--color-text-tertiary); font-size: var(--size-icon-sm);"></iconify-icon>
+        </div>
+      </button>
+
+      <!-- 주의 알림 (예시) — card-alert -->
+      <section class="card-alert card-alert--warning fade-in fade-in--d4" role="status">
+        <iconify-icon icon="fluent:warning-24-filled" class="card-alert__icon"></iconify-icon>
+        <div>
+          <div class="card-alert__title">오후 산책이 평소보다 짧았어요</div>
+          <div class="card-alert__desc">컨디션이 신경 쓰이시면 간호사에게 문의해 주세요.</div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- 플로팅 필 탭바 -->
+  <nav class="tabbar" role="tablist" aria-label="메인 탭">
+    <button class="tabbar__item is-active" role="tab" aria-selected="true">
+      <iconify-icon icon="fluent:home-24-filled"></iconify-icon>
+      <span>홈</span>
+    </button>
+    <button class="tabbar__item" role="tab">
+      <iconify-icon icon="fluent:clipboard-task-list-ltr-24-filled"></iconify-icon>
+      <span>가이드</span>
+    </button>
+    <button class="tabbar__item" role="tab">
+      <iconify-icon icon="fluent:chat-24-filled"></iconify-icon>
+      <span>소통</span>
+    </button>
+    <button class="tabbar__item" role="tab">
+      <iconify-icon icon="fluent:document-text-24-filled"></iconify-icon>
+      <span>기록</span>
+    </button>
+    <button class="tabbar__item" role="tab">
+      <iconify-icon icon="fluent:person-24-filled"></iconify-icon>
+      <span>마이</span>
+    </button>
+  </nav>
+
+  <!-- AI FAB — 하루안부 심볼 -->
+  <button class="fab-ai" aria-label="AI 어시스턴트 열기">
+    <img src="../07_디자인/logo/brand-system/01_심볼단독.svg" alt="">
+  </button>
+
+</div>
+
+</body>
+</html>

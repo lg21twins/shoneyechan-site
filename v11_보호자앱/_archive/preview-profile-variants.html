@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ko" data-role="guardian" data-platform="mobile">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>프로필 섹션 옵션 비교</title>
+
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css">
+  <link rel="stylesheet" href="../07_디자인/system/app.css">
+  <link rel="stylesheet" href="../07_디자인/system/components.css">
+  <script src="../07_디자인/_iconify-icon.min.js"></script>
+
+  <style>
+    body { background: var(--color-bg-canvas); }
+    .app-shell { max-width: 430px; margin: 0 auto; padding: 16px; }
+    .opt-head {
+      font-size: 13px; font-weight: 800; color: var(--color-text-tertiary);
+      letter-spacing: 0.4px; text-transform: uppercase;
+      margin: 32px 0 4px; padding-left: 4px;
+    }
+    .opt-head:first-of-type { margin-top: 0; }
+    .opt-source { font-size: 11px; color: var(--color-text-tertiary); font-weight: 600; margin-bottom: 12px; padding-left: 4px; }
+    .opt-note { font-size: 12px; color: var(--color-text-secondary); margin: 0 4px 8px; line-height: 1.4; }
+
+    /* ============================================================
+       옵션 0 — 현재 (좌측 아바타 + 우측 이름·서브·배지, 하단 3 chip)
+    ============================================================ */
+    .v0 .profile { display: flex; align-items: center; gap: var(--space-5); }
+    .v0 .profile__av {
+      width: 64px; height: 64px; border-radius: 999px;
+      background: var(--color-accent-soft);
+      flex-shrink: 0; position: relative; overflow: hidden;
+    }
+    .v0 .profile__av img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+    .v0 .profile__edit {
+      position: absolute; bottom: -2px; right: -2px;
+      width: 22px; height: 22px; border-radius: 999px;
+      background: var(--color-accent);
+      display: flex; align-items: center; justify-content: center;
+      border: 2px solid var(--color-bg-surface);
+    }
+    .v0 .profile__edit iconify-icon { font-size: 11px; color: #fff; }
+    .v0 .profile__name { font-size: 18px; font-weight: 800; }
+    .v0 .profile__sub { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+    .v0 .care-chips {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 18px;
+    }
+    .v0 .care-chip {
+      text-align: center; padding: 12px;
+      background: var(--color-bg-canvas);
+      border-radius: 12px;
+    }
+    .v0 .care-chip__val { font-size: 14px; font-weight: 800; }
+    .v0 .care-chip__label { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+
+    /* ============================================================
+       옵션 A — Pair avatars: 보호자 + 환자 관계 시각화
+    ============================================================ */
+    .vA .pair {
+      display: flex; align-items: center; justify-content: center;
+      gap: 0; margin-bottom: 16px;
+    }
+    .vA .pair__av {
+      width: 64px; height: 64px; border-radius: 999px;
+      overflow: hidden;
+      border: 3px solid var(--color-bg-surface);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .vA .pair__av img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+    .vA .pair__av--me { transform: translateX(8px); z-index: 2; background: var(--color-accent-soft); }
+    .vA .pair__av--patient { transform: translateX(-8px); z-index: 1; }
+    .vA .pair-text { text-align: center; }
+    .vA .pair-name {
+      font-size: 17px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .vA .pair-name .arrow { color: var(--color-text-tertiary); font-size: 14px; }
+    .vA .pair-rel {
+      font-size: 12px; color: var(--color-text-secondary);
+      margin-top: 4px;
+    }
+    .vA .pair-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 999px;
+      background: var(--color-accent-soft); color: var(--color-accent);
+      font-size: 11px; font-weight: 700;
+      margin-top: 8px;
+    }
+    .vA .pair-badge iconify-icon { font-size: 11px; }
+    .vA .stats {
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      margin-top: 18px; padding-top: 14px;
+      border-top: 1px solid var(--color-border-subtle);
+    }
+    .vA .stat { text-align: center; position: relative; }
+    .vA .stat + .stat::before {
+      content: ''; position: absolute; left: 0; top: 10%; bottom: 10%;
+      width: 1px; background: var(--color-border-subtle);
+    }
+    .vA .stat__val { font-size: 17px; font-weight: 800; }
+    .vA .stat__label { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+
+    /* ============================================================
+       옵션 B — Patient-first hero (케어 대상이 중앙)
+    ============================================================ */
+    .vB .me-corner {
+      position: absolute; top: 14px; right: 14px;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 8px 4px 4px; border-radius: 999px;
+      background: var(--color-bg-canvas);
+    }
+    .vB .me-corner img {
+      width: 22px; height: 22px; border-radius: 999px;
+      object-fit: cover; object-position: center top;
+    }
+    .vB .me-corner span { font-size: 11px; font-weight: 700; color: var(--color-text-secondary); }
+    .vB .patient-card { position: relative; padding-top: 14px; padding-bottom: 8px; }
+    .vB .patient-hero {
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      padding: 12px 0 18px;
+    }
+    .vB .patient-av {
+      width: 80px; height: 80px; border-radius: 999px;
+      overflow: hidden;
+      border: 3px solid var(--color-bg-surface);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+    .vB .patient-av img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+    .vB .patient-name { font-size: 20px; font-weight: 800; }
+    .vB .patient-sub { font-size: 12px; color: var(--color-text-secondary); }
+    .vB .stats { display: grid; grid-template-columns: 1fr 1fr 1fr; padding-top: 14px; border-top: 1px solid var(--color-border-subtle); }
+    .vB .stat { text-align: center; position: relative; }
+    .vB .stat + .stat::before { content: ''; position: absolute; left: 0; top: 10%; bottom: 10%; width: 1px; background: var(--color-border-subtle); }
+    .vB .stat__val { font-size: 16px; font-weight: 800; }
+    .vB .stat__label { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+
+    /* ============================================================
+       옵션 C — Forest 카드 (중앙 정렬, divider stats)
+    ============================================================ */
+    .vC .center { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 4px 0 14px; }
+    .vC .av-circle {
+      width: 80px; height: 80px; border-radius: 999px;
+      overflow: hidden;
+      border: 2px solid var(--color-accent-soft);
+    }
+    .vC .av-circle img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+    .vC .name-row { display: flex; align-items: center; gap: 6px; }
+    .vC .name { font-size: 18px; font-weight: 800; }
+    .vC .edit-btn { color: var(--color-text-tertiary); }
+    .vC .sub-line {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; color: var(--color-text-secondary);
+    }
+    .vC .sub-line iconify-icon { font-size: 13px; }
+    .vC .stats {
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      padding-top: 14px; border-top: 1px solid var(--color-border-subtle);
+    }
+    .vC .stat {
+      text-align: center; position: relative;
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+    }
+    .vC .stat + .stat::before { content: ''; position: absolute; left: 0; top: 10%; bottom: 10%; width: 1px; background: var(--color-border-subtle); }
+    .vC .stat__val { font-size: 17px; font-weight: 800; }
+    .vC .stat__label { font-size: 11px; color: var(--color-text-secondary); }
+
+    /* ============================================================
+       옵션 D — Compact horizontal (Coffee Meets Bagel)
+       좌측 아바타 + 우측 이름 + inline pill 통계
+    ============================================================ */
+    .vD .horiz { display: flex; align-items: center; gap: 14px; }
+    .vD .av {
+      width: 68px; height: 68px; border-radius: 999px;
+      overflow: hidden; flex-shrink: 0;
+      border: 2px solid var(--color-accent-soft);
+    }
+    .vD .av img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+    .vD .body { flex: 1; min-width: 0; }
+    .vD .name { font-size: 18px; font-weight: 800; }
+    .vD .sub { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+    .vD .pills { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+    .vD .pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 8px; border-radius: 999px;
+      background: var(--color-bg-canvas);
+      font-size: 11px; font-weight: 700;
+    }
+    .vD .pill--accent { background: var(--color-accent-soft); color: var(--color-accent); }
+    .vD .pill iconify-icon { font-size: 11px; }
+    .vD .qr-btn {
+      width: 36px; height: 36px; border-radius: 999px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--color-bg-canvas); flex-shrink: 0;
+    }
+    .vD .qr-btn iconify-icon { font-size: 18px; color: var(--color-text-secondary); }
+
+    /* ============================================================
+       옵션 E — Banner header (배경 그라데이션 + 아바타 오버랩)
+    ============================================================ */
+    .vE { padding: 0; overflow: hidden; }
+    .vE .banner {
+      height: 88px;
+      background: linear-gradient(135deg, var(--color-accent), var(--brand-blue-400, #5B9BFF));
+      position: relative;
+    }
+    .vE .banner__edit {
+      position: absolute; top: 14px; right: 14px;
+      width: 28px; height: 28px; border-radius: 999px;
+      background: rgba(255,255,255,0.22);
+      display: flex; align-items: center; justify-content: center;
+      backdrop-filter: blur(8px);
+    }
+    .vE .banner__edit iconify-icon { font-size: 14px; color: #fff; }
+    .vE .hero {
+      padding: 0 var(--space-5) var(--space-5);
+      margin-top: -32px;
+      position: relative;
+    }
+    .vE .av {
+      width: 72px; height: 72px; border-radius: 999px;
+      overflow: hidden;
+      border: 4px solid var(--color-bg-surface);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+    .vE .av img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+    .vE .name-row { margin-top: 10px; display: flex; align-items: center; gap: 8px; }
+    .vE .name { font-size: 19px; font-weight: 800; }
+    .vE .premium {
+      display: inline-flex; align-items: center; gap: 3px;
+      padding: 2px 7px; border-radius: 999px;
+      background: var(--color-warning-soft); color: var(--palette-amber-700, #B45309);
+      font-size: 10px; font-weight: 800;
+    }
+    .vE .premium iconify-icon { font-size: 10px; }
+    .vE .sub { font-size: 12px; color: var(--color-text-secondary); margin-top: 4px; }
+    .vE .stats {
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      margin-top: 16px; padding-top: 14px;
+      border-top: 1px solid var(--color-border-subtle);
+    }
+    .vE .stat { text-align: center; position: relative; }
+    .vE .stat + .stat::before { content: ''; position: absolute; left: 0; top: 10%; bottom: 10%; width: 1px; background: var(--color-border-subtle); }
+    .vE .stat__val { font-size: 16px; font-weight: 800; }
+    .vE .stat__label { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+  </style>
+</head>
+<body>
+
+<div class="app-shell">
+  <h1 style="font-size:22px;font-weight:800;margin:8px 0 4px;">프로필 섹션 옵션</h1>
+  <p style="font-size:13px;color:var(--color-text-secondary);margin:0 0 24px;">
+    같은 사용자(박민지 보호자 + 박영자 어머님) 5가지 변형. 번호 알려주세요.
+  </p>
+
+  <!-- 옵션 0 -->
+  <div class="opt-head">옵션 0 — 현재 (참고)</div>
+  <div class="opt-source">좌측 아바타 + 우측 이름·서브, 하단 3 chip</div>
+  <section class="card v0">
+    <div class="profile">
+      <div class="profile__av">
+        <img src="img/보호자.png" alt="박민지">
+        <span class="profile__edit"><iconify-icon icon="fluent:camera-24-filled"></iconify-icon></span>
+      </div>
+      <div>
+        <div class="profile__name">박민지</div>
+        <div class="profile__sub">보호자 · 어머님(박영자) 담당</div>
+        <span class="badge badge--info" style="margin-top:6px;">프리미엄</span>
+      </div>
+    </div>
+    <div class="care-chips">
+      <div class="care-chip"><div class="care-chip__val">302호</div><div class="care-chip__label">호실</div></div>
+      <div class="care-chip"><div class="care-chip__val">김서연</div><div class="care-chip__label">담당 간호사</div></div>
+      <div class="care-chip"><div class="care-chip__val">200일</div><div class="care-chip__label">입소 경과</div></div>
+    </div>
+  </section>
+
+  <!-- 옵션 A -->
+  <div class="opt-head">옵션 A — Pair avatars (보호자 ↔ 환자 관계 시각화)</div>
+  <div class="opt-note">두 아바타가 살짝 겹치며 "내가 누구를 돌보는지" 한눈에. 관계가 hero</div>
+  <section class="card vA">
+    <div class="pair">
+      <div class="pair__av pair__av--me"><img src="img/보호자.png" alt="박민지"></div>
+      <div class="pair__av pair__av--patient"><img src="img/환자.png" alt="박영자"></div>
+    </div>
+    <div class="pair-text">
+      <div class="pair-name">박민지 <span class="arrow"><iconify-icon icon="fluent:heart-24-filled"></iconify-icon></span> 박영자</div>
+      <div class="pair-rel">보호자 · 어머님 담당 (200일)</div>
+      <span class="pair-badge"><iconify-icon icon="fluent:star-24-filled"></iconify-icon>프리미엄</span>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat__val">302호</div><div class="stat__label">호실</div></div>
+      <div class="stat"><div class="stat__val">김서연</div><div class="stat__label">담당 간호사</div></div>
+      <div class="stat"><div class="stat__val">200일</div><div class="stat__label">입소 경과</div></div>
+    </div>
+  </section>
+
+  <!-- 옵션 B -->
+  <div class="opt-head">옵션 B — Patient-first hero (케어 대상이 중심)</div>
+  <div class="opt-note">박영자(어머님)가 hero, 박민지는 우상단 작은 chip. "마이페이지 = 어머님 케어 페이지"</div>
+  <section class="card vB patient-card">
+    <div class="me-corner">
+      <img src="img/보호자.png" alt="박민지">
+      <span>박민지 (보호자)</span>
+    </div>
+    <div class="patient-hero">
+      <div class="patient-av"><img src="img/환자.png" alt="박영자"></div>
+      <div class="patient-name">박영자 어머님</div>
+      <div class="patient-sub">82세 · 입소 200일</div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat__val">302호</div><div class="stat__label">호실</div></div>
+      <div class="stat"><div class="stat__val">김서연</div><div class="stat__label">담당 간호사</div></div>
+      <div class="stat"><div class="stat__val">프리미엄</div><div class="stat__label">구독</div></div>
+    </div>
+  </section>
+
+  <!-- 옵션 C -->
+  <div class="opt-head">옵션 C — Centered Forest 스타일</div>
+  <div class="opt-note">아바타 중앙 정렬 + 메타 한 줄 + divider 통계 3개. 차분하고 명확</div>
+  <section class="card vC">
+    <div class="center">
+      <div class="av-circle"><img src="img/보호자.png" alt="박민지"></div>
+      <div class="name-row">
+        <span class="name">박민지</span>
+        <iconify-icon icon="fluent:edit-24-filled" class="edit-btn"></iconify-icon>
+      </div>
+      <div class="sub-line">
+        <iconify-icon icon="fluent:heart-pulse-24-filled"></iconify-icon>
+        어머님(박영자) 담당 · 200일
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat__val">302호</div><div class="stat__label">호실</div></div>
+      <div class="stat"><div class="stat__val">김서연</div><div class="stat__label">담당 간호사</div></div>
+      <div class="stat"><div class="stat__val">프리미엄</div><div class="stat__label">구독</div></div>
+    </div>
+  </section>
+
+  <!-- 옵션 D -->
+  <div class="opt-head">옵션 D — Compact horizontal (Coffee Meets Bagel)</div>
+  <div class="opt-note">좌 아바타 + 우 이름 + inline pill 정보. 컴팩트하고 정보 밀도 높음</div>
+  <section class="card vD">
+    <div class="horiz">
+      <div class="av"><img src="img/보호자.png" alt="박민지"></div>
+      <div class="body">
+        <div class="name">박민지</div>
+        <div class="sub">어머님(박영자) 담당</div>
+        <div class="pills">
+          <span class="pill"><iconify-icon icon="fluent:building-24-filled"></iconify-icon>302호</span>
+          <span class="pill"><iconify-icon icon="fluent:calendar-24-filled"></iconify-icon>200일</span>
+          <span class="pill pill--accent"><iconify-icon icon="fluent:star-24-filled"></iconify-icon>프리미엄</span>
+        </div>
+      </div>
+      <button class="qr-btn" aria-label="QR"><iconify-icon icon="fluent:qr-code-24-filled"></iconify-icon></button>
+    </div>
+  </section>
+
+  <!-- 옵션 E -->
+  <div class="opt-head">옵션 E — Banner header (그라데이션 배경 + 오버랩 아바타)</div>
+  <div class="opt-note">상단 컬러 배너로 프리미엄 톤. 아바타가 배너 위에 겹쳐 보임. 가장 임팩트 큼</div>
+  <section class="card vE">
+    <div class="banner">
+      <button class="banner__edit" aria-label="편집"><iconify-icon icon="fluent:edit-24-filled"></iconify-icon></button>
+    </div>
+    <div class="hero">
+      <div class="av"><img src="img/보호자.png" alt="박민지"></div>
+      <div class="name-row">
+        <span class="name">박민지</span>
+        <span class="premium"><iconify-icon icon="fluent:star-24-filled"></iconify-icon>프리미엄</span>
+      </div>
+      <div class="sub">보호자 · 어머님(박영자) 담당 · 200일</div>
+      <div class="stats">
+        <div class="stat"><div class="stat__val">302호</div><div class="stat__label">호실</div></div>
+        <div class="stat"><div class="stat__val">김서연</div><div class="stat__label">담당 간호사</div></div>
+        <div class="stat"><div class="stat__val">82세</div><div class="stat__label">어머님 연세</div></div>
+      </div>
+    </div>
+  </section>
+
+  <div style="height:80px;"></div>
+</div>
+
+</body>
+</html>

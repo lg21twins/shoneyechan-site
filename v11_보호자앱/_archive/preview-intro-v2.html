@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#ffffff">
+  <title>하루안부 — AI 인트로 v2 (Mobbin 레퍼런스 적용)</title>
+  <link rel="stylesheet" href="pretendard.css">
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css">
+  <script src="../07_디자인/_iconify-icon.min.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    button{touch-action:manipulation;-webkit-tap-highlight-color:transparent;cursor:pointer;background:none;border:none;font:inherit;color:inherit}
+
+    :root{
+      --blue:#2C7AFC;
+      --blue-soft:#E5F2FF;
+      --blue-mid:#BFE0FF;
+      --ink:#1C1C1E;
+      --ink-2:rgba(28,28,30,.62);
+      --ink-3:rgba(28,28,30,.42);
+      --bg:#FAFAF6;
+      --font:'Pretendard Variable','Pretendard',-apple-system,system-ui,sans-serif;
+    }
+
+    html,body{height:100%;background:var(--bg);overflow:hidden}
+    body{font-family:var(--font);color:var(--ink);-webkit-font-smoothing:antialiased}
+
+    /* ───────── 글로벌 오브 (모든 스테이지에서 지속) ───────── */
+    .orb{
+      position:fixed;left:50%;top:50%;
+      width:620px;height:620px;max-width:120vw;max-height:120vw;
+      transform:translate(-50%,-50%) scale(.78);
+      border-radius:50%;
+      background:radial-gradient(circle at 50% 38%,
+        rgba(27,231,234,.55) 0%,
+        rgba(70,195,230,.45) 32%,
+        rgba(70,168,255,.30) 60%,
+        rgba(70,168,255,.10) 80%,
+        transparent 100%);
+      filter:blur(34px);
+      opacity:0;
+      pointer-events:none;
+      z-index:1;
+      transition:opacity 1.2s ease, transform 1.6s cubic-bezier(.22,1,.36,1), background 1s ease;
+    }
+    .orb.show{opacity:.95;transform:translate(-50%,-50%) scale(1)}
+    .orb.calm{
+      background:radial-gradient(circle at 50% 42%,
+        rgba(140,210,255,.55) 0%,
+        rgba(120,180,255,.42) 36%,
+        rgba(160,200,255,.22) 64%,
+        transparent 100%);
+      transform:translate(-50%,-50%) scale(1.12);
+    }
+
+    /* ───────── 스테이지 컨테이너 ───────── */
+    .scene{
+      position:fixed;inset:0;z-index:2;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      padding:0 36px;
+      text-align:center;
+      transition:background-color .9s ease;
+    }
+    .scene.brand-only{background:#fff}
+
+    .stage{
+      position:relative;
+      display:flex;flex-direction:column;align-items:center;
+      max-width:340px;width:100%;
+      transition:opacity .55s ease, transform .55s ease;
+    }
+    .stage.gone{opacity:0;transform:translateY(-8px);pointer-events:none}
+
+    /* ───────── 스테이지 0: 브랜드 (Lake/Blinkist 식 미니멀 로고) ───────── */
+    .brand{
+      width:120px;height:120px;
+      display:flex;align-items:center;justify-content:center;
+      opacity:0;transform:translateY(8px) scale(.94);
+      transition:opacity .8s cubic-bezier(.22,1,.36,1), transform .9s cubic-bezier(.22,1,.36,1);
+    }
+    .brand.show{opacity:1;transform:translateY(0) scale(1)}
+    .brand svg{width:100%;height:100%;display:block}
+
+    /* ───────── 스테이지 1: 컨텍스트 인사말 (Co-Star + Timepage 식) ───────── */
+    .eyebrow{
+      font-size:11.5px;letter-spacing:2.4px;font-weight:600;
+      color:var(--ink-3);text-transform:uppercase;
+      margin-bottom:28px;
+      opacity:0;transform:translateY(6px);
+      transition:opacity .6s ease, transform .6s ease;
+    }
+    .eyebrow.show{opacity:1;transform:translateY(0)}
+    .eyebrow .dot{display:inline-block;margin:0 8px;opacity:.55}
+
+    .address{
+      font-size:16px;font-weight:500;letter-spacing:-.2px;
+      color:var(--ink-2);margin-bottom:14px;
+      opacity:0;transform:translateY(6px);
+      transition:opacity .6s cubic-bezier(.22,1,.36,1), transform .6s cubic-bezier(.22,1,.36,1);
+    }
+    .address.show{opacity:1;transform:translateY(0)}
+
+    .headline{
+      font-size:30px;font-weight:700;line-height:1.28;letter-spacing:-.7px;
+      color:var(--ink);
+      opacity:0;transform:translateY(8px);
+      transition:opacity .75s cubic-bezier(.22,1,.36,1), transform .75s cubic-bezier(.22,1,.36,1);
+    }
+    .headline.show{opacity:1;transform:translateY(0)}
+    .headline b{color:var(--blue);font-weight:700;position:relative;display:inline-block}
+    .headline b::after{
+      content:"";position:absolute;left:2%;right:2%;bottom:-4px;height:10px;
+      background:linear-gradient(90deg,rgba(44,122,252,0),rgba(44,122,252,.28),rgba(44,122,252,0));
+      filter:blur(4px);border-radius:8px;
+      opacity:0;transform:scaleX(.4);transform-origin:left center;
+      transition:opacity .7s ease .25s, transform .9s cubic-bezier(.22,1,.36,1) .25s;
+    }
+    .headline.show b::after{opacity:1;transform:scaleX(1)}
+
+    /* ───────── 스테이지 2: 단일 히어로 링 (Apple Fitness 식) ───────── */
+    .hero-ring{
+      position:relative;
+      width:min(78vw,290px);aspect-ratio:1;
+      opacity:0;transform:scale(.92);
+      transition:opacity .65s cubic-bezier(.22,1,.36,1), transform .8s cubic-bezier(.22,1,.36,1);
+    }
+    .hero-ring.show{opacity:1;transform:scale(1)}
+    .hero-ring svg{width:100%;height:100%;display:block;overflow:visible}
+    .hero-track{fill:none;stroke:rgba(44,122,252,.10);stroke-linecap:round}
+    .hero-progress{
+      fill:none;stroke:var(--blue);stroke-linecap:round;
+      transform:rotate(-90deg);transform-origin:center;
+      will-change:stroke-dashoffset;
+    }
+    .hero-center{
+      position:absolute;inset:0;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:4px;
+    }
+    .hero-value{
+      font-size:64px;font-weight:800;letter-spacing:-2px;line-height:1;
+      color:var(--ink);font-variant-numeric:tabular-nums;
+      opacity:0;transform:translateY(6px);
+      transition:opacity .55s ease .3s, transform .6s cubic-bezier(.22,1,.36,1) .3s;
+      display:inline-flex;align-items:baseline;
+    }
+    .hero-value em{font-style:normal;font-size:22px;font-weight:700;color:var(--ink-2);margin-left:3px}
+    .hero-value.show{opacity:1;transform:translateY(0)}
+    .hero-label{
+      font-size:13.5px;font-weight:600;letter-spacing:-.2px;
+      color:var(--ink-3);margin-top:4px;
+      opacity:0;transform:translateY(4px);
+      transition:opacity .55s ease .45s, transform .55s ease .45s;
+    }
+    .hero-label.show{opacity:1;transform:translateY(0)}
+
+    /* 메트릭 스트립 (Google Fit 식 인라인) */
+    .metrics{
+      display:flex;align-items:center;justify-content:center;gap:18px;
+      margin-top:38px;
+      opacity:0;transform:translateY(6px);
+      transition:opacity .6s ease, transform .6s ease;
+    }
+    .metrics.show{opacity:1;transform:translateY(0)}
+    .metric{
+      display:flex;flex-direction:column;align-items:center;gap:6px;
+      min-width:64px;
+    }
+    .metric iconify-icon{font-size:20px;color:var(--blue);line-height:1}
+    .metric .v{
+      font-size:18px;font-weight:800;color:var(--ink);
+      letter-spacing:-.3px;font-variant-numeric:tabular-nums;
+      display:inline-flex;align-items:baseline;line-height:1;
+    }
+    .metric .v em{font-style:normal;font-size:11px;font-weight:600;color:var(--ink-3);margin-left:2px}
+    .metric .l{font-size:11px;font-weight:600;color:var(--ink-3);letter-spacing:.4px;text-transform:uppercase}
+    .metric-sep{width:1px;height:32px;background:rgba(28,28,30,.10)}
+
+    /* ───────── 스테이지 3: 클로징 (Tolan 식 글로우) ───────── */
+    .close-text{
+      font-size:24px;font-weight:700;line-height:1.5;letter-spacing:-.5px;
+      color:var(--ink);
+      opacity:0;transform:translateY(6px);
+      transition:opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1);
+    }
+    .close-text.show{opacity:1;transform:translateY(0)}
+    .close-sub{
+      margin-top:14px;
+      font-size:15px;font-weight:500;letter-spacing:-.2px;
+      color:var(--ink-2);
+      opacity:0;transform:translateY(6px);
+      transition:opacity .7s ease .25s, transform .7s ease .25s;
+    }
+    .close-sub.show{opacity:1;transform:translateY(0)}
+
+    /* ───────── 스킵 버튼 ───────── */
+    .skip{
+      position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0) + 32px);
+      transform:translateX(-50%);
+      font-size:12px;letter-spacing:1.6px;font-weight:600;text-transform:uppercase;
+      color:var(--ink-3);padding:12px 22px;
+      opacity:0;transition:opacity .5s ease;z-index:5;
+    }
+    .skip.show{opacity:1}
+    .skip:active{color:var(--ink-2)}
+
+    /* ───────── 우상단 라벨 (프리뷰 식별용) ───────── */
+    .preview-badge{
+      position:fixed;top:calc(env(safe-area-inset-top,0) + 12px);right:12px;
+      font-size:10px;letter-spacing:1.2px;font-weight:700;text-transform:uppercase;
+      color:var(--ink-3);background:rgba(255,255,255,.7);
+      backdrop-filter:saturate(1.2) blur(8px);
+      padding:6px 10px;border-radius:8px;
+      z-index:10;
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .orb,.brand,.eyebrow,.address,.headline,.hero-ring,.hero-value,.hero-label,.metrics,.close-text,.close-sub{
+        transition:opacity .2s ease!important;transform:none!important;
+      }
+      .hero-progress{transition:none!important}
+    }
+  </style>
+</head>
+<body>
+
+  <div class="orb" id="orb"></div>
+
+  <div class="scene brand-only" id="scene">
+    <div class="stage" id="stage"></div>
+  </div>
+
+  <button class="skip" id="skip" onclick="location.reload()">REPLAY</button>
+
+  <div class="preview-badge">INTRO V2 · MOBBIN APPLIED</div>
+
+<script>
+(function(){
+  const orb = document.getElementById('orb');
+  const scene = document.getElementById('scene');
+  const stage = document.getElementById('stage');
+  const skip = document.getElementById('skip');
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  async function fadeStage(){
+    stage.classList.add('gone');
+    await sleep(450);
+    stage.classList.remove('gone');
+    stage.innerHTML = '';
+  }
+
+  async function stage0_brand(){
+    stage.innerHTML = `
+      <div class="brand" id="brand">
+        <svg viewBox="0 0 512 512" fill="none" aria-hidden="true">
+          <g transform="translate(50,50) scale(0.163)">
+            <path d="M2521.32 2506.66C1239.65 2657.48 1239.65 1895.6 1239.65 1279.34L2497.69 0C2518.68 494.198 2522.27 1157.92 1658.86 1262.48C2641.88 1314.25 2521.32 2101.84 2521.32 2506.66Z" fill="#2C7AFC"/>
+            <path d="M4.677 19.335C1286.35-131.481 1286.35 630.399 1286.35 1246.66L28.315 2526C7.322 2031.8 3.73 1368.08 867.143 1263.52C-115.881 1211.75 4.677 424.157 4.677 19.335Z" fill="#2C7AFC"/>
+          </g>
+        </svg>
+      </div>`;
+    await sleep(120);
+    stage.querySelector('.brand').classList.add('show');
+    await sleep(1100);
+    stage.querySelector('.brand').classList.remove('show');
+    await sleep(500);
+  }
+
+  async function stage1_greeting(){
+    scene.classList.remove('brand-only');
+    orb.classList.add('show');
+    skip.classList.add('show');
+
+    const now = new Date();
+    const days = ['일','월','화','수','목','금','토'];
+    const hh = now.getHours(), mm = now.getMinutes();
+    const dayPart = hh < 12 ? '오전' : '오후';
+    const hh12 = ((hh + 11) % 12) + 1;
+    const dateStr = `${now.getMonth()+1}월 ${now.getDate()}일 ${days[now.getDay()]}요일`;
+    const timeStr = `${dayPart} ${hh12}:${String(mm).padStart(2,'0')}`;
+
+    stage.innerHTML = `
+      <div class="eyebrow" id="eyebrow">TODAY'S BRIEFING<span class="dot">·</span>${dateStr}<span class="dot">·</span>${timeStr}</div>
+      <div class="address" id="addr">지욱님,</div>
+      <div class="headline" id="hl">영자님은 오늘<br><b>잘 지내셨어요</b>.</div>
+    `;
+    await sleep(80);
+    stage.querySelector('#eyebrow').classList.add('show');
+    await sleep(420);
+    stage.querySelector('#addr').classList.add('show');
+    await sleep(380);
+    stage.querySelector('#hl').classList.add('show');
+    await sleep(2400);
+    await fadeStage();
+  }
+
+  async function stage2_ring(){
+    stage.innerHTML = `
+      <div class="hero-ring" id="ring">
+        <svg viewBox="0 0 320 320" aria-hidden="true">
+          <circle class="hero-track" cx="160" cy="160" r="140" stroke-width="18"/>
+          <circle class="hero-progress" cx="160" cy="160" r="140" stroke-width="18" data-progress="0.94"/>
+        </svg>
+        <div class="hero-center">
+          <div class="hero-value" id="hv">94<em>%</em></div>
+          <div class="hero-label" id="hl2">오늘의 안부 지수</div>
+        </div>
+      </div>
+      <div class="metrics" id="ms">
+        <div class="metric">
+          <iconify-icon icon="fluent:person-walking-20-filled"></iconify-icon>
+          <span class="v">25<em>분</em></span>
+          <span class="l">산책</span>
+        </div>
+        <div class="metric-sep"></div>
+        <div class="metric">
+          <iconify-icon icon="fluent:food-24-filled"></iconify-icon>
+          <span class="v">3<em>끼</em></span>
+          <span class="l">식사</span>
+        </div>
+        <div class="metric-sep"></div>
+        <div class="metric">
+          <iconify-icon icon="fluent:pill-24-filled"></iconify-icon>
+          <span class="v">3<em>회</em></span>
+          <span class="l">투약</span>
+        </div>
+      </div>
+    `;
+    const ring = stage.querySelector('#ring');
+    const prog = stage.querySelector('.hero-progress');
+    const len = prog.getTotalLength();
+    prog.style.transition = 'none';
+    prog.style.strokeDasharray = len;
+    prog.style.strokeDashoffset = len;
+
+    await sleep(120);
+    ring.classList.add('show');
+    await sleep(280);
+
+    // 링 그리기
+    void prog.offsetWidth;
+    prog.style.transition = 'stroke-dashoffset 1.4s cubic-bezier(.22,1,.36,1)';
+    prog.style.strokeDashoffset = len * (1 - 0.94);
+
+    await sleep(450);
+    stage.querySelector('#hv').classList.add('show');
+    stage.querySelector('#hl2').classList.add('show');
+
+    await sleep(950);
+    stage.querySelector('#ms').classList.add('show');
+
+    await sleep(2400);
+    await fadeStage();
+  }
+
+  async function stage3_close(){
+    orb.classList.add('calm');
+    stage.innerHTML = `
+      <div class="close-text" id="ct">평안한 하루를 보내셨어요.</div>
+      <div class="close-sub" id="cs">편히 쉬고 계세요.</div>
+    `;
+    await sleep(80);
+    stage.querySelector('#ct').classList.add('show');
+    stage.querySelector('#cs').classList.add('show');
+    await sleep(2400);
+  }
+
+  async function run(){
+    await stage0_brand();
+    await stage1_greeting();
+    await stage2_ring();
+    await stage3_close();
+    // 루프
+    await sleep(1200);
+    location.reload();
+  }
+
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', run);
+  } else {
+    run();
+  }
+})();
+</script>
+</body>
+</html>

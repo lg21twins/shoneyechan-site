@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="ko" data-role="guardian" data-platform="mobile">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>빠른 액션 — 10가지 레퍼런스 옵션</title>
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css">
+  <link rel="stylesheet" href="../07_디자인/system/app.css">
+  <link rel="stylesheet" href="../07_디자인/system/components.css">
+  <script src="../07_디자인/_iconify-icon.min.js"></script>
+  <style>
+    body { background: var(--color-bg-canvas); }
+    .app-shell { max-width: 430px; margin: 0 auto; padding: 16px; }
+    .sec-title { font-size: 22px; font-weight: 800; margin: 8px 0 4px; }
+    .sec-note { font-size: 13px; color: var(--color-text-secondary); margin: 0 0 24px; }
+    .ver-tag {
+      display: inline-block;
+      font-size: 11px; font-weight: 800; letter-spacing: 0.4px;
+      text-transform: uppercase; color: var(--color-text-tertiary);
+      margin: 36px 0 4px;
+    }
+    .ver-src { display: block; font-size: 11px; color: var(--color-text-tertiary); margin-bottom: 10px; line-height: 1.5; }
+
+    /* ============================================================
+       A1 — Apple Health Rings (큰 원형 ring + 중앙 metric)
+    ============================================================ */
+    .a1 { display: flex; gap: 12px; }
+    .a1 .hero {
+      flex: 1; aspect-ratio: 1 / 1;
+      padding: 16px; border-radius: 22px;
+      background: var(--color-bg-surface);
+      border: 1px solid rgba(0,0,0,0.05);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+      text-decoration: none; color: inherit;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .a1 .ring-wrap { position: relative; width: 110px; height: 110px; }
+    .a1 .ring-center {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .a1 .ring-num { font-size: 32px; font-weight: 800; line-height: 1; letter-spacing: -1.2px; color: var(--color-danger); }
+    .a1 .ring-label { font-size: 10px; font-weight: 700; color: var(--color-text-tertiary); }
+    .a1 .a1-text { font-size: 11px; font-weight: 700; color: var(--color-text-secondary); margin-top: 8px; text-align: center; }
+    .a1 .minis { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+    .a1 .mini {
+      flex: 1; padding: 0 12px;
+      background: var(--color-bg-surface);
+      border: 1px solid rgba(0,0,0,0.04);
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      text-decoration: none; color: inherit;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .a1 .mini-ic {
+      width: 28px; height: 28px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .a1 .mini-ic iconify-icon { font-size: 15px; }
+    .a1 .ic-w { background: var(--color-warning-soft); }
+    .a1 .ic-w iconify-icon { color: var(--palette-amber-700, #B45309); }
+    .a1 .ic-s { background: var(--color-success-soft); }
+    .a1 .ic-s iconify-icon { color: var(--color-success); }
+    .a1 .ic-n { background: var(--color-bg-canvas); }
+    .a1 .ic-n iconify-icon { color: var(--color-text-secondary); }
+    .a1 .mini-l { font-size: 12px; font-weight: 800; }
+
+    /* ============================================================
+       A2 — Wallet card style (신용카드 모양 hero + 하단 CTA)
+    ============================================================ */
+    .a2 .hero {
+      width: 100%; aspect-ratio: 1.6/1;
+      padding: 18px;
+      border-radius: 18px;
+      background:
+        linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+      color: #fff;
+      display: flex; flex-direction: column; justify-content: space-between;
+      text-decoration: none;
+      position: relative; overflow: hidden;
+      box-shadow: 0 10px 24px -8px rgba(30,64,175,0.4);
+      margin-bottom: 12px;
+    }
+    .a2 .hero::after {
+      content: ''; position: absolute; right: -30px; top: -30px;
+      width: 130px; height: 130px;
+      background: radial-gradient(circle, rgba(255,255,255,0.2), transparent 60%);
+    }
+    .a2 .h-top {
+      display: flex; align-items: center; justify-content: space-between;
+      position: relative; z-index: 1;
+    }
+    .a2 .h-tag { font-size: 11px; font-weight: 700; opacity: 0.85; letter-spacing: 0.3px; }
+    .a2 .h-chip {
+      padding: 3px 9px; border-radius: 999px;
+      background: rgba(255,255,255,0.22);
+      font-size: 10px; font-weight: 800;
+    }
+    .a2 .h-bottom { position: relative; z-index: 1; }
+    .a2 .h-num { font-size: 32px; font-weight: 800; letter-spacing: -1.2px; line-height: 1; }
+    .a2 .h-label { font-size: 12px; opacity: 0.85; margin-top: 4px; font-weight: 700; }
+    .a2 .row { display: flex; gap: 10px; }
+    .a2 .btn {
+      flex: 1; padding: 12px 8px;
+      background: var(--color-bg-surface);
+      border: 1px solid rgba(0,0,0,0.04);
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      text-decoration: none; color: inherit;
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+    }
+    .a2 .btn-ic {
+      width: 28px; height: 28px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .a2 .btn-ic iconify-icon { font-size: 15px; }
+    .a2 .btn-l { font-size: 11px; font-weight: 800; }
+    .a2 .ic-w { background: var(--color-warning-soft); }
+    .a2 .ic-w iconify-icon { color: var(--palette-amber-700, #B45309); }
+    .a2 .ic-s { background: var(--color-success-soft); }
+    .a2 .ic-s iconify-icon { color: var(--color-success); }
+    .a2 .ic-n { background: var(--color-bg-canvas); }
+    .a2 .ic-n iconify-icon { color: var(--color-text-secondary); }
+
+    /* ============================================================
+       A3 — Notion/Habit Tracker (도트 그리드 + 큰 숫자)
+    ============================================================ */
+    .a3 { display: flex; gap: 12px; }
+    .a3 .hero {
+      flex: 1; aspect-ratio: 1 / 1;
+      padding: 16px;
+      border-radius: 20px;
+      background: var(--color-bg-surface);
+      border: 1px solid rgba(0,0,0,0.05);
+      display: flex; flex-direction: column; justify-content: space-between;
+      text-decoration: none; color: inherit;
+    }
+    .a3 .grid {
+      display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px;
+    }
+    .a3 .dot { aspect-ratio: 1; border-radius: 3px; background: rgba(0,0,0,0.06); }
+    .a3 .dot.lo { background: #FED7AA; }
+    .a3 .dot.mid { background: #FB923C; }
+    .a3 .dot.hi { background: #EA580C; }
+    .a3 .h-bottom { }
+    .a3 .h-label { font-size: 10px; font-weight: 800; color: var(--color-text-tertiary); letter-spacing: 0.3px; text-transform: uppercase; }
+    .a3 .h-num { font-size: 28px; font-weight: 800; letter-spacing: -1px; line-height: 1; margin-top: 4px; }
+    .a3 .h-sub { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+    .a3 .minis { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+    .a3 .mini { flex: 1; padding: 0 12px; background: var(--color-bg-surface); border: 1px solid rgba(0,0,0,0.04); border-radius: 12px; text-decoration: none; color: inherit; display: flex; align-items: center; gap: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+    .a3 .mini-ic { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .a3 .mini-ic iconify-icon { font-size: 15px; }
+    .a3 .mini-l { font-size: 12px; font-weight: 800; }
+    .a3 .ic-w { background: var(--color-warning-soft); }
+    .a3 .ic-w iconify-icon { color: var(--palette-amber-700, #B45309); }
+    .a3 .ic-s { background: var(--color-success-soft); }
+    .a3 .ic-s iconify-icon { color: var(--color-success); }
+    .a3 .ic-n { background: var(--color-bg-canvas); }
+    .a3 .ic-n iconify-icon { color: var(--color-text-secondary); }
+
+    /* ============================================================
+       A4 — Calendar Widget (Outlook style: 큰 날짜 + 일정 리스트)
+    ============================================================ */
+    .a4 {
+      background: var(--color-bg-surface);
+      border: 1px solid rgba(0,0,0,0.04);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    }
+    .a4 .head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .a4 .head-num {
+      font-size: 30px; font-weight: 800; letter-spacing: -1.2px; line-height: 1;
+    }
+    .a4 .head-num small { font-size: 13px; font-weight: 700; color: var(--color-accent); display: block; }
+    .a4 .head-cta {
+      width: 36px; height: 36px; border-radius: 999px;
+      background: var(--color-accent);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff;
+    }
+    .a4 .head-cta iconify-icon { font-size: 16px; }
+    .a4 .items { display: flex; flex-direction: column; }
+    .a4 .row-i {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 0;
+      text-decoration: none; color: inherit;
+    }
+    .a4 .row-i + .row-i { border-top: 1px solid rgba(0,0,0,0.05); }
+    .a4 .row-bar {
+      width: 4px; align-self: stretch; border-radius: 4px;
+      background: var(--color-text-tertiary);
+    }
+    .a4 .row-bar--alert { background: var(--color-danger); }
+    .a4 .row-bar--warning { background: var(--palette-amber-700, #B45309); }
+    .a4 .row-bar--success { background: var(--color-success); }
+    .a4 .row-bar--neutral { background: var(--color-text-tertiary); }
+    .a4 .row-body { flex: 1; }
+    .a4 .row-l { font-size: 13px; font-weight: 800; }
+    .a4 .row-m { font-size: 11px; color: var(--color-text-secondary); margin-top: 1px; }
+
+    /* ============================================================
+       A5 — Compact balance bar (단일 행 단순)
+    ============================================================ */
+    .a5 {
+      background: var(--color-bg-surface);
+      border: 1px solid rgba(0,0,0,0.04);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    }
+    .a5 .head {
+      padding: 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      background: linear-gradient(90deg, #FEE2E2, #FED7AA);
+      text-decoration: none; color: inherit;
+    }
+    .a5 .head-l { font-size: 11px; font-weight: 700; color: rgba(0,0,0,0.55); }
+    .a5 .head-n { font-size: 26px; font-weight: 800; color: var(--color-danger); letter-spacing: -1px; line-height: 1; }
+    .a5 .head-n em { font-size: 11px; font-style: normal; opacity: 0.65; margin-left: 3px; }
+    .a5 .head-btn {
+      padding: 7px 12px;
+      background: #1C1C1E; color: #fff;
+      border-radius: 999px;
+      font-size: 11px; font-weight: 800;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .a5 .head-btn iconify-icon { font-size: 11px; }
+    .a5 .actions { display: flex; }
+    .a5 .a-btn {
+      flex: 1; padding: 14px 8px;
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+      text-decoration: none; color: inherit;
+    }
+    .a5 .a-btn + .a-btn { border-left: 1px solid rgba(0,0,0,0.05); }
+    .a5 .a-ic {
+      width: 26px; height: 26px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .a5 .a-ic iconify-icon { font-size: 14px; }
+    .a5 .a-l { font-size: 11px; font-weight: 800; }
+    .a5 .ic-w { background: var(--color-warning-soft); }
+    .a5 .ic-w iconify-icon { color: var(--palette-amber-700, #B45309); }
+    .a5 .ic-s { background: var(--color-success-soft); }
+    .a5 .ic-s iconify-icon { color: var(--color-success); }
+    .a5 .ic-n { background: var(--color-bg-canvas); }
+    .a5 .ic-n iconify-icon { color: var(--color-text-secondary); }
+
+    /* ============================================================
+       A6 — Dark tiles (Satispay 풍 — 다크 + 볼드 숫자)
+    ============================================================ */
+    .a6 { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 8px; }
+    .a6 .card {
+      padding: 14px;
+      border-radius: 14px;
+      text-decoration: none; color: inherit;
+      display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .a6 .hero {
+      grid-column: span 2;
+      background: #1C1C1E; color: #fff;
+      flex-direction: row; align-items: center; gap: 14px;
+      padding: 18px;
+    }
+    .a6 .hero-ic {
+      width: 48px; height: 48px; border-radius: 14px;
+      background: rgba(255,107,107,0.18);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .a6 .hero-ic iconify-icon { font-size: 26px; color: #FF6B6B; }
+    .a6 .hero-body { flex: 1; }
+    .a6 .hero-num { font-size: 28px; font-weight: 800; line-height: 1; letter-spacing: -1px; }
+    .a6 .hero-l { font-size: 12px; opacity: 0.6; margin-top: 4px; }
+    .a6 .hero-cta {
+      padding: 4px 10px; border-radius: 999px;
+      background: #FF6B6B; color: #fff;
+      font-size: 11px; font-weight: 800;
+    }
+    .a6 .tile { background: #1C1C1E; color: #fff; padding: 14px; }
+    .a6 .tile-ic { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .a6 .tile-ic iconify-icon { font-size: 15px; }
+    .a6 .ic-w { background: rgba(251,191,36,0.18); }
+    .a6 .ic-w iconify-icon { color: #FBBF24; }
+    .a6 .ic-s { background: rgba(52,211,153,0.18); }
+    .a6 .ic-s iconify-icon { color: #34D399; }
+    .a6 .ic-n { background: rgba(255,255,255,0.08); }
+    .a6 .ic-n iconify-icon { color: #fff; }
+    .a6 .tile-row { display: flex; align-items: baseline; justify-content: space-between; gap: 4px; }
+    .a6 .tile-l { font-size: 13px; font-weight: 800; }
+    .a6 .tile-m { font-size: 10px; opacity: 0.55; }
+
+    /* ============================================================
+       A7 — News card style (큰 photo / illustration + headline)
+    ============================================================ */
+    .a7 .hero {
+      width: 100%; aspect-ratio: 16/9;
+      border-radius: 18px;
+      background:
+        linear-gradient(0deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.1) 50%, transparent 100%),
+        linear-gradient(135deg, #FB923C 0%, #F87171 50%, #C084FC 100%);
+      color: #fff;
+      padding: 16px;
+      text-decoration: none;
+      position: relative; overflow: hidden;
+      display: flex; flex-direction: column; justify-content: space-between;
+      box-shadow: 0 8px 22px -8px rgba(0,0,0,0.2);
+      margin-bottom: 12px;
+    }
+    .a7 .top-tag {
+      align-self: flex-start;
+      padding: 4px 10px; border-radius: 999px;
+      background: rgba(255,255,255,0.22);
+      backdrop-filter: blur(10px);
+      font-size: 10px; font-weight: 800; letter-spacing: 0.4px;
+    }
+    .a7 .bot { position: relative; z-index: 1; }
+    .a7 .bot-title { font-size: 22px; font-weight: 800; line-height: 1.15; }
+    .a7 .bot-sub { font-size: 12px; opacity: 0.85; margin-top: 4px; }
+    .a7 .actions {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    }
+    .a7 .a-card {
+      padding: 12px;
+      background: var(--color-bg-surface);
+      border-radius: 12px;
+      border: 1px solid rgba(0,0,0,0.04);
+      text-decoration: none; color: inherit;
+      display: flex; flex-direction: column; gap: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .a7 .a-ic { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .a7 .a-ic iconify-icon { font-size: 15px; }
+    .a7 .a-l { font-size: 12px; font-weight: 800; }
+    .a7 .ic-w { background: var(--color-warning-soft); }
+    .a7 .ic-w iconify-icon { color: var(--palette-amber-700, #B45309); }
+    .a7 .ic-s { background: var(--color-success-soft); }
+    .a7 .ic-s iconify-icon { color: var(--color-success); }
+    .a7 .ic-n { background: var(--color-bg-canvas); }
+    .a7 .ic-n iconify-icon { color: var(--color-text-secondary); }
+
+    /* ============================================================
+       A8 — Glassmorphism stacked (frosted glass cards layered)
+    ============================================================ */
+    .a8 {
+      padding: 20px 16px 14px;
+      border-radius: 22px;
+      background:
+        radial-gradient(80% 60% at 20% 0%, rgba(255,107,107,0.5) 0%, transparent 50%),
+        radial-gradient(80% 60% at 100% 80%, rgba(168,85,247,0.5) 0%, transparent 50%),
+        linear-gradient(135deg, #FFE4E1 0%, #F0F0FF 100%);
+      position: relative; overflow: hidden;
+    }
+    .a8 .hero {
+      padding: 16px;
+      background: rgba(255,255,255,0.55);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.6);
+      border-radius: 16px;
+      text-decoration: none; color: inherit;
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 10px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    }
+    .a8 .hero-ic {
+      width: 42px; height: 42px; border-radius: 12px;
+      background: #FF3B30; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .a8 .hero-ic iconify-icon { font-size: 22px; }
+    .a8 .hero-body { flex: 1; }
+    .a8 .hero-n { font-size: 22px; font-weight: 800; line-height: 1; letter-spacing: -0.8px; }
+    .a8 .hero-l { font-size: 12px; color: rgba(0,0,0,0.6); font-weight: 700; margin-top: 2px; }
+    .a8 .hero-chev iconify-icon { color: var(--color-text-secondary); }
+    .a8 .row { display: flex; gap: 8px; }
+    .a8 .pill {
+      flex: 1;
+      padding: 10px 8px;
+      background: rgba(255,255,255,0.5);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.5);
+      border-radius: 12px;
+      text-decoration: none; color: inherit;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+    }
+    .a8 .pill iconify-icon { font-size: 18px; color: #1C1C1E; }
+    .a8 .pill-l { font-size: 11px; font-weight: 800; }
+
+    /* ============================================================
+       A9 — Apple Music style (큰 album-like square + listed actions below)
+    ============================================================ */
+    .a9 .hero {
+      width: 100%; aspect-ratio: 1.6/1;
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at 30% 30%, #FF8FA3 0%, #FF4D6D 40%, #C9184A 100%);
+      color: #fff;
+      padding: 18px;
+      text-decoration: none;
+      display: flex; flex-direction: column; justify-content: space-between;
+      position: relative; overflow: hidden;
+      margin-bottom: 12px;
+      box-shadow: 0 10px 24px -8px rgba(201,24,74,0.4);
+    }
+    .a9 .hero::after {
+      content: ''; position: absolute; left: -30px; bottom: -50px;
+      width: 200px; height: 200px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 50%; filter: blur(20px);
+    }
+    .a9 .h-tag { font-size: 10px; opacity: 0.85; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 800; position: relative; z-index: 1; }
+    .a9 .h-title { font-size: 24px; font-weight: 800; line-height: 1.15; margin-top: 4px; position: relative; z-index: 1; }
+    .a9 .h-cta {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px;
+      background: rgba(255,255,255,0.95); color: #C9184A;
+      border-radius: 999px;
+      font-size: 12px; font-weight: 800;
+      align-self: flex-start;
+      position: relative; z-index: 1;
+    }
+    .a9 .h-cta iconify-icon { font-size: 14px; }
+    .a9 .list {
+      background: var(--color-bg-surface);
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,0.04);
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .a9 .lrow {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px;
+      text-decoration: none; color: inherit;
+    }
+    .a9 .lrow + .lrow { border-top: 1px solid rgba(0,0,0,0.05); }
+    .a9 .l-ic { width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; }
+    .a9 .l-ic iconify-icon { font-size: 16px; }
+    .a9 .ic-w { background: var(--color-warning-soft); }
+    .a9 .ic-w iconify-icon { color: var(--palette-amber-700, #B45309); }
+    .a9 .ic-s { background: var(--color-success-soft); }
+    .a9 .ic-s iconify-icon { color: var(--color-success); }
+    .a9 .ic-n { background: var(--color-bg-canvas); }
+    .a9 .ic-n iconify-icon { color: var(--color-text-secondary); }
+    .a9 .l-l { flex: 1; font-size: 13px; font-weight: 800; }
+    .a9 .l-m { font-size: 11px; color: var(--color-text-secondary); }
+
+    /* ============================================================
+       A10 — 미니 progress bar dashboard
+    ============================================================ */
+    .a10 { background: var(--color-bg-surface); border: 1px solid rgba(0,0,0,0.04); border-radius: 18px; padding: 18px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
+    .a10 .hero {
+      display: flex; align-items: center; gap: 14px;
+      padding-bottom: 14px; border-bottom: 1px solid rgba(0,0,0,0.05);
+      margin-bottom: 14px;
+      text-decoration: none; color: inherit;
+    }
+    .a10 .hero-ic {
+      width: 56px; height: 56px; border-radius: 16px;
+      background: linear-gradient(135deg, #FF6B6B, #C9184A);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(201,24,74,0.3);
+    }
+    .a10 .hero-ic iconify-icon { font-size: 26px; }
+    .a10 .hero-body { flex: 1; }
+    .a10 .hero-n { font-size: 26px; font-weight: 800; line-height: 1; letter-spacing: -1px; }
+    .a10 .hero-l { font-size: 12px; color: var(--color-text-secondary); margin-top: 3px; font-weight: 700; }
+    .a10 .hero-chev iconify-icon { color: var(--color-text-tertiary); }
+    .a10 .list { display: flex; flex-direction: column; gap: 12px; }
+    .a10 .r { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; }
+    .a10 .r-ic { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .a10 .r-ic iconify-icon { font-size: 15px; }
+    .a10 .ic-w { background: var(--color-warning-soft); }
+    .a10 .ic-w iconify-icon { color: var(--palette-amber-700, #B45309); }
+    .a10 .ic-s { background: var(--color-success-soft); }
+    .a10 .ic-s iconify-icon { color: var(--color-success); }
+    .a10 .ic-n { background: var(--color-bg-canvas); }
+    .a10 .ic-n iconify-icon { color: var(--color-text-secondary); }
+    .a10 .r-body { flex: 1; }
+    .a10 .r-head { display: flex; align-items: baseline; justify-content: space-between; }
+    .a10 .r-l { font-size: 12px; font-weight: 800; }
+    .a10 .r-m { font-size: 10px; color: var(--color-text-tertiary); font-weight: 700; }
+    .a10 .r-bar { height: 3px; background: rgba(0,0,0,0.06); border-radius: 3px; overflow: hidden; margin-top: 4px; }
+    .a10 .r-bar-fill { height: 100%; border-radius: 3px; }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <h1 class="sec-title">빠른 액션 — 10가지 레퍼런스 옵션</h1>
+  <p class="sec-note">각각 다른 앱(Mobbin) 패턴 기반. 번호 알려주세요.</p>
+
+  <!-- A1 -->
+  <div class="ver-tag">A1 — Apple Health Rings</div>
+  <span class="ver-src">큰 원형 ring + 중앙 숫자 + 우측 미니 액션 3개. Tonal 패턴</span>
+  <div class="a1">
+    <a class="hero">
+      <div class="ring-wrap">
+        <svg width="110" height="110" viewBox="0 0 110 110">
+          <circle cx="55" cy="55" r="46" fill="none" stroke="rgba(0,0,0,0.06)" stroke-width="10"/>
+          <circle cx="55" cy="55" r="46" fill="none" stroke="#FF3B30" stroke-width="10" stroke-linecap="round" stroke-dasharray="180 289" transform="rotate(-90 55 55)"/>
+        </svg>
+        <div class="ring-center"><div class="ring-num">3</div><div class="ring-label">건</div></div>
+      </div>
+      <div class="a1-text">미확인 알림</div>
+    </a>
+    <div class="minis">
+      <a class="mini"><span class="mini-ic ic-w"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon></span><span class="mini-l">결제</span></a>
+      <a class="mini"><span class="mini-ic ic-s"><iconify-icon icon="fluent:people-24-filled"></iconify-icon></span><span class="mini-l">가족</span></a>
+      <a class="mini"><span class="mini-ic ic-n"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon></span><span class="mini-l">설정</span></a>
+    </div>
+  </div>
+
+  <!-- A2 -->
+  <div class="ver-tag">A2 — Wallet card</div>
+  <span class="ver-src">신용카드 모양 hero (1.6:1) + 아래 3 미니 카드. Afterpay/Apple Wallet 패턴</span>
+  <div class="a2">
+    <a class="hero">
+      <div class="h-top"><span class="h-tag">미확인 알림</span><span class="h-chip">3건</span></div>
+      <div class="h-bottom">
+        <div class="h-num">긴급 1 · 일정 2</div>
+        <div class="h-label">확인 필요 → 탭하기</div>
+      </div>
+    </a>
+    <div class="row">
+      <a class="btn"><span class="btn-ic ic-w"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon></span><span class="btn-l">결제</span></a>
+      <a class="btn"><span class="btn-ic ic-s"><iconify-icon icon="fluent:people-24-filled"></iconify-icon></span><span class="btn-l">가족</span></a>
+      <a class="btn"><span class="btn-ic ic-n"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon></span><span class="btn-l">설정</span></a>
+    </div>
+  </div>
+
+  <!-- A3 -->
+  <div class="ver-tag">A3 — Habit dot grid</div>
+  <span class="ver-src">7x4 도트 그리드(주별 알림 히트맵) + 미니 액션. Me+/Liven 패턴</span>
+  <div class="a3">
+    <a class="hero">
+      <div class="grid">
+        <span class="dot"></span><span class="dot"></span><span class="dot lo"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <span class="dot"></span><span class="dot mid"></span><span class="dot lo"></span><span class="dot"></span><span class="dot hi"></span><span class="dot"></span><span class="dot"></span>
+        <span class="dot lo"></span><span class="dot"></span><span class="dot"></span><span class="dot mid"></span><span class="dot"></span><span class="dot lo"></span><span class="dot"></span>
+        <span class="dot"></span><span class="dot hi"></span><span class="dot mid"></span><span class="dot"></span><span class="dot"></span><span class="dot lo"></span><span class="dot"></span>
+      </div>
+      <div class="h-bottom">
+        <div class="h-label">미확인 알림</div>
+        <div class="h-num">3<small style="font-size:13px;color:var(--color-text-tertiary);font-weight:600;margin-left:3px;">건</small></div>
+        <div class="h-sub">지난 주 평균 1.4건</div>
+      </div>
+    </a>
+    <div class="minis">
+      <a class="mini"><span class="mini-ic ic-w"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon></span><span class="mini-l">결제</span></a>
+      <a class="mini"><span class="mini-ic ic-s"><iconify-icon icon="fluent:people-24-filled"></iconify-icon></span><span class="mini-l">가족</span></a>
+      <a class="mini"><span class="mini-ic ic-n"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon></span><span class="mini-l">설정</span></a>
+    </div>
+  </div>
+
+  <!-- A4 -->
+  <div class="ver-tag">A4 — Calendar widget</div>
+  <span class="ver-src">큰 날짜 숫자 + 좌측 컬러바로 분류된 일정 리스트. Outlook Calendar 패턴</span>
+  <section class="a4">
+    <div class="head">
+      <div class="head-num">3<small>오늘</small></div>
+      <a class="head-cta"><iconify-icon icon="fluent:arrow-right-12-filled"></iconify-icon></a>
+    </div>
+    <div class="items">
+      <a class="row-i"><span class="row-bar row-bar--alert"></span><div class="row-body"><div class="row-l">미확인 알림 3건</div><div class="row-m">긴급 1건 · 일정 2건</div></div></a>
+      <a class="row-i"><span class="row-bar row-bar--warning"></span><div class="row-body"><div class="row-l">결제</div><div class="row-m">월 ₩125,000 · 납부 완료</div></div></a>
+      <a class="row-i"><span class="row-bar row-bar--success"></span><div class="row-body"><div class="row-l">가족</div><div class="row-m">3명 등록</div></div></a>
+      <a class="row-i"><span class="row-bar row-bar--neutral"></span><div class="row-body"><div class="row-l">설정</div><div class="row-m">앱 환경</div></div></a>
+    </div>
+  </section>
+
+  <!-- A5 -->
+  <div class="ver-tag">A5 — Compact balance bar</div>
+  <span class="ver-src">상단 컬러 헤더(alert 강조 + dark CTA) + 하단 3분할 액션. Foodpanda pay 톤</span>
+  <section class="a5">
+    <a class="head">
+      <div><div class="head-l">미확인 알림</div><div class="head-n">3<em>건</em></div></div>
+      <span class="head-btn">확인 <iconify-icon icon="fluent:arrow-right-12-filled"></iconify-icon></span>
+    </a>
+    <div class="actions">
+      <a class="a-btn"><span class="a-ic ic-w"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon></span><span class="a-l">결제</span></a>
+      <a class="a-btn"><span class="a-ic ic-s"><iconify-icon icon="fluent:people-24-filled"></iconify-icon></span><span class="a-l">가족</span></a>
+      <a class="a-btn"><span class="a-ic ic-n"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon></span><span class="a-l">설정</span></a>
+    </div>
+  </section>
+
+  <!-- A6 -->
+  <div class="ver-tag">A6 — Dark tiles</div>
+  <span class="ver-src">검정 배경 + 볼드 컬러 액센트. Satispay/Opal 톤. 노화 콘트라스트 강점</span>
+  <div class="a6">
+    <a class="card hero">
+      <div class="hero-ic"><iconify-icon icon="fluent:alert-24-filled"></iconify-icon></div>
+      <div class="hero-body">
+        <div class="hero-num">3건</div>
+        <div class="hero-l">미확인 알림 · 긴급 1건</div>
+      </div>
+      <span class="hero-cta">확인</span>
+    </a>
+    <a class="card tile">
+      <div class="tile-ic ic-w"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon></div>
+      <div class="tile-row"><span class="tile-l">결제</span><span class="tile-m">완료</span></div>
+    </a>
+    <a class="card tile">
+      <div class="tile-ic ic-s"><iconify-icon icon="fluent:people-24-filled"></iconify-icon></div>
+      <div class="tile-row"><span class="tile-l">가족</span><span class="tile-m">3명</span></div>
+    </a>
+  </div>
+
+  <!-- A7 -->
+  <div class="ver-tag">A7 — News card style</div>
+  <span class="ver-src">큰 컬러 그라데이션 banner (16:9) + 하단 3 액션 그리드. SHEIN/News 톤</span>
+  <div class="a7">
+    <a class="hero">
+      <span class="top-tag">긴급 알림</span>
+      <div class="bot">
+        <div class="bot-title">3건 미확인</div>
+        <div class="bot-sub">긴급 1건 · 일정 2건 · 지금 확인</div>
+      </div>
+    </a>
+    <div class="actions">
+      <a class="a-card"><span class="a-ic ic-w"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon></span><span class="a-l">결제</span></a>
+      <a class="a-card"><span class="a-ic ic-s"><iconify-icon icon="fluent:people-24-filled"></iconify-icon></span><span class="a-l">가족</span></a>
+      <a class="a-card"><span class="a-ic ic-n"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon></span><span class="a-l">설정</span></a>
+    </div>
+  </div>
+
+  <!-- A8 -->
+  <div class="ver-tag">A8 — Glassmorphism stacked</div>
+  <span class="ver-src">파스텔 그라데이션 배경 + 반투명 카드 적층. iOS 17 위젯 톤</span>
+  <div class="a8">
+    <a class="hero">
+      <div class="hero-ic"><iconify-icon icon="fluent:alert-24-filled"></iconify-icon></div>
+      <div class="hero-body">
+        <div class="hero-n">3건</div>
+        <div class="hero-l">미확인 알림</div>
+      </div>
+      <span class="hero-chev"><iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></span>
+    </a>
+    <div class="row">
+      <a class="pill"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon><span class="pill-l">결제</span></a>
+      <a class="pill"><iconify-icon icon="fluent:people-24-filled"></iconify-icon><span class="pill-l">가족</span></a>
+      <a class="pill"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon><span class="pill-l">설정</span></a>
+    </div>
+  </div>
+
+  <!-- A9 -->
+  <div class="ver-tag">A9 — Apple Music banner + list</div>
+  <span class="ver-src">큰 컬러풀 banner with CTA pill + 아래 그룹화된 액션 리스트. 정보 위계 강함</span>
+  <div class="a9">
+    <a class="hero">
+      <span class="h-tag">긴급 알림</span>
+      <div class="h-title">3건 미확인</div>
+      <span class="h-cta"><iconify-icon icon="fluent:arrow-right-12-filled"></iconify-icon> 지금 확인하기</span>
+    </a>
+    <div class="list">
+      <a class="lrow"><span class="l-ic ic-w"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon></span><span class="l-l">결제</span><span class="l-m">납부 완료</span></a>
+      <a class="lrow"><span class="l-ic ic-s"><iconify-icon icon="fluent:people-24-filled"></iconify-icon></span><span class="l-l">가족</span><span class="l-m">3명 등록</span></a>
+      <a class="lrow"><span class="l-ic ic-n"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon></span><span class="l-l">설정</span><span class="l-m">앱 환경</span></a>
+    </div>
+  </div>
+
+  <!-- A10 -->
+  <div class="ver-tag">A10 — Mini progress dashboard</div>
+  <span class="ver-src">큰 그라데이션 아이콘 hero + 미니 progress bar 액션 행들. Stripe dashboard 톤</span>
+  <section class="a10">
+    <a class="hero">
+      <div class="hero-ic"><iconify-icon icon="fluent:alert-24-filled"></iconify-icon></div>
+      <div class="hero-body">
+        <div class="hero-n">3건 미확인</div>
+        <div class="hero-l">긴급 1건 · 일정 2건</div>
+      </div>
+      <span class="hero-chev"><iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></span>
+    </a>
+    <div class="list">
+      <a class="r"><span class="r-ic ic-w"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon></span>
+        <div class="r-body"><div class="r-head"><span class="r-l">결제</span><span class="r-m">12/12 완료</span></div>
+          <div class="r-bar"><div class="r-bar-fill" style="width:100%;background:var(--palette-amber-700,#B45309)"></div></div></div></a>
+      <a class="r"><span class="r-ic ic-s"><iconify-icon icon="fluent:people-24-filled"></iconify-icon></span>
+        <div class="r-body"><div class="r-head"><span class="r-l">가족</span><span class="r-m">3 / 5 명</span></div>
+          <div class="r-bar"><div class="r-bar-fill" style="width:60%;background:var(--color-success)"></div></div></div></a>
+      <a class="r"><span class="r-ic ic-n"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon></span>
+        <div class="r-body"><div class="r-head"><span class="r-l">설정</span><span class="r-m">앱 환경</span></div>
+          <div class="r-bar"><div class="r-bar-fill" style="width:25%;background:var(--color-text-tertiary)"></div></div></div></a>
+    </div>
+  </section>
+
+  <div style="height:80px;"></div>
+</div>
+</body>
+</html>

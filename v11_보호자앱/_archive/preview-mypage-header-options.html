@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ko" data-role="guardian" data-platform="mobile">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>마이페이지 헤더 — 5개 옵션 비교</title>
+
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css">
+  <script src="../07_디자인/_app-theme.js"></script>
+  <link rel="stylesheet" href="../07_디자인/system/app.css">
+  <link rel="stylesheet" href="../07_디자인/system/components.css">
+  <script src="../07_디자인/_iconify-icon.min.js"></script>
+
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:'Pretendard Variable','Pretendard',-apple-system,sans-serif;
+      background:#0F172A;color:#E2E8F0;padding:32px 16px;min-height:100vh;
+      -webkit-font-smoothing:antialiased;
+    }
+    .page-head{max-width:1400px;margin:0 auto 32px}
+    .page-head h1{font-size:24px;font-weight:800;color:#fff;letter-spacing:-.5px}
+    .page-head p{font-size:14px;color:#94A3B8;margin-top:6px;line-height:1.5}
+    .page-head a{color:#5B9BFF;text-decoration:none}
+
+    .grid{
+      max-width:1400px;margin:0 auto;
+      display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+      gap:24px;align-items:start;
+    }
+
+    .opt{
+      background:#1E293B;border-radius:20px;padding:20px;
+      display:flex;flex-direction:column;gap:14px;
+    }
+    .opt-tag{
+      display:inline-flex;align-items:center;gap:6px;
+      font-size:11px;font-weight:700;letter-spacing:.4px;color:#5B9BFF;
+      text-transform:uppercase;
+    }
+    .opt-tag.rec{color:#10B981}
+    .opt-title{font-size:16px;font-weight:700;color:#fff;letter-spacing:-.3px;line-height:1.3}
+    .opt-desc{font-size:12.5px;color:#94A3B8;line-height:1.5}
+    .opt-ref{font-size:11px;color:#64748B}
+    .opt-ref a{color:#94A3B8;text-decoration:underline}
+
+    /* 모바일 프레임 */
+    .phone{
+      width:100%;max-width:280px;margin:0 auto;
+      aspect-ratio:9/16;border-radius:28px;
+      overflow:hidden;position:relative;
+      box-shadow:0 12px 40px rgba(0,0,0,.4),inset 0 0 0 1px rgba(255,255,255,.06);
+      background:#F6F8FC;
+    }
+    .phone-inner{
+      width:100%;height:100%;overflow:hidden;position:relative;
+      color:#111827;font-size:13px;
+    }
+    .statusbar{
+      height:24px;background:transparent;display:flex;align-items:center;
+      justify-content:space-between;padding:0 16px;font-size:11px;font-weight:600;
+      position:relative;z-index:5;color:#111827;
+    }
+
+    /* === 공통 === */
+    .slim-nav{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:6px 14px;
+    }
+    .slim-nav .ico{
+      width:30px;height:30px;border-radius:50%;
+      background:rgba(255,255,255,.7);backdrop-filter:blur(8px);
+      display:inline-flex;align-items:center;justify-content:center;
+      font-size:14px;color:#1E5FD6;
+    }
+    .slim-nav .ttl{font-size:13px;font-weight:700;color:#111827}
+
+    .profile-card{
+      margin:10px 12px;padding:14px;background:#fff;border-radius:14px;
+      box-shadow:0 4px 16px rgba(0,0,0,.06);
+    }
+    .pf-row{display:flex;align-items:center;gap:10px}
+    .pf-ava{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#5B9BFF,#1E5FD6);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
+    .pf-meta{flex:1;min-width:0}
+    .pf-name{font-size:12.5px;font-weight:700;color:#111827}
+    .pf-sub{font-size:9px;color:#6B7280;margin-top:2px}
+    .pf-badge{display:inline-block;font-size:8px;font-weight:700;padding:2px 6px;border-radius:999px;background:#DBEAFE;color:#1E5FD6;margin-top:4px}
+    .chips{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
+    .chip{background:#F1F5F9;border-radius:8px;padding:6px 4px;text-align:center}
+    .chip-v{font-size:11px;font-weight:700;color:#111827}
+    .chip-l{font-size:8px;color:#6B7280;margin-top:1px}
+
+    /* === Option 1: Greeting Hero === */
+    .o1-hero{
+      margin:6px 12px 0;padding:18px 16px;border-radius:14px;
+      background:linear-gradient(135deg,#2C7AFC,#1E5FD6);color:#fff;
+    }
+    .o1-hero-t{font-size:14px;font-weight:800;letter-spacing:-.3px;line-height:1.2}
+    .o1-hero-s{font-size:10px;font-weight:500;opacity:.85;margin-top:5px}
+    .o1-hero-s b{font-weight:700;opacity:1}
+
+    /* === Option 2: Two-line + Status Chip === */
+    .o2-block{padding:12px 14px 0}
+    .o2-name{font-size:18px;font-weight:800;color:#111827;letter-spacing:-.5px}
+    .o2-sub{font-size:10px;color:#6B7280;margin-top:2px}
+    .o2-status{
+      margin-top:10px;display:inline-flex;align-items:center;gap:7px;
+      background:#ECFDF5;color:#047857;padding:6px 10px;border-radius:999px;
+      font-size:10px;font-weight:700;width:auto;
+    }
+    .o2-status .dot{width:5px;height:5px;border-radius:50%;background:#10B981;box-shadow:0 0 0 3px rgba(16,185,129,.2)}
+    .o2-status .arrow{margin-left:2px;font-size:10px;color:#10B981}
+
+    /* === Option 3: Merged Header (CVS) === */
+    .o3-merge{padding:8px 14px 12px;display:flex;gap:12px;align-items:flex-start}
+    .o3-ava{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#5B9BFF,#1E5FD6);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0}
+    .o3-meta{flex:1;line-height:1.35}
+    .o3-greet{font-size:14px;font-weight:800;color:#111827}
+    .o3-mail{font-size:9.5px;color:#6B7280;margin-top:2px}
+    .o3-edit{font-size:10px;font-weight:700;color:#1E5FD6;margin-top:5px}
+    .o3-divide{height:6px;background:#F1F5F9;margin:8px 0 0}
+
+    /* === Option 4: Full-bleed Gradient === */
+    .o4-band{
+      padding:14px 16px 22px;
+      background:linear-gradient(180deg,#5B9BFF 0%,#2C7AFC 60%,#1E5FD6 100%);
+      color:#fff;text-align:center;
+    }
+    .o4-top{display:flex;align-items:center;justify-content:space-between}
+    .o4-top .ico-w{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.25);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+    .o4-ava{width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.95);color:#1E5FD6;display:inline-flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;margin:12px auto 8px;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+    .o4-name{font-size:14px;font-weight:800;letter-spacing:-.3px}
+    .o4-sub{font-size:9.5px;opacity:.88;margin-top:2px}
+    .o4-badge{display:inline-block;font-size:8px;font-weight:700;padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.22);color:#fff;margin-top:7px}
+
+    /* === Option 5: Role Switcher === */
+    .o5-nav{display:flex;align-items:center;justify-content:space-between;padding:6px 12px}
+    .o5-ico{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.7);color:#1E5FD6;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+    .o5-pill{
+      flex:1;margin:0 8px;background:#fff;border-radius:999px;
+      padding:7px 12px;display:flex;align-items:center;justify-content:center;gap:5px;
+      font-size:11px;font-weight:700;color:#111827;
+      box-shadow:0 1px 4px rgba(0,0,0,.06);
+    }
+    .o5-pill .ch{font-size:9px;color:#6B7280}
+    .o5-block{padding:12px 14px 0}
+    .o5-name{font-size:14px;font-weight:800;color:#111827;letter-spacing:-.3px}
+    .o5-meta{font-size:9.5px;color:#6B7280;margin-top:3px;line-height:1.4}
+    .o5-status{margin-top:8px;display:inline-flex;align-items:center;gap:6px;background:#ECFDF5;color:#047857;padding:5px 9px;border-radius:999px;font-size:9.5px;font-weight:700}
+    .o5-status .dot{width:5px;height:5px;border-radius:50%;background:#10B981}
+
+    /* footer */
+    .priority{
+      max-width:1400px;margin:32px auto 0;padding:20px;
+      background:#1E293B;border-radius:16px;
+    }
+    .priority h2{font-size:14px;font-weight:700;color:#fff;margin-bottom:10px}
+    .priority table{width:100%;border-collapse:collapse;font-size:12px}
+    .priority th,.priority td{padding:8px 10px;text-align:left;border-bottom:1px solid #334155;color:#CBD5E1}
+    .priority th{color:#94A3B8;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.4px}
+    .priority .rank{font-weight:800;color:#10B981}
+    .priority .rank.no{color:#64748B}
+  </style>
+</head>
+<body>
+
+  <header class="page-head">
+    <h1>마이페이지 헤더 — 5개 옵션 비교</h1>
+    <p>Mobbin 16개 레퍼런스 분석 → Haru Anbu 보호자앱 컨텍스트에 맞춰 변형. 현재 라이브: <a href="g05-mypage.html">g05-mypage.html</a></p>
+  </header>
+
+  <div class="grid">
+
+    <!-- ============ Option 1 ============ -->
+    <div class="opt">
+      <div>
+        <span class="opt-tag">Option 1 · Grill'd 패턴</span>
+        <div class="opt-title">인사형 컬러 히어로</div>
+      </div>
+      <div class="phone"><div class="phone-inner">
+        <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+        <div class="slim-nav">
+          <span class="ico"><iconify-icon icon="fluent:chevron-left-24-filled"></iconify-icon></span>
+          <span class="ttl">마이</span>
+          <span class="ico"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon></span>
+        </div>
+        <div class="o1-hero">
+          <div class="o1-hero-t">박민지 님, 안녕하세요</div>
+          <div class="o1-hero-s">어머님 케어 <b>200일째</b></div>
+        </div>
+        <div class="profile-card">
+          <div class="pf-row">
+            <div class="pf-ava">박</div>
+            <div class="pf-meta">
+              <div class="pf-name">박민지</div>
+              <div class="pf-sub">보호자 · 어머님(박영자) 담당</div>
+              <span class="pf-badge">프리미엄</span>
+            </div>
+          </div>
+          <div class="chips">
+            <div class="chip"><div class="chip-v">302호</div><div class="chip-l">호실</div></div>
+            <div class="chip"><div class="chip-v">김서연</div><div class="chip-l">담당</div></div>
+            <div class="chip"><div class="chip-v">200일</div><div class="chip-l">입소</div></div>
+          </div>
+        </div>
+      </div></div>
+      <p class="opt-desc">풀블리드 블루 밴드로 정서적 인사. "200일째" 의례적 인정으로 retention ↑. SOS 발생 시 hierarchy 충돌 주의.</p>
+      <p class="opt-ref">참고 — Grill'd Profile</p>
+    </div>
+
+    <!-- ============ Option 2 (추천) ============ -->
+    <div class="opt">
+      <div>
+        <span class="opt-tag rec">Option 2 · 추천</span>
+        <div class="opt-title">투-라인 헤더 + 어머님 상태칩</div>
+      </div>
+      <div class="phone"><div class="phone-inner">
+        <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+        <div class="slim-nav">
+          <span class="ico"><iconify-icon icon="fluent:chevron-left-24-filled"></iconify-icon></span>
+          <span class="ttl">마이</span>
+          <span class="ico"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon></span>
+        </div>
+        <div class="o2-block">
+          <div class="o2-name">박민지</div>
+          <div class="o2-sub">보호자 · 어머님(박영자) 담당</div>
+          <div class="o2-status">
+            <span class="dot"></span>어머님 케어 중 · 활기 좋음
+            <span class="arrow"><iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></span>
+          </div>
+        </div>
+        <div class="profile-card" style="margin-top:14px">
+          <div class="chips">
+            <div class="chip"><div class="chip-v">302호</div><div class="chip-l">호실</div></div>
+            <div class="chip"><div class="chip-v">김서연</div><div class="chip-l">담당</div></div>
+            <div class="chip"><div class="chip-v">200일</div><div class="chip-l">입소</div></div>
+          </div>
+        </div>
+      </div></div>
+      <p class="opt-desc">SOS 배너 점멸을 헤더 안 "상태칩"으로 흡수 → 정상 시 초록·SOS 시 빨강 펄스. "어머님 어때?" 0.5초 답.</p>
+      <p class="opt-ref">참고 — Alan · Gentler Streak</p>
+    </div>
+
+    <!-- ============ Option 3 ============ -->
+    <div class="opt">
+      <div>
+        <span class="opt-tag">Option 3 · CVS 패턴</span>
+        <div class="opt-title">헤더·프로필 카드 병합</div>
+      </div>
+      <div class="phone"><div class="phone-inner">
+        <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+        <div class="slim-nav">
+          <span class="ico"><iconify-icon icon="fluent:chevron-left-24-filled"></iconify-icon></span>
+          <span class="ttl">마이</span>
+          <span style="width:30px"></span>
+        </div>
+        <div class="o3-merge">
+          <div class="o3-ava">박</div>
+          <div class="o3-meta">
+            <div class="o3-greet">박민지 님, 안녕하세요</div>
+            <div class="o3-mail">lg22twins@gmail.com</div>
+            <div class="o3-mail">010-XXXX-XXXX</div>
+            <div class="o3-edit">프로필 수정 ›</div>
+          </div>
+        </div>
+        <div class="o3-divide"></div>
+        <div style="padding:12px 14px 0">
+          <div style="font-size:10px;font-weight:700;color:#6B7280;letter-spacing:.4px;text-transform:uppercase;margin-bottom:8px">케어 대상</div>
+          <div class="profile-card" style="margin:0">
+            <div class="pf-row">
+              <div class="pf-ava" style="background:#10B981">박</div>
+              <div class="pf-meta">
+                <div class="pf-name">박영자 · 78세</div>
+                <div class="pf-sub">302호 · 김서연 간호사 · 200일</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <p class="opt-desc">카드 중첩 제거 → 평면 위계. 스크롤 1회 절약, 메뉴 도달 빠름. 단, 케어 정보(칩)는 별도 카드 필요.</p>
+      <p class="opt-ref">참고 — CVS Health Account</p>
+    </div>
+
+    <!-- ============ Option 4 ============ -->
+    <div class="opt">
+      <div>
+        <span class="opt-tag">Option 4 · LINE 패턴</span>
+        <div class="opt-title">풀블리드 그라디언트 + 플로팅 아바타</div>
+      </div>
+      <div class="phone"><div class="phone-inner">
+        <div class="statusbar" style="color:#fff"><span>9:41</span><span>●●●</span></div>
+        <div class="o4-band">
+          <div class="o4-top">
+            <span class="ico-w"><iconify-icon icon="fluent:chevron-left-24-filled"></iconify-icon></span>
+            <span class="ico-w"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon></span>
+          </div>
+          <div class="o4-ava">박</div>
+          <div class="o4-name">박민지</div>
+          <div class="o4-sub">보호자 · 어머님(박영자) 담당</div>
+          <span class="o4-badge">프리미엄</span>
+        </div>
+        <div class="profile-card" style="margin-top:-12px">
+          <div class="chips">
+            <div class="chip"><div class="chip-v">302호</div><div class="chip-l">호실</div></div>
+            <div class="chip"><div class="chip-v">김서연</div><div class="chip-l">담당</div></div>
+            <div class="chip"><div class="chip-v">200일</div><div class="chip-l">입소</div></div>
+          </div>
+        </div>
+      </div></div>
+      <p class="opt-desc">임팩트 최강. PWA 정체성 확보. 단점: 상단 280px 점유 → 1스크롤 = 카드 1개. 메뉴 도달 느림.</p>
+      <p class="opt-ref">참고 — LINE Profile · MasterClass</p>
+    </div>
+
+    <!-- ============ Option 5 ============ -->
+    <div class="opt">
+      <div>
+        <span class="opt-tag">Option 5 · Slack 패턴</span>
+        <div class="opt-title">역할(케어 대상) 스위처</div>
+      </div>
+      <div class="phone"><div class="phone-inner">
+        <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+        <div class="o5-nav">
+          <span class="o5-ico"><iconify-icon icon="fluent:chevron-left-24-filled"></iconify-icon></span>
+          <div class="o5-pill">
+            <iconify-icon icon="fluent:chevron-down-24-filled" style="font-size:11px"></iconify-icon>
+            어머님(박영자) 담당
+          </div>
+          <span class="o5-ico"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon></span>
+        </div>
+        <div class="o5-block">
+          <div class="o5-name">박민지</div>
+          <div class="o5-meta">서초실버케어 · 302호<br>200일째 케어 중</div>
+          <div class="o5-status"><span class="dot"></span>활기 좋음 · 마지막 통화 2시간 전</div>
+        </div>
+        <div class="profile-card" style="margin-top:14px">
+          <div class="chips">
+            <div class="chip"><div class="chip-v">302호</div><div class="chip-l">호실</div></div>
+            <div class="chip"><div class="chip-v">김서연</div><div class="chip-l">담당</div></div>
+            <div class="chip"><div class="chip-v">200일</div><div class="chip-l">입소</div></div>
+          </div>
+        </div>
+      </div></div>
+      <p class="opt-desc">향후 다중 케어 대상(어머님+아버님) 확장성 ↑. 현재는 1명만 → 기능 과잉. 확장 로드맵 있을 때만.</p>
+      <p class="opt-ref">참고 — Slack You · Threads Status</p>
+    </div>
+
+  </div>
+
+  <div class="priority">
+    <h2>추천 우선순위</h2>
+    <table>
+      <thead><tr><th>순위</th><th>옵션</th><th>이유</th></tr></thead>
+      <tbody>
+        <tr><td class="rank">1</td><td>Option 2 — 투-라인 + 상태칩</td><td>SOS 점멸 피로 해결 + "어머님 어때?" 0.5초 답. 시니어 케어 본질.</td></tr>
+        <tr><td class="rank">2</td><td>Option 1 — 인사형 히어로</td><td>정서적 연결 + 200일 의례. SOS 시 hierarchy 충돌 주의.</td></tr>
+        <tr><td class="rank">3</td><td>Option 3 — 병합 평면화</td><td>정보 밀도 최고. 케어 칩 자리 재설계 필요.</td></tr>
+        <tr><td class="rank no">4</td><td>Option 4 — 풀블리드</td><td>PWA에서 chrome 과잉. 메뉴 도달 ↓.</td></tr>
+        <tr><td class="rank no">5</td><td>Option 5 — 스위처</td><td>1명 케어엔 오버스펙.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</body>
+</html>

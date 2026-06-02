@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ko" data-role="guardian" data-platform="mobile">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>탭바 비교 — A vs B</title>
+<link rel="stylesheet" href="../07_디자인/tokens/tokens.css">
+
+  <script src="../07_디자인/_app-theme.js"></script><link rel="stylesheet" href="../07_디자인/system/app.css">
+<link rel="stylesheet" href="../07_디자인/system/components.css">
+<script src="iconify.min.js"></script>
+<style>
+  body {
+    background: var(--color-bg-canvas);
+    padding: 24px 16px 240px;
+    font-family: var(--font-family-base);
+  }
+  .hd {
+    text-align: center; max-width: 430px; margin: 0 auto 16px;
+    color: var(--color-text-secondary); font-size: var(--text-caption);
+  }
+  .section-label {
+    max-width: 430px; margin: 32px auto 12px;
+    font-size: var(--text-headline); font-weight: var(--weight-bold);
+    text-align: center;
+  }
+  .section-meta {
+    max-width: 430px; margin: 0 auto 16px;
+    font-size: var(--text-caption); color: var(--color-text-secondary);
+    text-align: center;
+  }
+  .stage {
+    max-width: 430px; margin: 0 auto;
+    height: 320px; position: relative;
+    border-radius: var(--radius-card-lg);
+    overflow: hidden;
+    background:
+      linear-gradient(180deg, var(--brand-blue-50) 0%, var(--color-bg-canvas) 60%),
+      url('https://images.unsplash.com/photo-1502673530728-f79b4cab31b1?w=860&q=70&fit=crop') center/cover no-repeat;
+    box-shadow: var(--shadow-1);
+  }
+  .stage::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(239,246,255,0.55), rgba(239,246,255,0.85));
+  }
+  .stage-content {
+    position: absolute; inset: 0; padding: 24px;
+    display: flex; flex-direction: column; gap: 8px;
+    z-index: 1;
+  }
+  .stage-content .greeting {
+    font-size: var(--font-22); font-weight: var(--weight-bold);
+  }
+  .stage-content .sub {
+    font-size: var(--text-callout); color: var(--color-text-secondary);
+  }
+  .stage-content .mini-card {
+    margin-top: auto;
+    background: var(--color-bg-surface);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card);
+    padding: var(--space-4);
+    box-shadow: var(--shadow-1);
+  }
+  .stage-content .mini-card b { color: var(--color-accent); }
+
+  /* 탭바 — 절대 위치 (스테이지 안에 고정) */
+  .demo-tabbar {
+    position: absolute;
+    left: var(--space-5); right: var(--space-5);
+    bottom: var(--space-5);
+    height: var(--tabbar-height);
+    display: flex; padding: 0 var(--space-4);
+    border-radius: var(--radius-pill);
+    z-index: 2;
+  }
+  .demo-tabbar__item {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 2px;
+    color: rgba(28,28,30,0.45);
+    font: var(--weight-bold) var(--tabbar-label-size)/1 var(--font-family-base);
+    background: transparent; border: 0; cursor: pointer;
+  }
+  .demo-tabbar__item iconify-icon { font-size: var(--tabbar-icon-size); }
+  .demo-tabbar__item.is-active { color: var(--color-accent); }
+
+  /* A: 현재 v3.1 토큰 (기본) */
+  .demo-tabbar--a {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--color-border-subtle);
+    box-shadow: var(--shadow-1);
+  }
+
+  /* B: 기존 보호자앱 푸른 glass */
+  .demo-tabbar--b {
+    background: rgba(210, 225, 250, 0.55);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    box-shadow: 0 4px 20px rgba(0,0,0,.08), inset 0 1px 0 rgba(255,255,255,.4);
+  }
+
+  /* 라벨 */
+  .tag {
+    position: absolute; top: 12px; left: 12px;
+    background: rgba(0,0,0,0.6); color: #fff;
+    font-size: var(--text-mini); font-weight: var(--weight-bold);
+    padding: 4px 10px; border-radius: var(--radius-pill);
+    z-index: 3;
+  }
+</style>
+</head>
+<body>
+
+<div class="hd">스크롤해서 두 옵션을 위/아래로 비교해 보세요</div>
+
+<div class="section-label">A · 현재 v3.1 토큰 (흰색 85% + blur 24px)</div>
+<div class="section-meta">또렷함 ↑ · 콘텐츠 위에서도 라벨 잘 보임 · components.css 기본값</div>
+<div class="stage">
+  <span class="tag">A</span>
+  <div class="stage-content">
+    <div class="greeting">오늘도 수고하셨어요,<br>영자님 잘 계세요</div>
+    <div class="sub">식사 정상 · 투약 완료 · 활동 보통</div>
+    <div class="mini-card">AI 안부 리포트 · <b>안정적이세요</b></div>
+  </div>
+  <nav class="demo-tabbar demo-tabbar--a" aria-label="탭바 A">
+    <button class="demo-tabbar__item is-active"><iconify-icon icon="fluent:home-24-filled"></iconify-icon><span>홈</span></button>
+    <button class="demo-tabbar__item"><iconify-icon icon="fluent:clipboard-task-list-ltr-24-filled"></iconify-icon><span>AI 가이드</span></button>
+    <button class="demo-tabbar__item"><iconify-icon icon="fluent:chat-24-filled"></iconify-icon><span>소통</span></button>
+    <button class="demo-tabbar__item"><iconify-icon icon="fluent:document-text-24-filled"></iconify-icon><span>기록</span></button>
+    <button class="demo-tabbar__item"><iconify-icon icon="fluent:person-24-filled"></iconify-icon><span>마이</span></button>
+  </nav>
+</div>
+
+<div class="section-label">B · 기존 보호자앱 푸른 glass (rgba(210,225,250,0.55) + blur 12px)</div>
+<div class="section-meta">투명도 ↑ · 시원하고 떠 있는 느낌 · 콘텐츠 비치는 양 많음</div>
+<div class="stage">
+  <span class="tag">B</span>
+  <div class="stage-content">
+    <div class="greeting">오늘도 수고하셨어요,<br>영자님 잘 계세요</div>
+    <div class="sub">식사 정상 · 투약 완료 · 활동 보통</div>
+    <div class="mini-card">AI 안부 리포트 · <b>안정적이세요</b></div>
+  </div>
+  <nav class="demo-tabbar demo-tabbar--b" aria-label="탭바 B">
+    <button class="demo-tabbar__item is-active"><iconify-icon icon="fluent:home-24-filled"></iconify-icon><span>홈</span></button>
+    <button class="demo-tabbar__item"><iconify-icon icon="fluent:clipboard-task-list-ltr-24-filled"></iconify-icon><span>AI 가이드</span></button>
+    <button class="demo-tabbar__item"><iconify-icon icon="fluent:chat-24-filled"></iconify-icon><span>소통</span></button>
+    <button class="demo-tabbar__item"><iconify-icon icon="fluent:document-text-24-filled"></iconify-icon><span>기록</span></button>
+    <button class="demo-tabbar__item"><iconify-icon icon="fluent:person-24-filled"></iconify-icon><span>마이</span></button>
+  </nav>
+</div>
+
+<div class="section-label">A · 같은 탭바를 복잡한 배경 위에서</div>
+<div class="section-meta">콘텐츠 많을 때 가독성 비교용</div>
+<div class="stage" style="background: url('https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=860&q=70&fit=crop') center/cover no-repeat;">
+  <span class="tag">A · 복잡한 배경</span>
+  <nav class="demo-tabbar demo-tabbar--a">
+    <button class="demo-tabbar__item is-active"><iconify-icon icon="fluent:home-24-filled"></iconify-icon><span>홈</span></button>
+    <button class="demo-tabbar__item"><iconify-icon icon="fluent:clipboard-task-list-ltr-24-filled"></iconify-icon><span>AI 가이드</span></button>
+    <button class="demo-tabbar__item"><iconify-icon icon="fluent:chat-24-filled"></iconify-icon><span>소통</span></button>
+    <button class="demo-tabbar__item"><iconify-icon icon="fluent:document-text-24-filled"></iconify-icon><span>기록</span></button>
+    <button class="demo-tabbar__item"><iconify-icon icon="fluent:person-24-filled"></iconify-icon><span>마이</span></button>
+  </nav>
+</div>
+
+<div class="section-label">B · 같은 탭바를 복잡한 배경 위에서</div>
+<div class="stage" style="background: url('https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=860&q=70&fit=crop') center/cover no-repeat;">
+  <span class="tag">B · 복잡한 배경</span>
+  <nav class="demo-tabbar demo-tabbar--b">
+    <button class="demo-tabbar__item is-active"><iconify-icon icon="fluent:home-24-filled"></iconify-icon><span>홈</span></button>
+    <button class="demo-tabbar__item"><iconify-icon icon="fluent:clipboard-task-list-ltr-24-filled"></iconify-icon><span>AI 가이드</span></button>
+    <button class="demo-tabbar__item"><iconify-icon icon="fluent:chat-24-filled"></iconify-icon><span>소통</span></button>
+    <button class="demo-tabbar__item"><iconify-icon icon="fluent:document-text-24-filled"></iconify-icon><span>기록</span></button>
+    <button class="demo-tabbar__item"><iconify-icon icon="fluent:person-24-filled"></iconify-icon><span>마이</span></button>
+  </nav>
+</div>
+
+</body>
+</html>

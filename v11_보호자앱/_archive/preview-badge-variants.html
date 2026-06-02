@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ko" data-role="guardian" data-platform="mobile">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>카테고리 배지 — 옵션 비교</title>
+
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css">
+  <link rel="stylesheet" href="../07_디자인/system/app.css">
+  <link rel="stylesheet" href="../07_디자인/system/components.css">
+  <script src="../07_디자인/_iconify-icon.min.js"></script>
+
+  <style>
+    body { background: var(--color-bg-canvas); }
+    .app-shell { max-width: 430px; margin: 0 auto; padding: 16px; }
+    .opt-head {
+      font-size: 13px; font-weight: 700; color: var(--color-text-tertiary);
+      letter-spacing: 0.4px; text-transform: uppercase;
+      margin: 28px 0 8px; padding-left: 4px;
+    }
+    .opt-head:first-of-type { margin-top: 0; }
+    .opt-note {
+      font-size: 12px; color: var(--color-text-secondary);
+      margin: 4px 4px 10px; line-height: 1.4;
+    }
+    .opt-source { font-size: 10px; color: var(--color-text-tertiary); font-weight: 600; }
+
+    /* 메시지 카드 골격 (g03-sotong 동일) */
+    .msg-row {
+      display: flex; gap: 12px; padding: 14px 16px;
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: 16px;
+      align-items: flex-start;
+      box-shadow: var(--shadow-1);
+    }
+    .av {
+      width: 40px; height: 40px; border-radius: 999px;
+      background: var(--color-bg-canvas); color: var(--color-text-secondary);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .av iconify-icon { font-size: 20px; }
+    .msg-body { flex: 1; min-width: 0; }
+    .msg-name { font-size: 15px; font-weight: 700; color: var(--color-text-primary); }
+    .msg-preview { font-size: 13px; color: var(--color-text-secondary); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* ============================================================
+       옵션 1 — 현재 (인라인 UPPERCASE + dot, 배경 없음)
+    ============================================================ */
+    .v1 .row { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+    .v1 .cat {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.4px; text-transform: uppercase;
+      color: var(--color-accent);
+    }
+    .v1 .cat::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      background: currentColor;
+    }
+
+    /* ============================================================
+       옵션 2 — Soft-fill pill (원래 디자인 시스템 .badge--info 그대로)
+    ============================================================ */
+    .v2 .row { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+    .v2 .cat {
+      display: inline-flex; padding: 2px 8px;
+      font-size: 11px; font-weight: 700;
+      border-radius: 999px;
+      background: var(--color-accent-soft);
+      color: var(--color-accent);
+    }
+
+    /* ============================================================
+       옵션 3 — Outline pill (eBay LIVE 스타일)
+    ============================================================ */
+    .v3 .row { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+    .v3 .cat {
+      display: inline-flex; padding: 1px 8px;
+      font-size: 10px; font-weight: 800;
+      letter-spacing: 0.5px; text-transform: uppercase;
+      border: 1.5px solid var(--color-accent);
+      border-radius: 999px;
+      color: var(--color-accent);
+    }
+
+    /* ============================================================
+       옵션 4 — 우측 정렬 dot+text (제목과 분리)
+    ============================================================ */
+    .v4 .row {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; margin-bottom: 2px;
+    }
+    .v4 .cat {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 600;
+      color: var(--color-text-secondary);
+      flex-shrink: 0;
+    }
+    .v4 .cat::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--color-accent);
+    }
+
+    /* ============================================================
+       옵션 5 — 좌측 컬러 바 (카드 왼쪽 4px 색 띠)
+    ============================================================ */
+    .v5 .msg-row {
+      position: relative; padding-left: 20px;
+    }
+    .v5 .msg-row::before {
+      content: ''; position: absolute; left: 0; top: 12px; bottom: 12px;
+      width: 4px; border-radius: 4px;
+      background: var(--color-accent);
+    }
+    .v5 .cat {
+      display: inline-block;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 0.4px; text-transform: uppercase;
+      color: var(--color-accent);
+      margin-bottom: 4px;
+    }
+
+    /* ============================================================
+       옵션 6 — Solid fill (강한 컬러 + 흰 텍스트)
+    ============================================================ */
+    .v6 .row { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+    .v6 .cat {
+      display: inline-flex; padding: 2px 9px;
+      font-size: 10px; font-weight: 800;
+      letter-spacing: 0.5px; text-transform: uppercase;
+      border-radius: 999px;
+      background: var(--color-accent);
+      color: #fff;
+    }
+
+    /* ============================================================
+       옵션 7 — Tag-icon (Outlook 스타일)
+    ============================================================ */
+    .v7 .row { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; }
+    .v7 .cat {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 12px; font-weight: 600;
+      color: var(--color-accent);
+    }
+    .v7 .cat iconify-icon { font-size: 14px; }
+
+    /* ============================================================
+       옵션 8 — Kicker (제목 위 별도 줄, 작은 메타)
+    ============================================================ */
+    .v8 .row { margin-bottom: 2px; }
+    .v8 .cat {
+      display: inline-block;
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 0.6px; text-transform: uppercase;
+      color: var(--color-accent);
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <h1 style="font-size:22px;font-weight:800;margin:8px 0 4px;">카테고리 배지 옵션</h1>
+  <p style="font-size:13px;color:var(--color-text-secondary);margin:0 0 24px;">
+    같은 메시지 8가지 변형. 원하는 옵션 번호로 알려주세요.
+  </p>
+
+  <!-- 옵션 1 -->
+  <div class="opt-head">옵션 1 — 현재 (인라인 dot)</div>
+  <div class="opt-note">UPPERCASE accent 텍스트 + 좌측 dot. <span class="opt-source">(현재 적용)</span></div>
+  <div class="msg-row v1">
+    <div class="av"><iconify-icon icon="fluent:heart-pulse-24-filled"></iconify-icon></div>
+    <div class="msg-body">
+      <div class="row">
+        <span class="msg-name">혈당 검사 처치 안내</span>
+        <span class="cat">케어</span>
+      </div>
+      <div class="msg-preview">손가락 끝에서 소량의 혈액을 채취하는…</div>
+    </div>
+  </div>
+
+  <!-- 옵션 2 -->
+  <div class="opt-head">옵션 2 — Soft-fill pill</div>
+  <div class="opt-note">연한 배경 + accent 텍스트. <span class="opt-source">(디자인 시스템 기본 .badge--info)</span></div>
+  <div class="msg-row v2">
+    <div class="av"><iconify-icon icon="fluent:heart-pulse-24-filled"></iconify-icon></div>
+    <div class="msg-body">
+      <div class="row">
+        <span class="msg-name">혈당 검사 처치 안내</span>
+        <span class="cat">케어</span>
+      </div>
+      <div class="msg-preview">손가락 끝에서 소량의 혈액을 채취하는…</div>
+    </div>
+  </div>
+
+  <!-- 옵션 3 -->
+  <div class="opt-head">옵션 3 — Outline pill</div>
+  <div class="opt-note">테두리만 있는 캡슐. <span class="opt-source">(eBay "EBAY LIVE")</span></div>
+  <div class="msg-row v3">
+    <div class="av"><iconify-icon icon="fluent:heart-pulse-24-filled"></iconify-icon></div>
+    <div class="msg-body">
+      <div class="row">
+        <span class="msg-name">혈당 검사 처치 안내</span>
+        <span class="cat">케어</span>
+      </div>
+      <div class="msg-preview">손가락 끝에서 소량의 혈액을 채취하는…</div>
+    </div>
+  </div>
+
+  <!-- 옵션 4 -->
+  <div class="opt-head">옵션 4 — 우측 정렬 dot+text</div>
+  <div class="opt-note">제목 왼쪽, 카테고리 오른쪽 끝. 시각적 분리 명확. <span class="opt-source">(Apple Mail 메타)</span></div>
+  <div class="msg-row v4">
+    <div class="av"><iconify-icon icon="fluent:heart-pulse-24-filled"></iconify-icon></div>
+    <div class="msg-body">
+      <div class="row">
+        <span class="msg-name">혈당 검사 처치 안내</span>
+        <span class="cat">케어</span>
+      </div>
+      <div class="msg-preview">손가락 끝에서 소량의 혈액을 채취하는…</div>
+    </div>
+  </div>
+
+  <!-- 옵션 5 -->
+  <div class="opt-head">옵션 5 — 좌측 컬러 바</div>
+  <div class="opt-note">카드 왼쪽에 4px 색 띠 + 제목 위 작은 라벨. <span class="opt-source">(Liven, 알림 강조)</span></div>
+  <div class="msg-row v5">
+    <div class="av"><iconify-icon icon="fluent:heart-pulse-24-filled"></iconify-icon></div>
+    <div class="msg-body">
+      <span class="cat">케어</span>
+      <div class="msg-name">혈당 검사 처치 안내</div>
+      <div class="msg-preview">손가락 끝에서 소량의 혈액을 채취하는…</div>
+    </div>
+  </div>
+
+  <!-- 옵션 6 -->
+  <div class="opt-head">옵션 6 — Solid fill (강한 컬러)</div>
+  <div class="opt-note">accent 채움 + 흰 텍스트. 시선 강하게 끌림. <span class="opt-source">(쇼핑 앱 "NEW", "SALE")</span></div>
+  <div class="msg-row v6">
+    <div class="av"><iconify-icon icon="fluent:heart-pulse-24-filled"></iconify-icon></div>
+    <div class="msg-body">
+      <div class="row">
+        <span class="msg-name">혈당 검사 처치 안내</span>
+        <span class="cat">케어</span>
+      </div>
+      <div class="msg-preview">손가락 끝에서 소량의 혈액을 채취하는…</div>
+    </div>
+  </div>
+
+  <!-- 옵션 7 -->
+  <div class="opt-head">옵션 7 — Tag 아이콘 + 텍스트</div>
+  <div class="opt-note">아이콘으로 "분류" 의미 강조. 배경 없음. <span class="opt-source">(Outlook Categories)</span></div>
+  <div class="msg-row v7">
+    <div class="av"><iconify-icon icon="fluent:heart-pulse-24-filled"></iconify-icon></div>
+    <div class="msg-body">
+      <div class="row">
+        <span class="msg-name">혈당 검사 처치 안내</span>
+        <span class="cat"><iconify-icon icon="fluent:tag-24-filled"></iconify-icon>케어</span>
+      </div>
+      <div class="msg-preview">손가락 끝에서 소량의 혈액을 채취하는…</div>
+    </div>
+  </div>
+
+  <!-- 옵션 8 -->
+  <div class="opt-head">옵션 8 — Kicker (제목 위 줄바꿈)</div>
+  <div class="opt-note">카테고리를 제목 위 별도 줄로. 작고 메타 톤. <span class="opt-source">(Acorns "ACTION REQUIRED")</span></div>
+  <div class="msg-row v8">
+    <div class="av"><iconify-icon icon="fluent:heart-pulse-24-filled"></iconify-icon></div>
+    <div class="msg-body">
+      <div class="row">
+        <span class="cat">케어</span>
+      </div>
+      <div class="msg-name">혈당 검사 처치 안내</div>
+      <div class="msg-preview">손가락 끝에서 소량의 혈액을 채취하는…</div>
+    </div>
+  </div>
+
+  <div style="height: 80px;"></div>
+</div>
+
+</body>
+</html>

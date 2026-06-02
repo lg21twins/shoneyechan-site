@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ko" data-role="guardian" data-platform="mobile">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>빠른 액션 — 추가 옵션 모음</title>
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css">
+  <link rel="stylesheet" href="../07_디자인/system/app.css">
+  <link rel="stylesheet" href="../07_디자인/system/components.css">
+  <script src="../07_디자인/_iconify-icon.min.js"></script>
+  <style>
+    body { background: var(--color-bg-canvas); }
+    .app-shell { max-width: 430px; margin: 0 auto; padding: 16px; }
+    .sec-title { font-size: 22px; font-weight: 800; margin: 8px 0 4px; }
+    .sec-note { font-size: 13px; color: var(--color-text-secondary); margin: 0 0 24px; }
+    .ver-tag { display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: 0.4px; text-transform: uppercase; color: var(--color-text-tertiary); margin: 32px 0 4px; }
+    .ver-src { display: block; font-size: 11px; color: var(--color-text-tertiary); margin-bottom: 12px; }
+
+    /* ============================================================
+       R1 — Linear monochrome (검정/하양만, 미세 accent dot)
+    ============================================================ */
+    .r1 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .r1 .cell {
+      aspect-ratio: 1;
+      background: var(--color-bg-surface);
+      border: 1px solid #1C1C1E;
+      border-radius: 16px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+      text-decoration: none; color: #1C1C1E;
+      position: relative;
+    }
+    .r1 .cell iconify-icon { font-size: 22px; color: #1C1C1E; }
+    .r1 .lbl { font-size: 11px; font-weight: 800; }
+    .r1 .dot {
+      position: absolute; top: 8px; right: 8px;
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #FF3B30;
+    }
+
+    /* ============================================================
+       R2 — 타이포그래픽 (큰 텍스트가 hero, 아이콘 작게)
+    ============================================================ */
+    .r2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .r2 .cell {
+      aspect-ratio: 1.4/1;
+      padding: 16px;
+      background: var(--color-bg-surface);
+      border: 1px solid rgba(0,0,0,0.05);
+      border-radius: 18px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+      display: flex; flex-direction: column; justify-content: space-between;
+      text-decoration: none; color: inherit;
+    }
+    .r2 .top { display: flex; align-items: center; justify-content: space-between; }
+    .r2 .lbl-tag { font-size: 10px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; color: var(--color-text-tertiary); }
+    .r2 .ic-tiny iconify-icon { font-size: 16px; }
+    .r2 .ic--family iconify-icon { color: #FB7185; }
+    .r2 .ic--billing iconify-icon { color: #10B981; }
+    .r2 .ic--alert iconify-icon { color: #EC4899; }
+    .r2 .ic--settings iconify-icon { color: #6366F1; }
+    .r2 .big {
+      font-size: 24px; font-weight: 800; line-height: 1.05; letter-spacing: -0.7px;
+    }
+
+    /* ============================================================
+       R3 — Neumorphism (소프트 그림자, 입체 버튼)
+    ============================================================ */
+    .r3 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 18px 12px; background: #E8EDF3; border-radius: 22px; }
+    .r3 .cell {
+      aspect-ratio: 1; border-radius: 16px;
+      background: #E8EDF3;
+      box-shadow:
+        6px 6px 12px rgba(163,177,198,0.45),
+        -6px -6px 12px rgba(255,255,255,0.9);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+      text-decoration: none; color: #1C1C1E;
+    }
+    .r3 .cell iconify-icon { font-size: 22px; }
+    .r3 .ic--family iconify-icon { color: #E32B25; }
+    .r3 .ic--billing iconify-icon { color: #047857; }
+    .r3 .ic--alert iconify-icon { color: #BE185D; }
+    .r3 .ic--settings iconify-icon { color: #4338CA; }
+    .r3 .lbl { font-size: 11px; font-weight: 700; }
+
+    /* ============================================================
+       R4 — Sticker/comic (두꺼운 검정 보더 + 컬러 fill)
+    ============================================================ */
+    .r4 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .r4 .cell {
+      aspect-ratio: 1.5/1; padding: 14px;
+      border: 2.5px solid #1C1C1E;
+      border-radius: 18px;
+      display: flex; align-items: center; gap: 12px;
+      text-decoration: none; color: #1C1C1E;
+      box-shadow: 4px 4px 0 #1C1C1E;
+    }
+    .r4 .family { background: #FED7AA; }
+    .r4 .billing { background: #BBF7D0; }
+    .r4 .alert { background: #FBCFE8; }
+    .r4 .settings { background: #C7D2FE; }
+    .r4 .ic-bg {
+      width: 38px; height: 38px; border-radius: 999px;
+      background: #1C1C1E;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .r4 .ic-bg iconify-icon { font-size: 20px; color: #fff; }
+    .r4 .lbl { font-size: 16px; font-weight: 800; }
+
+    /* ============================================================
+       R5 — 사진 배경 (Unsplash 이미지 + 텍스트 오버레이)
+    ============================================================ */
+    .r5 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .r5 .cell {
+      aspect-ratio: 1.5/1; border-radius: 18px;
+      overflow: hidden;
+      text-decoration: none; color: #fff;
+      position: relative;
+      box-shadow: 0 6px 16px -6px rgba(0,0,0,0.25);
+    }
+    .r5 .cell::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(0,0,0,0.45), rgba(0,0,0,0.7));
+    }
+    .r5 .family { background: url('https://images.unsplash.com/photo-1511895426328-dc8714191300?w=400&q=80') center/cover; }
+    .r5 .billing { background: url('https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&q=80') center/cover; }
+    .r5 .alert { background: url('https://images.unsplash.com/photo-1495465798138-718f86d1a4bc?w=400&q=80') center/cover; }
+    .r5 .settings { background: url('https://images.unsplash.com/photo-1559757175-5700dde675bc?w=400&q=80') center/cover; }
+    .r5 .body { position: relative; z-index: 1; padding: 14px; height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
+    .r5 iconify-icon { font-size: 22px; color: #fff; }
+    .r5 .lbl { font-size: 14px; font-weight: 800; }
+    .r5 .meta { font-size: 10px; opacity: 0.85; font-weight: 600; }
+
+    /* ============================================================
+       R6 — Single feature carousel (가로 스와이프)
+    ============================================================ */
+    .r6 {
+      display: flex; gap: 12px;
+      overflow-x: auto; scrollbar-width: none;
+      margin: 0 -16px; padding: 4px 16px;
+    }
+    .r6::-webkit-scrollbar { display: none; }
+    .r6 .cell {
+      flex-shrink: 0;
+      width: 160px; aspect-ratio: 1;
+      padding: 16px;
+      border-radius: 20px;
+      display: flex; flex-direction: column; justify-content: space-between;
+      text-decoration: none; color: #fff;
+      box-shadow: 0 8px 20px -6px rgba(0,0,0,0.25);
+      scroll-snap-align: start;
+    }
+    .r6 .alert { background: linear-gradient(135deg, #FB7185, #EC4899); }
+    .r6 .family { background: linear-gradient(135deg, #FB923C, #F87171); }
+    .r6 .billing { background: linear-gradient(135deg, #34D399, #10B981); }
+    .r6 .settings { background: linear-gradient(135deg, #818CF8, #6366F1); }
+    .r6 .ic { font-size: 32px; }
+    .r6 .lbl { font-size: 15px; font-weight: 800; }
+    .r6 .meta { font-size: 11px; opacity: 0.85; margin-top: 2px; }
+
+    /* ============================================================
+       R7 — Vertical list with large icons (큰 아이콘 좌측)
+    ============================================================ */
+    .r7 { display: flex; flex-direction: column; gap: 8px; }
+    .r7 .row {
+      padding: 14px 16px;
+      border-radius: 16px;
+      display: flex; align-items: center; gap: 14px;
+      text-decoration: none; color: inherit;
+      position: relative; overflow: hidden;
+    }
+    .r7 .family { background: linear-gradient(90deg, #FFE4D9 0%, var(--color-bg-surface) 60%); }
+    .r7 .billing { background: linear-gradient(90deg, #D1FAE5 0%, var(--color-bg-surface) 60%); }
+    .r7 .alert { background: linear-gradient(90deg, #FCE7F3 0%, var(--color-bg-surface) 60%); }
+    .r7 .settings { background: linear-gradient(90deg, #E0E7FF 0%, var(--color-bg-surface) 60%); }
+    .r7 .ic-big {
+      width: 44px; height: 44px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .r7 .ic-big iconify-icon { font-size: 22px; color: #fff; }
+    .r7 .family .ic-big { background: linear-gradient(135deg, #FB923C, #E32B25); }
+    .r7 .billing .ic-big { background: linear-gradient(135deg, #34D399, #047857); }
+    .r7 .alert .ic-big { background: linear-gradient(135deg, #F472B6, #BE185D); }
+    .r7 .settings .ic-big { background: linear-gradient(135deg, #818CF8, #4338CA); }
+    .r7 .body { flex: 1; }
+    .r7 .lbl { font-size: 15px; font-weight: 800; }
+    .r7 .meta { font-size: 11px; color: var(--color-text-secondary); margin-top: 1px; font-weight: 600; }
+    .r7 .chev { color: var(--color-text-tertiary); }
+
+    /* ============================================================
+       R8 — Material You expressive (큰 둥근 사각 + 작은 컴팩트)
+    ============================================================ */
+    .r8 {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    }
+    .r8 .cell {
+      padding: 16px;
+      border-radius: 24px;
+      display: flex; flex-direction: column; gap: 8px;
+      text-decoration: none; color: inherit;
+      aspect-ratio: 1.3/1;
+    }
+    .r8 .family { background: #FFEDD5; color: #9A3412; }
+    .r8 .billing { background: #DCFCE7; color: #14532D; }
+    .r8 .alert { background: #FCE7F3; color: #831843; }
+    .r8 .settings { background: #E0E7FF; color: #3730A3; }
+    .r8 iconify-icon { font-size: 26px; }
+    .r8 .top { display: flex; align-items: center; justify-content: space-between; }
+    .r8 .dot {
+      min-width: 18px; height: 18px; padding: 0 5px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.85); color: #fff;
+      font-size: 10px; font-weight: 800;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .r8 .lbl { font-size: 18px; font-weight: 800; letter-spacing: -0.4px; }
+    .r8 .sub { font-size: 11px; opacity: 0.75; font-weight: 600; }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <h1 class="sec-title">빠른 액션 — 다른 톤 옵션</h1>
+  <p class="sec-note">아예 다른 디자인 톤 8가지 추가. 번호 알려주세요.</p>
+
+  <!-- R1 -->
+  <div class="ver-tag">R1 — Linear 모노크롬 (흑백 미니멀)</div>
+  <span class="ver-src">검정 보더 + 화이트 면 + 미세한 빨간 점 (알림). 신문/잡지 톤</span>
+  <div class="r1">
+    <a class="cell"><iconify-icon icon="fluent:people-24-filled"></iconify-icon><span class="lbl">가족</span></a>
+    <a class="cell"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon><span class="lbl">결제</span></a>
+    <a class="cell"><span class="dot"></span><iconify-icon icon="fluent:alert-24-filled"></iconify-icon><span class="lbl">알림</span></a>
+    <a class="cell"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon><span class="lbl">설정</span></a>
+  </div>
+
+  <!-- R2 -->
+  <div class="ver-tag">R2 — 타이포그래픽 (큰 텍스트 hero)</div>
+  <span class="ver-src">텍스트가 주연 — 라벨 작게 위 + "3명 가족" 같은 큰 표현 본문</span>
+  <div class="r2">
+    <a class="cell"><div class="top"><span class="lbl-tag">가족</span><span class="ic-tiny ic--family"><iconify-icon icon="fluent:people-24-filled"></iconify-icon></span></div><div class="big">3명<br>등록</div></a>
+    <a class="cell"><div class="top"><span class="lbl-tag">결제</span><span class="ic-tiny ic--billing"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon></span></div><div class="big">₩125K<br>완료</div></a>
+    <a class="cell"><div class="top"><span class="lbl-tag">알림</span><span class="ic-tiny ic--alert"><iconify-icon icon="fluent:alert-24-filled"></iconify-icon></span></div><div class="big">3건<br>미확인</div></a>
+    <a class="cell"><div class="top"><span class="lbl-tag">설정</span><span class="ic-tiny ic--settings"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon></span></div><div class="big">앱<br>환경</div></a>
+  </div>
+
+  <!-- R3 -->
+  <div class="ver-tag">R3 — Neumorphism (소프트 입체)</div>
+  <span class="ver-src">옅은 회청색 배경 + 양면 부드러운 그림자. 촉각적 버튼 느낌</span>
+  <div class="r3">
+    <a class="cell"><span class="ic--family"><iconify-icon icon="fluent:people-24-filled"></iconify-icon></span><span class="lbl">가족</span></a>
+    <a class="cell"><span class="ic--billing"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon></span><span class="lbl">결제</span></a>
+    <a class="cell"><span class="ic--alert"><iconify-icon icon="fluent:alert-24-filled"></iconify-icon></span><span class="lbl">알림</span></a>
+    <a class="cell"><span class="ic--settings"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon></span><span class="lbl">설정</span></a>
+  </div>
+
+  <!-- R4 -->
+  <div class="ver-tag">R4 — Sticker/Comic (두꺼운 보더 + 펀치)</div>
+  <span class="ver-src">두꺼운 검정 보더 + 펀치 그림자 + 컬러 파스텔 fill. 펀치감 강함</span>
+  <div class="r4">
+    <a class="cell family"><div class="ic-bg"><iconify-icon icon="fluent:people-24-filled"></iconify-icon></div><span class="lbl">가족</span></a>
+    <a class="cell billing"><div class="ic-bg"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon></div><span class="lbl">결제</span></a>
+    <a class="cell alert"><div class="ic-bg"><iconify-icon icon="fluent:alert-24-filled"></iconify-icon></div><span class="lbl">알림</span></a>
+    <a class="cell settings"><div class="ic-bg"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon></div><span class="lbl">설정</span></a>
+  </div>
+
+  <!-- R5 -->
+  <div class="ver-tag">R5 — 사진 배경 카드</div>
+  <span class="ver-src">실제 사진 + 어두운 오버레이 + 텍스트. Airbnb 톤</span>
+  <div class="r5">
+    <a class="cell family"><div class="body"><iconify-icon icon="fluent:people-24-filled"></iconify-icon><div><div class="lbl">가족</div><div class="meta">3명 등록</div></div></div></a>
+    <a class="cell billing"><div class="body"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon><div><div class="lbl">결제</div><div class="meta">납부 완료</div></div></div></a>
+    <a class="cell alert"><div class="body"><iconify-icon icon="fluent:alert-24-filled"></iconify-icon><div><div class="lbl">알림</div><div class="meta">3건 미확인</div></div></div></a>
+    <a class="cell settings"><div class="body"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon><div><div class="lbl">설정</div><div class="meta">앱 환경</div></div></div></a>
+  </div>
+
+  <!-- R6 -->
+  <div class="ver-tag">R6 — 가로 스크롤 그라데이션 카드</div>
+  <span class="ver-src">가로 스와이프 4개 정사각 카드. Apple Wallet pass-style</span>
+  <div class="r6">
+    <a class="cell alert"><span class="ic"><iconify-icon icon="fluent:alert-24-filled"></iconify-icon></span><div><div class="lbl">알림</div><div class="meta">3건 미확인</div></div></a>
+    <a class="cell family"><span class="ic"><iconify-icon icon="fluent:people-24-filled"></iconify-icon></span><div><div class="lbl">가족</div><div class="meta">3명 등록</div></div></a>
+    <a class="cell billing"><span class="ic"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon></span><div><div class="lbl">결제</div><div class="meta">납부 완료</div></div></a>
+    <a class="cell settings"><span class="ic"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon></span><div><div class="lbl">설정</div><div class="meta">앱 환경</div></div></a>
+  </div>
+
+  <!-- R7 -->
+  <div class="ver-tag">R7 — 세로 리스트 + 그라데이션 아이콘</div>
+  <span class="ver-src">파스텔 그라데이션 행 + 진한 그라데이션 아이콘 박스. 깔끔한 리스트</span>
+  <div class="r7">
+    <a class="row alert"><div class="ic-big"><iconify-icon icon="fluent:alert-24-filled"></iconify-icon></div><div class="body"><div class="lbl">알림</div><div class="meta">3건 미확인 · 긴급 1건</div></div><iconify-icon icon="fluent:chevron-right-24-filled" class="chev"></iconify-icon></a>
+    <a class="row family"><div class="ic-big"><iconify-icon icon="fluent:people-24-filled"></iconify-icon></div><div class="body"><div class="lbl">가족</div><div class="meta">3명 등록 · 권한 관리</div></div><iconify-icon icon="fluent:chevron-right-24-filled" class="chev"></iconify-icon></a>
+    <a class="row billing"><div class="ic-big"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon></div><div class="body"><div class="lbl">결제</div><div class="meta">월 ₩125,000 납부 완료</div></div><iconify-icon icon="fluent:chevron-right-24-filled" class="chev"></iconify-icon></a>
+    <a class="row settings"><div class="ic-big"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon></div><div class="body"><div class="lbl">설정</div><div class="meta">앱 환경</div></div><iconify-icon icon="fluent:chevron-right-24-filled" class="chev"></iconify-icon></a>
+  </div>
+
+  <!-- R8 -->
+  <div class="ver-tag">R8 — Material You expressive (옅은 컬러 + 진한 텍스트)</div>
+  <span class="ver-src">파스텔 배경 + 진한 같은 톤 텍스트 (Google Material 3). 큰 둥근 모서리</span>
+  <div class="r8">
+    <a class="cell alert">
+      <div class="top"><iconify-icon icon="fluent:alert-24-filled"></iconify-icon><span class="dot">3</span></div>
+      <div><div class="lbl">알림</div><div class="sub">3건 미확인</div></div>
+    </a>
+    <a class="cell family">
+      <div class="top"><iconify-icon icon="fluent:people-24-filled"></iconify-icon></div>
+      <div><div class="lbl">가족</div><div class="sub">3명 등록</div></div>
+    </a>
+    <a class="cell billing">
+      <div class="top"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon></div>
+      <div><div class="lbl">결제</div><div class="sub">월 ₩125K</div></div>
+    </a>
+    <a class="cell settings">
+      <div class="top"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon></div>
+      <div><div class="lbl">설정</div><div class="sub">앱 환경</div></div>
+    </a>
+  </div>
+
+  <div style="height:80px;"></div>
+</div>
+</body>
+</html>

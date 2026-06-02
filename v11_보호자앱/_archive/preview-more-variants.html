@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ko" data-role="guardian" data-platform="mobile">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>자세히 보기 — 옵션 비교</title>
+
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css">
+  <link rel="stylesheet" href="../07_디자인/system/app.css">
+  <link rel="stylesheet" href="../07_디자인/system/components.css">
+  <script src="../07_디자인/_iconify-icon.min.js"></script>
+
+  <style>
+    body { background: var(--color-bg-canvas); }
+    .app-shell { max-width: 430px; margin: 0 auto; padding: 16px; }
+    .opt-head {
+      font-size: 13px; font-weight: 800; color: var(--color-text-tertiary);
+      letter-spacing: 0.4px; text-transform: uppercase;
+      margin: 32px 0 4px; padding-left: 4px;
+    }
+    .opt-head:first-of-type { margin-top: 0; }
+    .opt-source { font-size: 11px; color: var(--color-text-tertiary); font-weight: 600; margin-bottom: 12px; padding-left: 4px; }
+    .sec-head {
+      display: flex; align-items: baseline; justify-content: space-between;
+      margin-bottom: var(--space-3);
+    }
+    .sec-head__title { font-size: var(--text-headline); font-weight: var(--weight-bold); }
+
+    /* ============================================================
+       옵션 1 — 현재 (3-column 아이콘 그리드)
+    ============================================================ */
+    .v1 .more-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3);
+    }
+    .v1 .more-grid .card-action {
+      display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
+      padding: var(--space-5) var(--space-3); text-align: center;
+    }
+    .v1 .more-grid .card-action iconify-icon { font-size: 22px; color: var(--color-accent); }
+    .v1 .more-grid .card-action span {
+      font-size: var(--text-caption); font-weight: var(--weight-semibold);
+    }
+
+    /* ============================================================
+       옵션 2 — Plain row list (foodpanda · Afterpay)
+       카드 1개 안에 3행 행렬, 좌 아이콘 + 제목 + chevron, 행 사이 dividers
+    ============================================================ */
+    .v2 .list { padding: 0; overflow: hidden; }
+    .v2 .row {
+      display: flex; align-items: center; gap: var(--space-4);
+      padding: var(--space-4) var(--space-5);
+      text-decoration: none; color: inherit;
+    }
+    .v2 .row + .row { border-top: 1px solid var(--color-border-subtle); }
+    .v2 .row__icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--color-accent-soft);
+      flex-shrink: 0;
+    }
+    .v2 .row__icon iconify-icon { font-size: 18px; color: var(--color-accent); }
+    .v2 .row__title { flex: 1; font-size: 15px; font-weight: 700; }
+    .v2 .row__chev { color: var(--color-text-tertiary); font-size: 18px; }
+
+    /* ============================================================
+       옵션 3 — Row with metadata (MyFitnessPal · Me+)
+       아이콘 + 제목 + 우측 작은 메타 정보 + chevron
+    ============================================================ */
+    .v3 .list { padding: 0; overflow: hidden; }
+    .v3 .row {
+      display: flex; align-items: center; gap: var(--space-4);
+      padding: var(--space-4) var(--space-5);
+      text-decoration: none; color: inherit;
+    }
+    .v3 .row + .row { border-top: 1px solid var(--color-border-subtle); }
+    .v3 .row__icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .v3 .row__icon iconify-icon { font-size: 18px; }
+    .v3 .row__icon--accent  { background: var(--color-accent-soft); }
+    .v3 .row__icon--accent  iconify-icon { color: var(--color-accent); }
+    .v3 .row__icon--success { background: var(--color-success-soft); }
+    .v3 .row__icon--success iconify-icon { color: var(--color-success); }
+    .v3 .row__icon--warning { background: var(--color-warning-soft); }
+    .v3 .row__icon--warning iconify-icon { color: var(--palette-amber-700, #B45309); }
+    .v3 .row__body { flex: 1; min-width: 0; }
+    .v3 .row__title { font-size: 15px; font-weight: 700; }
+    .v3 .row__sub { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+    .v3 .row__meta { font-size: 13px; font-weight: 700; color: var(--color-accent); flex-shrink: 0; }
+    .v3 .row__chev { color: var(--color-text-tertiary); font-size: 16px; margin-left: 4px; }
+
+    /* ============================================================
+       옵션 4 — Stacked rich cards (Tesla)
+       각 행이 카드, 아이콘 + 제목 + 1줄 설명 + 우측 화살표
+    ============================================================ */
+    .v4 .stack { display: flex; flex-direction: column; gap: var(--space-3); }
+    .v4 .item {
+      display: flex; align-items: center; gap: var(--space-4);
+      padding: var(--space-5);
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-1);
+      text-decoration: none; color: inherit;
+    }
+    .v4 .item__icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--color-accent-soft);
+      flex-shrink: 0;
+    }
+    .v4 .item__icon iconify-icon { font-size: 22px; color: var(--color-accent); }
+    .v4 .item__body { flex: 1; min-width: 0; }
+    .v4 .item__title { font-size: 16px; font-weight: 800; }
+    .v4 .item__desc { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+    .v4 .item__chev { color: var(--color-text-tertiary); font-size: 20px; }
+
+    /* ============================================================
+       옵션 5 — Horizontal scroll cards (가로 스와이프)
+    ============================================================ */
+    .v5 .scroll {
+      display: flex; gap: var(--space-3);
+      overflow-x: auto; -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      margin: 0 -16px; padding: var(--space-2) 16px;
+    }
+    .v5 .scroll::-webkit-scrollbar { display: none; }
+    .v5 .card {
+      flex-shrink: 0; width: 180px;
+      padding: var(--space-5);
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-1);
+      text-decoration: none; color: inherit;
+      display: flex; flex-direction: column; gap: var(--space-3);
+    }
+    .v5 .card__icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--color-accent-soft);
+    }
+    .v5 .card__icon iconify-icon { font-size: 22px; color: var(--color-accent); }
+    .v5 .card__title { font-size: 15px; font-weight: 800; }
+    .v5 .card__sub { font-size: 12px; color: var(--color-text-secondary); }
+
+    /* ============================================================
+       옵션 6 — Text-only minimal (목차 스타일)
+       아이콘 없이 제목 + 메타 + chevron, 매우 미니멀
+    ============================================================ */
+    .v6 .list { padding: 0; overflow: hidden; }
+    .v6 .row {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-4) var(--space-5);
+      text-decoration: none; color: inherit;
+    }
+    .v6 .row + .row { border-top: 1px solid var(--color-border-subtle); }
+    .v6 .row__title { flex: 1; font-size: 15px; font-weight: 700; }
+    .v6 .row__meta { font-size: 13px; color: var(--color-text-secondary); }
+    .v6 .row__chev { color: var(--color-text-tertiary); font-size: 16px; }
+  </style>
+</head>
+<body>
+
+<div class="app-shell">
+  <h1 style="font-size:22px;font-weight:800;margin:8px 0 4px;">자세히 보기 옵션</h1>
+  <p style="font-size:13px;color:var(--color-text-secondary);margin:0 0 24px;">
+    같은 3개 항목(처방·약물 / 의료 타임라인 / 청구·납부) 6가지 변형. 번호로 알려주세요.
+  </p>
+
+  <!-- 옵션 1 -->
+  <div class="opt-head">옵션 1 — 현재 (3-column 아이콘 그리드)</div>
+  <div class="opt-source">탭바와 시각 언어가 겹치는 문제</div>
+  <div class="v1">
+    <div class="sec-head"><span class="sec-head__title">자세히 보기</span></div>
+    <div class="more-grid">
+      <a class="card card-action"><iconify-icon icon="fluent:pill-24-filled"></iconify-icon><span>처방·약물</span></a>
+      <a class="card card-action"><iconify-icon icon="fluent:timeline-24-filled"></iconify-icon><span>의료 타임라인</span></a>
+      <a class="card card-action"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon><span>청구·납부</span></a>
+    </div>
+  </div>
+
+  <!-- 옵션 2 -->
+  <div class="opt-head">옵션 2 — Plain row list</div>
+  <div class="opt-source">탭바와 완전히 다른 시각 언어. foodpanda · Afterpay 패턴</div>
+  <div class="v2">
+    <div class="sec-head"><span class="sec-head__title">자세히 보기</span></div>
+    <div class="card list">
+      <a class="row">
+        <span class="row__icon"><iconify-icon icon="fluent:pill-24-filled"></iconify-icon></span>
+        <span class="row__title">처방·약물</span>
+        <iconify-icon icon="fluent:chevron-right-24-filled" class="row__chev"></iconify-icon>
+      </a>
+      <a class="row">
+        <span class="row__icon"><iconify-icon icon="fluent:timeline-24-filled"></iconify-icon></span>
+        <span class="row__title">의료 타임라인</span>
+        <iconify-icon icon="fluent:chevron-right-24-filled" class="row__chev"></iconify-icon>
+      </a>
+      <a class="row">
+        <span class="row__icon"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon></span>
+        <span class="row__title">청구·납부</span>
+        <iconify-icon icon="fluent:chevron-right-24-filled" class="row__chev"></iconify-icon>
+      </a>
+    </div>
+  </div>
+
+  <!-- 옵션 3 -->
+  <div class="opt-head">옵션 3 — Row + 메타 정보</div>
+  <div class="opt-source">각 항목의 현재 상태 한눈에. MyFitnessPal · Me+ 패턴</div>
+  <div class="v3">
+    <div class="sec-head"><span class="sec-head__title">자세히 보기</span></div>
+    <div class="card list">
+      <a class="row">
+        <span class="row__icon row__icon--success"><iconify-icon icon="fluent:pill-24-filled"></iconify-icon></span>
+        <div class="row__body">
+          <div class="row__title">처방·약물</div>
+          <div class="row__sub">복약 중 5종</div>
+        </div>
+        <span class="row__meta">3/3</span>
+        <iconify-icon icon="fluent:chevron-right-24-filled" class="row__chev"></iconify-icon>
+      </a>
+      <a class="row">
+        <span class="row__icon row__icon--accent"><iconify-icon icon="fluent:timeline-24-filled"></iconify-icon></span>
+        <div class="row__body">
+          <div class="row__title">의료 타임라인</div>
+          <div class="row__sub">지난 진료 4/10</div>
+        </div>
+        <span class="row__meta">8건</span>
+        <iconify-icon icon="fluent:chevron-right-24-filled" class="row__chev"></iconify-icon>
+      </a>
+      <a class="row">
+        <span class="row__icon row__icon--warning"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon></span>
+        <div class="row__body">
+          <div class="row__title">청구·납부</div>
+          <div class="row__sub">납부기한 4/25 (D-9)</div>
+        </div>
+        <span class="row__meta" style="color:var(--palette-amber-700,#B45309);">₩1.2M</span>
+        <iconify-icon icon="fluent:chevron-right-24-filled" class="row__chev"></iconify-icon>
+      </a>
+    </div>
+  </div>
+
+  <!-- 옵션 4 -->
+  <div class="opt-head">옵션 4 — Stacked rich cards</div>
+  <div class="opt-source">각 항목이 단독 카드, 1줄 설명 포함. Tesla 메뉴 패턴</div>
+  <div class="v4">
+    <div class="sec-head"><span class="sec-head__title">자세히 보기</span></div>
+    <div class="stack">
+      <a class="item">
+        <span class="item__icon"><iconify-icon icon="fluent:pill-24-filled"></iconify-icon></span>
+        <div class="item__body">
+          <div class="item__title">처방·약물</div>
+          <div class="item__desc">복약 현황, 처방 변경 이력</div>
+        </div>
+        <iconify-icon icon="fluent:chevron-right-24-filled" class="item__chev"></iconify-icon>
+      </a>
+      <a class="item">
+        <span class="item__icon"><iconify-icon icon="fluent:timeline-24-filled"></iconify-icon></span>
+        <div class="item__body">
+          <div class="item__title">의료 타임라인</div>
+          <div class="item__desc">진료·처방·검사 전체 이력</div>
+        </div>
+        <iconify-icon icon="fluent:chevron-right-24-filled" class="item__chev"></iconify-icon>
+      </a>
+      <a class="item">
+        <span class="item__icon"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon></span>
+        <div class="item__body">
+          <div class="item__title">청구·납부</div>
+          <div class="item__desc">월별 요양비 청구서, 결제 내역</div>
+        </div>
+        <iconify-icon icon="fluent:chevron-right-24-filled" class="item__chev"></iconify-icon>
+      </a>
+    </div>
+  </div>
+
+  <!-- 옵션 5 -->
+  <div class="opt-head">옵션 5 — 가로 스크롤 카드</div>
+  <div class="opt-source">스와이프로 탐색, 다른 가로 스크롤(다가오는 일정)과 톤 통일</div>
+  <div class="v5">
+    <div class="sec-head"><span class="sec-head__title">자세히 보기</span></div>
+    <div class="scroll">
+      <a class="card">
+        <div class="card__icon"><iconify-icon icon="fluent:pill-24-filled"></iconify-icon></div>
+        <div>
+          <div class="card__title">처방·약물</div>
+          <div class="card__sub">복약 중 5종 · 오늘 3/3</div>
+        </div>
+      </a>
+      <a class="card">
+        <div class="card__icon"><iconify-icon icon="fluent:timeline-24-filled"></iconify-icon></div>
+        <div>
+          <div class="card__title">의료 타임라인</div>
+          <div class="card__sub">진료 이력 8건</div>
+        </div>
+      </a>
+      <a class="card">
+        <div class="card__icon"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon></div>
+        <div>
+          <div class="card__title">청구·납부</div>
+          <div class="card__sub">₩1.2M · 4/25 납부</div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- 옵션 6 -->
+  <div class="opt-head">옵션 6 — Text-only minimal</div>
+  <div class="opt-source">아이콘 제거, 가장 가벼움. 노년 가독성 최우선 톤</div>
+  <div class="v6">
+    <div class="sec-head"><span class="sec-head__title">자세히 보기</span></div>
+    <div class="card list">
+      <a class="row">
+        <span class="row__title">처방·약물</span>
+        <span class="row__meta">5종</span>
+        <iconify-icon icon="fluent:chevron-right-24-filled" class="row__chev"></iconify-icon>
+      </a>
+      <a class="row">
+        <span class="row__title">의료 타임라인</span>
+        <span class="row__meta">8건</span>
+        <iconify-icon icon="fluent:chevron-right-24-filled" class="row__chev"></iconify-icon>
+      </a>
+      <a class="row">
+        <span class="row__title">청구·납부</span>
+        <span class="row__meta">₩1.2M</span>
+        <iconify-icon icon="fluent:chevron-right-24-filled" class="row__chev"></iconify-icon>
+      </a>
+    </div>
+  </div>
+
+  <div style="height: 80px;"></div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ko" data-role="guardian" data-platform="mobile">
+<head>
+  <meta charset="UTF-8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#EFF6FF">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="icon" href="icon-192.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>하루안부 — 알림</title>
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css?v=24">
+
+  <script src="../07_디자인/_app-theme.js"></script>
+  <link rel="stylesheet" href="../07_디자인/system/app.css?v=24">
+  <link rel="stylesheet" href="../07_디자인/system/components.css?v=20260523e">
+  <script src="../07_디자인/_iconify-icon.min.js"></script>
+  <style>
+    .app-shell { max-width: 430px; margin: 0 auto; }
+
+    /* 진행 중 — action-first dock (Variant C) */
+    .live-wrap { display: flex; flex-direction: column; gap: var(--space-4); }
+    .live-card {animation:haru-fade-in-up var(--duration-slow,350ms) var(--easing-standard) both;
+      background: var(--palette-white);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-card-lg);
+      padding: var(--space-6) var(--space-6) var(--space-5);
+    }
+    .live-status {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: var(--text-mini); font-weight: var(--weight-bold);
+      color: var(--color-danger); letter-spacing: 0.02em;
+    }
+    .live-status .pulse {
+      width: 7px; height: 7px; border-radius: 50%; background: var(--color-danger);
+      position: relative;
+    }
+    .live-status .pulse::after {
+      content: ""; position: absolute; inset: -4px; border-radius: 50%;
+      border: 2px solid var(--color-danger); opacity: 0.35;
+      animation: haru-pulse 2s ease-in-out infinite;
+    }
+    .live-title { font-size: var(--text-headline); font-weight: var(--weight-bold); color: var(--color-text-primary); margin-top: 6px; letter-spacing: -0.01em; }
+    .live-row {
+      display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap;
+      margin-top: var(--space-3);
+    }
+    .live-reading {
+      font-size: 22px; font-weight: var(--weight-bold); color: var(--color-text-primary);
+      font-variant-numeric: tabular-nums; letter-spacing: -0.02em;
+    }
+    .live-reading .unit { font-size: var(--text-mini); font-weight: var(--weight-semibold); color: var(--color-text-secondary); margin-left: 4px; }
+    .live-who { font-size: var(--text-callout); color: var(--color-text-secondary); }
+    .live-who b { color: var(--color-text-primary); font-weight: var(--weight-bold); }
+    .live-elapsed {
+      margin-left: auto; font-size: var(--text-mini); font-weight: var(--weight-bold); color: var(--color-text-primary);
+      background: var(--color-bg-canvas); padding: 5px 10px; border-radius: var(--radius-pill);
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .live-elapsed iconify-icon { font-size: 13px; color: var(--color-text-secondary); }
+
+    .live-stepper { margin-top: var(--space-5); display: flex; flex-direction: column; gap: 6px; }
+    .live-stepper__bars { display: flex; gap: 5px; }
+    .live-stepper__seg {
+      flex: 1; height: 5px; border-radius: 5px; background: var(--color-border-subtle);
+    }
+    .live-stepper__seg.is-done { background: var(--color-success); }
+    .live-stepper__seg.is-now { background: var(--color-danger); }
+    .live-stepper__lbls {
+      display: flex; justify-content: space-between;
+      font-size: var(--text-mini); color: var(--color-text-secondary); font-weight: var(--weight-semibold);
+      font-variant-numeric: tabular-nums;
+    }
+    .live-stepper__lbls .is-now { color: var(--color-danger); font-weight: var(--weight-bold); }
+
+    /* 액션 독 */
+    .live-dock {
+      background: var(--palette-white);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-card-lg);
+      padding: 10px; display: flex; gap: 8px; align-items: center;
+    }
+    .live-dock__primary {
+      flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+      height: 54px;
+      background: var(--color-danger);
+      box-shadow: 0 8px 20px rgba(var(--color-danger-rgb), 0.28);
+      color: var(--palette-white);
+      border-radius: 14px; font-size: var(--text-callout); font-weight: var(--weight-bold);
+      text-decoration: none;
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+    .live-dock__primary:active { transform: scale(.97); box-shadow: 0 5px 16px rgba(var(--color-danger-rgb), 0.3); }
+    .live-dock__primary iconify-icon { font-size: 20px; }
+    .live-dock__secondary {
+      width: 54px; height: 54px; border-radius: 14px; background: var(--color-bg-canvas);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--color-text-primary); text-decoration: none; flex-shrink: 0;
+    }
+    .live-dock__secondary iconify-icon { font-size: 20px; }
+
+    /* 피드 */
+    .sec-title { font-size: var(--text-headline); font-weight: var(--weight-bold); margin-bottom: var(--space-3); }
+    .feed-card {animation:haru-fade-in-up var(--duration-slow,350ms) var(--easing-standard) 80ms both; padding: 0; overflow: hidden; }
+    .feed-item {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-4) var(--space-5);
+      text-decoration: none; color: inherit;
+    }
+    .feed-item + .feed-item { border-top: 1px solid var(--color-border-subtle); }
+    .feed-icon {
+      width: 32px; height: 32px; border-radius: 10px;
+      background: var(--color-bg-canvas);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .feed-icon iconify-icon { color: var(--color-text-secondary); font-size: 16px; }
+    .feed-icon--alert { background: var(--color-danger-soft); }
+    .feed-icon--alert iconify-icon { color: var(--color-danger); }
+    .feed-title { font-size: var(--text-callout); font-weight: var(--weight-semibold); }
+    .feed-meta { font-size: var(--text-mini); color: var(--color-text-secondary); margin-top: 2px; }
+    .feed-time { font-size: var(--text-mini); color: var(--color-text-tertiary); flex-shrink: 0; }
+  </style>
+
+  <!-- 보호자/요양보호사/의료진앱 공통 헤더·icon-btn 표준 (2026-05-22 통합) -->
+  <link rel="stylesheet" href="../v11_요양보호사앱/caregiver.css?v=20260525p">
+<style>
+  /* === 3앱 공통 헤더 표준 (d01-home 기준, 보호자앱에도 강제) === */
+  [data-platform="mobile"] .header{
+    padding: calc(env(safe-area-inset-top, 0px) + 6px) 20px 0 !important;
+    position: static !important;
+    background: transparent !important;
+  }
+  /* 기본 = 홈 패턴: 로고 + 액션 그룹 (flex space-between) */
+  [data-platform="mobile"] .header .top-nav{
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    margin-bottom: 24px !important;
+  }
+  /* 서브 패턴: title-block 있을 때 → grid 3-col (44 / 1fr / 44) */
+  [data-platform="mobile"] .header .top-nav:has(> .title-block){
+    display: grid !important;
+    grid-template-columns: 44px 1fr 44px !important;
+    margin-bottom: 8px !important;
+  }
+  [data-platform="mobile"] .header .top-nav:has(> .title-block) > .h-left{
+    width: 44px; height: 44px;
+  }
+  [data-platform="mobile"] .header .top-nav:has(> .title-block) > .title-block{
+    grid-column: 2; text-align: center; line-height: 1.2; min-width: 0;
+  }
+  [data-platform="mobile"] .header .top-nav:has(> .title-block) > .h-name{
+    font: 600 17px/1.2 inherit; color: var(--color-text-primary); letter-spacing: -.3px; text-align: center;
+  }
+  [data-platform="mobile"] .header .top-nav:has(> .title-block) > :first-child{
+    grid-column: 1; justify-self: start;
+  }
+  [data-platform="mobile"] .header .top-nav:has(> .title-block) > :last-child{
+    grid-column: 3; justify-self: end;
+  }
+  /* logo */
+  [data-platform="mobile"] .header .top-nav > .logo{
+    display: inline-flex !important;
+    align-items: center !important;
+    text-decoration: none !important;
+    color: inherit !important;
+    background: transparent !important;
+    border: 0 !important;
+    padding: 4px !important;
+    margin: -4px !important;
+    cursor: pointer !important;
+  }
+  [data-platform="mobile"] .header .top-nav > .logo svg{ width: 28px !important; height: 28px !important; display: block !important; }
+  /* top-actions 그룹 (홈 페이지) */
+  [data-platform="mobile"] .header .top-actions{
+    display: flex !important; align-items: center !important; gap: 8px !important;
+  }
+  /* icon-btn 글라스 (44×44, blur, shadow) */
+  [data-platform="mobile"] .header .icon-btn{
+    width: 44px !important; height: 44px !important; border-radius: 50% !important;
+    background: rgba(255,255,255,.55) !important;
+    border: .5px solid rgba(255,255,255,.55) !important;
+    backdrop-filter: blur(12px) saturate(140%) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(140%) !important;
+    box-shadow: 0 1px 1px rgba(255,255,255,.6) inset, 0 4px 16px rgba(0,0,0,.06) !important;
+    display: inline-flex !important; align-items: center !important; justify-content: center !important;
+    cursor: pointer !important; text-decoration: none !important;
+    position: relative !important;
+    transition: transform .1s !important;
+  }
+  [data-platform="mobile"] .header .icon-btn:active{ transform: scale(.93); }
+  [data-platform="mobile"] .header .icon-btn iconify-icon{
+    font-size: 22px !important;
+    color: var(--color-accent-strong) !important;
+  }
+  [data-platform="mobile"] .header .icon-btn .notif-dot,
+  [data-platform="mobile"] .header .notif-dot{
+    position: absolute !important; top: 10px !important; right: 10px !important;
+    width: 8px !important; height: 8px !important; border-radius: 50% !important;
+    background: var(--color-danger) !important;
+    border: 1.5px solid white !important;
+    z-index: 2 !important;
+  }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <header class="header">
+    <div class="top-nav">
+      <button class="icon-btn" aria-label="뒤로" onclick="history.back()"><iconify-icon icon="fluent:chevron-left-24-filled"></iconify-icon></button>
+      <div class="title-block">
+        <h1 class="h-name">알림</h1>
+      </div>
+      <a class="icon-btn" href="g07-settings.html" aria-label="알림 설정"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon></a>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <div class="stack-loose u-pt-5">
+
+      <!-- 지금 대응 중 -->
+      <section class="live-wrap fade-in fade-in--d1" aria-label="지금 대응 중인 알림">
+        <div class="live-card">
+          <div class="live-status"><span class="pulse" aria-hidden="true"></span> 대응 중</div>
+          <div class="live-title">혈압 이상이 감지됐어요</div>
+          <div class="live-row">
+            <span class="live-reading">150/95<span class="unit">mmHg</span></span>
+            <span class="live-who"><b>박영자</b>님</span>
+            <span class="live-elapsed"><iconify-icon icon="fluent:timer-24-regular"></iconify-icon> 5분 경과</span>
+          </div>
+          <div class="live-stepper" aria-label="대응 단계">
+            <div class="live-stepper__bars" aria-hidden="true">
+              <span class="live-stepper__seg is-done"></span>
+              <span class="live-stepper__seg is-done"></span>
+              <span class="live-stepper__seg is-now"></span>
+            </div>
+            <div class="live-stepper__lbls">
+              <span>2:30 감지</span>
+              <span>2:32 도착</span>
+              <span class="is-now">2:35 재측정</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="live-dock">
+          <a href="tel:" class="live-dock__primary">
+            <iconify-icon icon="fluent:call-24-filled"></iconify-icon>김서연 간호사에게 전화
+          </a>
+          <a href="g03-chat-nurse.html" class="live-dock__secondary" aria-label="간호사 채팅">
+            <iconify-icon icon="fluent:chat-24-filled"></iconify-icon>
+          </a>
+        </div>
+      </section>
+
+      <!-- 오늘의 알림 -->
+      <section class="fade-in fade-in--d2">
+        <div class="sec-title">오늘의 알림</div>
+        <div class="card feed-card">
+          <a href="g02-ai-report.html" class="feed-item">
+            <span class="feed-icon feed-icon--alert"><iconify-icon icon="fluent:heart-pulse-24-filled"></iconify-icon></span>
+            <div class="u-flex-1"><div class="feed-title">혈압 이상 감지</div><div class="feed-meta">박영자님 · 150/95 mmHg</div></div>
+            <span class="feed-time">14:30</span>
+          </a>
+          <a href="g02-ai-report.html" class="feed-item">
+            <span class="feed-icon"><iconify-icon icon="fluent:food-24-filled"></iconify-icon></span>
+            <div class="u-flex-1"><div class="feed-title">점심 식사 완료</div><div class="feed-meta">90% 드셨어요</div></div>
+            <span class="feed-time">13:00</span>
+          </a>
+          <a href="g02-ai-report.html" class="feed-item">
+            <span class="feed-icon"><iconify-icon icon="fluent:person-walking-20-filled"></iconify-icon></span>
+            <div class="u-flex-1"><div class="feed-title">산책 30분 완료</div><div class="feed-meta">정원 한 바퀴</div></div>
+            <span class="feed-time">11:30</span>
+          </a>
+          <a href="g02-ai-report.html" class="feed-item">
+            <span class="feed-icon"><iconify-icon icon="fluent:pill-24-filled"></iconify-icon></span>
+            <div class="u-flex-1"><div class="feed-title">오전 투약 완료</div><div class="feed-meta">혈압약·당뇨약 2종</div></div>
+            <span class="feed-time">9:00</span>
+          </a>
+          <a href="g02-ai-report.html" class="feed-item">
+            <span class="feed-icon"><iconify-icon icon="fluent:heart-pulse-24-filled"></iconify-icon></span>
+            <div class="u-flex-1"><div class="feed-title">오전 혈압 측정</div><div class="feed-meta">130/85 정상</div></div>
+            <span class="feed-time">9:00</span>
+          </a>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <div class="bottom-bar">
+    <nav class="tabbar">
+      <a href="g-guardian-live.html" class="tab" aria-label="홈"><span class="tab-icon"><iconify-icon icon="fluent:home-24-filled" class="u-fs-26"></iconify-icon></span></a>
+      <a href="g02-ai-guide.html" class="tab" aria-label="AI 가이드"><span class="tab-icon"><iconify-icon icon="fluent:book-24-filled" class="u-fs-26"></iconify-icon></span></a>
+      <a href="g03-sotong.html" class="tab" aria-label="소통"><span class="tab-icon"><iconify-icon icon="fluent:chat-24-filled" class="text-22"></iconify-icon></span></a>
+      <a href="g05-records.html" class="tab" aria-label="기록"><span class="tab-icon"><iconify-icon icon="fluent:folder-24-filled" class="u-fs-26"></iconify-icon></span></a>
+      <a href="g05-mypage.html" class="tab active" aria-label="마이"><span class="tab-icon"><iconify-icon icon="fluent:person-24-filled" class="u-fs-26"></iconify-icon></span></a>
+    </nav>
+    <a href="g-guardian-live.html?chat=1" class="ai-fab" aria-label="AI 어시스턴트">
+      <svg width="22" height="22" viewBox="0 0 2526 2526" fill="var(--brand-blue-500)"><path d="M2521.32 2506.66C1239.65 2657.48 1239.65 1895.6 1239.65 1279.34L2497.69 0C2518.68 494.198 2522.27 1157.92 1658.86 1262.48C2641.88 1314.25 2521.32 2101.84 2521.32 2506.66Z"/><path d="M4.677 19.335C1286.35-131.481 1286.35 630.399 1286.35 1246.66L28.315 2526C7.322 2031.8 3.73 1368.08 867.143 1263.52C-115.881 1211.75 4.677 424.157 4.677 19.335Z"/></svg>
+    </a>
+  </div>
+
+</div>
+  <div class="bottom-scrim" aria-hidden="true"></div>
+</body>
+</html>

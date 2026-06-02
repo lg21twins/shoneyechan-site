@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="ko" data-role="guardian" data-platform="mobile">
+<head>
+  <meta charset="UTF-8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#F0F4F8">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="icon" href="icon-192.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>하루안부 — 기록</title>
+
+  <!-- v3.1 디자인 시스템 -->
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css?v=24">
+
+  <script src="../07_디자인/_app-theme.js"></script>
+  <link rel="stylesheet" href="../07_디자인/system/app.css?v=24">
+  <link rel="stylesheet" href="../07_디자인/system/components.css?v=20260523e">
+  <script src="../07_디자인/_iconify-icon.min.js"></script>
+
+  <style>
+    /* v3.2.9: canvas 톤으로 통일 — 상단 safe-area도 일관된 배경 */
+    html { background: var(--color-bg-canvas); }
+    body { background: var(--color-bg-canvas); }
+    .app-shell { max-width: 430px; margin: 0 auto; }
+
+    /* 1차 액션 — 비대칭 정사각형 페어 (Alan 패턴 변형) */
+    .pri-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-3);
+    }
+    .pri-card {
+      position: relative;
+      display: flex; flex-direction: column;
+      justify-content: space-between;
+      aspect-ratio: 1 / 1;
+      padding: var(--space-5);
+      text-align: left;
+      border-radius: var(--radius-card);
+      overflow: hidden;
+    }
+    /* 두 카드 공통: 화이트 표면 */
+    .pri-card--soft {
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border-subtle);
+      box-shadow: var(--shadow-1);
+    }
+    .pri-card__icon {
+      width: 48px; height: 48px; border-radius: 14px;
+      background: var(--color-accent-soft);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .pri-card__icon img { width: 26px; height: 26px; }
+    .pri-card__icon iconify-icon { font-size: 26px; color: var(--color-accent); }
+    .pri-card__icon--success { background: var(--color-success-soft); }
+    .pri-card__icon--success iconify-icon { color: var(--color-success); }
+    .pri-card__body { width: 100%; }
+    .pri-card__title { font-size: var(--text-headline); font-weight: var(--weight-bold); line-height: 1.25; }
+    .pri-card__sub {
+      font-size: var(--text-caption);
+      color: var(--color-text-secondary);
+      margin-top: 4px;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .pri-card__badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      align-self: flex-start;
+      font-size: var(--text-mini); font-weight: var(--weight-bold);
+      padding: 2px 8px; border-radius: var(--radius-pill);
+      background: var(--color-success-soft); color: var(--color-success);
+      margin-top: var(--space-2);
+    }
+    .pri-card__badge--accent {
+      background: var(--color-accent-soft);
+      color: var(--color-accent);
+    }
+
+    /* 섹션 */
+    .sec-head {
+      display: flex; align-items: baseline; justify-content: space-between;
+      margin-bottom: var(--space-3);
+    }
+    .sec-head__title { font-size: var(--text-headline); font-weight: var(--weight-bold); }
+    .sec-head__more {
+      font-size: var(--text-caption); font-weight: var(--weight-semibold);
+      color: var(--color-accent); background: 0; border: 0; cursor: pointer;
+    }
+
+    /* 다가오는 일정 — 가로 스크롤 (좌우 시각적 잘림 방지) */
+    .sched-scroll {
+      display: flex; gap: var(--space-3);
+      overflow-x: auto; -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      /* app-main 좌우 패딩을 상쇄해서 화면 끝까지 스크롤 가능하게 */
+      margin: 0 calc(-1 * var(--space-5));
+      padding: var(--space-2) var(--space-5);
+      scroll-padding-inline: var(--space-5);
+      scroll-snap-type: x proximity;
+    }
+    .sched-scroll::-webkit-scrollbar { display: none; }
+    .sched-chip { scroll-snap-align: start; }
+    .sched-chip {
+      flex-shrink: 0;
+      width: 156px;
+      padding: var(--space-4);
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-1);
+    }
+    .sched-chip__dday {
+      display: inline-block;
+      font-size: var(--text-mini); font-weight: var(--weight-bold);
+      padding: 2px 7px; border-radius: var(--radius-pill);
+      background: var(--color-accent-soft); color: var(--color-accent);
+      margin-bottom: var(--space-3);
+    }
+    .sched-chip__dday--danger { background: var(--color-danger-soft); color: var(--color-danger); }
+    .sched-chip__name { font-size: var(--text-callout); font-weight: var(--weight-bold); margin-bottom: 2px; }
+    .sched-chip__date { font-size: var(--text-mini); color: var(--color-text-secondary); }
+
+    /* 최근 기록 — Timeline rail (옵션 A: Forest 패턴) */
+    .feed-card { padding: var(--space-4) var(--space-5); }
+    .tl {
+      position: relative;
+      padding-left: 22px;
+    }
+    .tl::before {
+      content: ''; position: absolute;
+      left: 5px; top: 12px; bottom: 12px;
+      width: 2px; background: var(--color-border-subtle);
+    }
+    .tl__item {
+      position: relative;
+      padding: 8px 0;
+      display: flex; align-items: flex-start; gap: 12px;
+      text-decoration: none; color: inherit;
+    }
+    .tl__item + .tl__item { padding-top: 12px; }
+    .tl__dot {
+      position: absolute; left: -22px; top: 14px;
+      width: 12px; height: 12px; border-radius: 50%;
+      background: var(--color-accent);
+      box-shadow: 0 0 0 3px var(--color-bg-surface);
+    }
+    .tl__dot--success { background: var(--color-success); }
+    .tl__dot--warning { background: var(--palette-amber-700); }
+    .tl__dot--info    { background: var(--color-accent); }
+    .tl__dot--neutral { background: var(--color-text-tertiary); }
+    .tl__body { flex: 1; min-width: 0; }
+    .tl__title { font-size: 14px; font-weight: 700; }
+    .tl__meta { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+    .tl__time { font-size: 11px; color: var(--color-text-tertiary); flex-shrink: 0; padding-top: 2px; }
+
+    /* 더 보기 — Row + 메타 정보 (옵션 3) */
+    .more-list { padding: 0; overflow: hidden; }
+    .more-row {
+      display: flex; align-items: center; gap: var(--space-4);
+      padding: var(--space-4) var(--space-5);
+      text-decoration: none; color: inherit;
+    }
+    .more-row + .more-row { border-top: 1px solid var(--color-border-subtle); }
+    .more-row__icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .more-row__icon iconify-icon { font-size: 18px; }
+    .more-row__icon--accent  { background: var(--color-accent-soft); }
+    .more-row__icon--accent  iconify-icon { color: var(--color-accent); }
+    .more-row__icon--success { background: var(--color-success-soft); }
+    .more-row__icon--success iconify-icon { color: var(--color-success); }
+    .more-row__icon--warning { background: var(--color-warning-soft); }
+    .more-row__icon--warning iconify-icon { color: var(--palette-amber-700); }
+    .more-row__body { flex: 1; min-width: 0; }
+    .more-row__title { font-size: 15px; font-weight: 700; }
+    .more-row__sub { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+    .more-row__meta { font-size: 13px; font-weight: 700; color: var(--color-accent); flex-shrink: 0; }
+    .more-row__meta--warning { color: var(--palette-amber-700); }
+    .more-row__chev { color: var(--color-text-tertiary); font-size: 16px; margin-left: 4px; }
+</style>
+  <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(function(){})}</script>
+  <!-- 탭바 홈 즉시 복귀를 위한 prefetch (특히 큰 페이지 g-guardian-live 우선) -->
+  <link rel="prefetch" href="g-guardian-live.html">
+  <link rel="prefetch" href="g02-ai-guide.html">
+  <link rel="prefetch" href="g03-sotong.html">
+  <link rel="prefetch" href="g05-mypage.html">
+
+  <!-- 보호자/요양보호사/의료진앱 공통 헤더·icon-btn 표준 (2026-05-22 통합) -->
+  <link rel="stylesheet" href="../v11_요양보호사앱/caregiver.css?v=20260525p">
+<style>
+  /* === 3앱 공통 헤더 표준 (d01-home 기준, 보호자앱에도 강제) === */
+  [data-platform="mobile"] .header{
+    padding: calc(env(safe-area-inset-top, 0px) + 6px) 20px 0 !important;
+    position: static !important;
+    background: transparent !important;
+  }
+  /* 기본 = 홈 패턴: 로고 + 액션 그룹 (flex space-between) */
+  [data-platform="mobile"] .header .top-nav{
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    margin-bottom: 24px !important;
+  }
+  /* 서브 패턴: title-block 있을 때 → grid 3-col (44 / 1fr / 44) */
+  [data-platform="mobile"] .header .top-nav:has(> .title-block){
+    display: grid !important;
+    grid-template-columns: 44px 1fr 44px !important;
+    margin-bottom: 8px !important;
+  }
+  [data-platform="mobile"] .header .top-nav:has(> .title-block) > .h-left{
+    width: 44px; height: 44px;
+  }
+  [data-platform="mobile"] .header .top-nav:has(> .title-block) > .title-block{
+    grid-column: 2; text-align: center; line-height: 1.2; min-width: 0;
+  }
+  [data-platform="mobile"] .header .top-nav:has(> .title-block) > .h-name{
+    font: 600 17px/1.2 inherit; color: var(--color-text-primary); letter-spacing: -.3px; text-align: center;
+  }
+  [data-platform="mobile"] .header .top-nav:has(> .title-block) > :first-child{
+    grid-column: 1; justify-self: start;
+  }
+  [data-platform="mobile"] .header .top-nav:has(> .title-block) > :last-child{
+    grid-column: 3; justify-self: end;
+  }
+  /* logo */
+  [data-platform="mobile"] .header .top-nav > .logo{
+    display: inline-flex !important;
+    align-items: center !important;
+    text-decoration: none !important;
+    color: inherit !important;
+    background: transparent !important;
+    border: 0 !important;
+    padding: 4px !important;
+    margin: -4px !important;
+    cursor: pointer !important;
+  }
+  [data-platform="mobile"] .header .top-nav > .logo svg{ width: 28px !important; height: 28px !important; display: block !important; }
+  /* top-actions 그룹 (홈 페이지) */
+  [data-platform="mobile"] .header .top-actions{
+    display: flex !important; align-items: center !important; gap: 8px !important;
+  }
+  /* icon-btn 글라스 (44×44, blur, shadow) */
+  [data-platform="mobile"] .header .icon-btn{
+    width: 44px !important; height: 44px !important; border-radius: 50% !important;
+    background: rgba(255,255,255,.55) !important;
+    border: .5px solid rgba(255,255,255,.55) !important;
+    backdrop-filter: blur(12px) saturate(140%) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(140%) !important;
+    box-shadow: 0 1px 1px rgba(255,255,255,.6) inset, 0 4px 16px rgba(0,0,0,.06) !important;
+    display: inline-flex !important; align-items: center !important; justify-content: center !important;
+    cursor: pointer !important; text-decoration: none !important;
+    position: relative !important;
+    transition: transform .1s !important;
+  }
+  [data-platform="mobile"] .header .icon-btn:active{ transform: scale(.93); }
+  [data-platform="mobile"] .header .icon-btn iconify-icon{
+    font-size: 22px !important;
+    color: var(--color-accent-strong) !important;
+  }
+  [data-platform="mobile"] .header .icon-btn .notif-dot,
+  [data-platform="mobile"] .header .notif-dot{
+    position: absolute !important; top: 10px !important; right: 10px !important;
+    width: 8px !important; height: 8px !important; border-radius: 50% !important;
+    background: var(--color-danger) !important;
+    border: 1.5px solid white !important;
+    z-index: 2 !important;
+  }
+
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <header class="header">
+    <div class="top-nav">
+      <span class="h-left" aria-hidden="true"></span>
+      <div class="title-block">
+        <h1 class="h-name">기록</h1>
+      </div>
+      <button class="icon-btn" aria-label="검색"><iconify-icon icon="fluent:search-24-filled"></iconify-icon></button>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <div class="stack-loose u-pt-5">
+
+      <!-- 검색 -->
+      <label class="search fade-in fade-in--d1">
+        <iconify-icon icon="fluent:search-24-filled"></iconify-icon>
+        <input type="search"  placeholder="진료기록, 처방전, 검사결과 검색" aria-label="진료기록, 처방전, 검사결과 검색">
+      </label>
+
+      <!-- 1차 액션: 비대칭 정사각형 페어 -->
+      <div class="pri-grid">
+        <a href="g02-ai-report.html" class="pri-card pri-card--soft fade-in fade-in--d2" aria-label="AI 리포트 열기">
+          <div class="pri-card__icon"><img src="../07_디자인/logo/brand-system/01_심볼단독.svg" alt="" aria-hidden="true"></div>
+          <div class="pri-card__body">
+            <div class="pri-card__title">AI 리포트</div>
+            <div class="pri-card__sub">일일·주간·월간 케어 요약</div>
+            <span class="pri-card__badge pri-card__badge--accent">
+              <iconify-icon icon="fluent:sparkle-16-filled"></iconify-icon>
+              주간 업데이트
+            </span>
+          </div>
+        </a>
+
+        <a href="g10-timeline.html" class="pri-card pri-card--soft fade-in fade-in--d3" aria-label="오늘의 케어">
+          <div class="pri-card__icon pri-card__icon--success">
+            <iconify-icon icon="fluent:clipboard-heart-24-filled"></iconify-icon>
+          </div>
+          <div class="pri-card__body">
+            <div class="pri-card__title">오늘의 케어</div>
+            <div class="pri-card__sub">투약·식사·활동·재활</div>
+            <span class="pri-card__badge">
+              <iconify-icon icon="fluent:circle-12-filled"></iconify-icon>
+              오늘 5건
+            </span>
+          </div>
+        </a>
+      </div>
+
+      <!-- 다가오는 일정 -->
+      <section class="fade-in fade-in--d4">
+        <div class="sec-head">
+          <span class="sec-head__title">다가오는 일정</span>
+        </div>
+        <div class="sched-scroll">
+          <div class="sched-chip">
+            <span class="sched-chip__dday sched-chip__dday--danger">D-9</span>
+            <div class="sched-chip__name">4월 요양비 납부</div>
+            <div class="sched-chip__date">4월 25일 (금)</div>
+          </div>
+          <div class="sched-chip">
+            <span class="sched-chip__dday">D-18</span>
+            <div class="sched-chip__name">정기 진료</div>
+            <div class="sched-chip__date">5월 4일 (월) · 김영수 전문의</div>
+          </div>
+          <div class="sched-chip">
+            <span class="sched-chip__dday">D-24</span>
+            <div class="sched-chip__name">처방전 갱신</div>
+            <div class="sched-chip__date">5월 10일 (일)</div>
+          </div>
+          <div class="sched-chip">
+            <span class="sched-chip__dday">D-30</span>
+            <div class="sched-chip__name">혈액 검사</div>
+            <div class="sched-chip__date">5월 16일 (토)</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 최근 기록 -->
+      <section class="fade-in fade-in--d5">
+        <div class="sec-head">
+          <span class="sec-head__title">최근 기록</span>
+          <a href="g10-timeline.html" class="sec-head__more">전체보기</a>
+        </div>
+        <div class="card feed-card">
+          <div class="tl">
+            <a class="tl__item" href="g10-timeline.html">
+              <span class="tl__dot tl__dot--success"></span>
+              <div class="tl__body">
+                <div class="tl__title">아침 투약 완료</div>
+                <div class="tl__meta">혈압약 · 당뇨약 복용</div>
+              </div>
+              <span class="tl__time">08:20</span>
+            </a>
+            <a class="tl__item" href="g10-timeline.html">
+              <span class="tl__dot tl__dot--warning"></span>
+              <div class="tl__body">
+                <div class="tl__title">점심 식사 · 섭취율 80%</div>
+                <div class="tl__meta">밥 + 국 + 반찬 3종</div>
+              </div>
+              <span class="tl__time">12:05</span>
+            </a>
+            <a class="tl__item" href="g10-timeline.html">
+              <span class="tl__dot tl__dot--info"></span>
+              <div class="tl__body">
+                <div class="tl__title">정기 진료 결과 등록</div>
+                <div class="tl__meta">고혈압·당뇨 경과 양호</div>
+              </div>
+              <span class="tl__time">4/10</span>
+            </a>
+            <a class="tl__item" href="g10-timeline.html">
+              <span class="tl__dot tl__dot--info"></span>
+              <div class="tl__body">
+                <div class="tl__title">혈액 검사 결과</div>
+                <div class="tl__meta">콜레스테롤 215 경계</div>
+              </div>
+              <span class="tl__time">4/5</span>
+            </a>
+            <a class="tl__item" href="g08-billing.html">
+              <span class="tl__dot tl__dot--neutral"></span>
+              <div class="tl__body">
+                <div class="tl__title">4월 청구서 발행</div>
+                <div class="tl__meta">1,245,000원 · 납부기한 4/25</div>
+              </div>
+              <span class="tl__time">4/1</span>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- 더 보기: 처방 / 타임라인 / 비용 — Text-only minimal -->
+      <section class="fade-in fade-in--d6">
+        <div class="sec-head">
+          <span class="sec-head__title">자세히 보기</span>
+        </div>
+        <div class="card more-list">
+          <a class="more-row" href="g09-prescription.html" aria-label="처방·약물 상세">
+            <span class="more-row__icon more-row__icon--success"><iconify-icon icon="fluent:pill-24-filled"></iconify-icon></span>
+            <div class="more-row__body">
+              <div class="more-row__title">처방·약물</div>
+              <div class="more-row__sub">복약 중 5종</div>
+            </div>
+            <span class="more-row__meta">3/3</span>
+            <iconify-icon icon="fluent:chevron-right-24-filled" class="more-row__chev"></iconify-icon>
+          </a>
+          <a class="more-row" href="g10-timeline.html" aria-label="의료 타임라인">
+            <span class="more-row__icon more-row__icon--accent"><iconify-icon icon="fluent:timeline-24-filled"></iconify-icon></span>
+            <div class="more-row__body">
+              <div class="more-row__title">의료 타임라인</div>
+              <div class="more-row__sub">지난 진료 4/10</div>
+            </div>
+            <span class="more-row__meta">8건</span>
+            <iconify-icon icon="fluent:chevron-right-24-filled" class="more-row__chev"></iconify-icon>
+          </a>
+          <a class="more-row" href="g08-billing.html" aria-label="청구·납부 상세">
+            <span class="more-row__icon more-row__icon--warning"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon></span>
+            <div class="more-row__body">
+              <div class="more-row__title">청구·납부</div>
+              <div class="more-row__sub">납부기한 4/25 (D-9)</div>
+            </div>
+            <span class="more-row__meta more-row__meta--warning">₩1.2M</span>
+            <iconify-icon icon="fluent:chevron-right-24-filled" class="more-row__chev"></iconify-icon>
+          </a>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <div class="bottom-bar">
+    <nav class="tabbar">
+      <a href="g-guardian-live.html" class="tab" aria-label="홈"><span class="tab-icon"><iconify-icon icon="fluent:home-24-filled" class="u-fs-26"></iconify-icon></span></a>
+      <a href="g02-ai-guide.html" class="tab" aria-label="AI 가이드"><span class="tab-icon"><iconify-icon icon="fluent:book-24-filled" class="u-fs-26"></iconify-icon></span></a>
+      <a href="g03-sotong.html" class="tab" aria-label="소통"><span class="tab-icon"><iconify-icon icon="fluent:chat-24-filled" class="text-22"></iconify-icon></span></a>
+      <a href="g05-records.html" class="tab active" aria-label="기록"><span class="tab-icon"><iconify-icon icon="fluent:folder-24-filled" class="u-fs-26"></iconify-icon></span></a>
+      <a href="g05-mypage.html" class="tab" aria-label="마이"><span class="tab-icon"><iconify-icon icon="fluent:person-24-filled" class="u-fs-26"></iconify-icon></span></a>
+    </nav>
+    <a href="g-guardian-live.html?chat=1" class="ai-fab" aria-label="AI 어시스턴트">
+      <svg width="22" height="22" viewBox="0 0 2526 2526" fill="var(--brand-blue-500)"><path d="M2521.32 2506.66C1239.65 2657.48 1239.65 1895.6 1239.65 1279.34L2497.69 0C2518.68 494.198 2522.27 1157.92 1658.86 1262.48C2641.88 1314.25 2521.32 2101.84 2521.32 2506.66Z"/><path d="M4.677 19.335C1286.35-131.481 1286.35 630.399 1286.35 1246.66L28.315 2526C7.322 2031.8 3.73 1368.08 867.143 1263.52C-115.881 1211.75 4.677 424.157 4.677 19.335Z"/></svg>
+    </a>
+  </div>
+
+</div>
+  <div class="bottom-scrim" aria-hidden="true"></div>
+</body>
+</html>

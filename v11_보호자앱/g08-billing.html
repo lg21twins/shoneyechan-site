@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ko" data-role="guardian" data-platform="mobile">
+<head>
+  <meta charset="UTF-8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#EFF6FF">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="icon" href="icon-192.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>하루안부 — 결제 / 청구</title>
+
+  <!-- v3.1 디자인 시스템 -->
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css?v=24">
+
+  <script src="../07_디자인/_app-theme.js"></script>
+  <link rel="stylesheet" href="../07_디자인/system/app.css?v=24">
+  <link rel="stylesheet" href="../07_디자인/system/components.css?v=20260523e">
+  <script src="../07_디자인/_iconify-icon.min.js"></script>
+
+  <style>
+    .app-shell { max-width: 430px; margin: 0 auto; }
+
+    /* 청구 hero — 화면당 1개 (card-hero 사용) */
+    .total-meta { display: flex; align-items: center; gap: var(--space-3); margin-top: var(--space-3); }
+    .total-meta__period { font-size: var(--text-caption); opacity: 0.85; }
+    .total-meta__dday {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 9px; border-radius: var(--radius-pill);
+      background: rgba(255,255,255,0.18);
+      font-size: var(--text-mini); font-weight: var(--weight-bold);
+    }
+    .total-cta { margin-top: var(--space-5); }
+
+    /* 정보 row */
+    .row-line {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-3) 0;
+    }
+    .row-line + .row-line { border-top: 1px solid var(--color-border-subtle); }
+    .row-line__label { font-size: var(--text-callout); color: var(--color-text-secondary); }
+    .row-line__value { font-size: var(--text-callout); font-weight: var(--weight-semibold); }
+    .row-line__value--minus { color: var(--color-success); }
+    .row-line--total .row-line__label,
+    .row-line--total .row-line__value {
+      font-size: var(--text-headline); font-weight: var(--weight-bold);
+    }
+
+    /* AI 비용 인사이트 — flat */
+    .insight-list { display: flex; flex-direction: column; gap: var(--space-3); margin-top: var(--space-3); }
+    .insight-item { display: flex; gap: var(--space-3); align-items: flex-start; font-size: var(--text-callout); line-height: var(--leading-normal); color: var(--color-text-secondary); }
+    .insight-item::before {
+      content: ''; flex-shrink: 0; width: 6px; height: 6px;
+      border-radius: var(--radius-pill); background: var(--color-accent);
+      margin-top: 7px;
+    }
+    .insight-item strong { color: var(--color-text-primary); font-weight: var(--weight-bold); }
+
+    /* 자동이체 */
+    .autodebit { display: flex; align-items: center; gap: var(--space-4); }
+    .autodebit__icon {
+      width: 40px; height: 40px; border-radius: 12px;
+      background: var(--color-accent-soft);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .autodebit__icon iconify-icon { font-size: 20px; color: var(--color-accent); }
+    .autodebit__body { flex: 1; }
+    .autodebit__bank { font-size: var(--text-mini); color: var(--color-text-secondary); }
+    .autodebit__main { font-size: var(--text-callout); font-weight: var(--weight-semibold); margin-top: 2px; }
+    .autodebit__actions { display: flex; flex-direction: column; gap: var(--space-2); }
+    .autodebit__btn {
+      font-size: var(--text-mini); font-weight: var(--weight-semibold);
+      color: var(--color-accent);
+      background: var(--color-accent-soft);
+      padding: 5px 10px; border-radius: var(--radius-2);
+      border: 0; cursor: pointer; white-space: nowrap;
+    }
+
+    /* 섹션 헤더 */
+    .sec-head__title { font-size: var(--text-headline); font-weight: var(--weight-bold); margin-bottom: var(--space-3); }
+
+    /* 납부 이력 */
+    .history-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-4) var(--space-5);
+    }
+    .history-row + .history-row { border-top: 1px solid var(--color-border-subtle); }
+    .history-row__date { font-size: var(--text-mini); color: var(--color-text-secondary); }
+    .history-row__title { font-size: var(--text-callout); font-weight: var(--weight-semibold); margin-top: 2px; }
+    .history-row__amount { font-size: var(--text-callout); font-weight: var(--weight-bold); }
+  </style>
+  <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(function(){})}</script>
+
+  <!-- 보호자/요양보호사/의료진앱 공통 헤더·icon-btn 표준 (2026-05-22 통합) -->
+  <link rel="stylesheet" href="../v11_요양보호사앱/caregiver.css?v=20260525p">
+<style>
+  /* === 3앱 공통 헤더 표준 (d01-home 기준, 보호자앱에도 강제) === */
+  [data-platform="mobile"] .header{
+    padding: calc(env(safe-area-inset-top, 0px) + 6px) 20px 0 !important;
+    position: static !important;
+    background: transparent !important;
+  }
+  /* 기본 = 홈 패턴: 로고 + 액션 그룹 (flex space-between) */
+  [data-platform="mobile"] .header .top-nav{
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    margin-bottom: 24px !important;
+  }
+  /* 서브 패턴: title-block 있을 때 → grid 3-col (44 / 1fr / 44) */
+  [data-platform="mobile"] .header .top-nav:has(> .title-block){
+    display: grid !important;
+    grid-template-columns: 44px 1fr 44px !important;
+    margin-bottom: 8px !important;
+  }
+  [data-platform="mobile"] .header .top-nav:has(> .title-block) > .h-left{
+    width: 44px; height: 44px;
+  }
+  [data-platform="mobile"] .header .top-nav:has(> .title-block) > .title-block{
+    grid-column: 2; text-align: center; line-height: 1.2; min-width: 0;
+  }
+  [data-platform="mobile"] .header .top-nav:has(> .title-block) > .h-name{
+    font: 600 17px/1.2 inherit; color: var(--color-text-primary); letter-spacing: -.3px; text-align: center;
+  }
+  [data-platform="mobile"] .header .top-nav:has(> .title-block) > :first-child{
+    grid-column: 1; justify-self: start;
+  }
+  [data-platform="mobile"] .header .top-nav:has(> .title-block) > :last-child{
+    grid-column: 3; justify-self: end;
+  }
+  /* logo */
+  [data-platform="mobile"] .header .top-nav > .logo{
+    display: inline-flex !important;
+    align-items: center !important;
+    text-decoration: none !important;
+    color: inherit !important;
+    background: transparent !important;
+    border: 0 !important;
+    padding: 4px !important;
+    margin: -4px !important;
+    cursor: pointer !important;
+  }
+  [data-platform="mobile"] .header .top-nav > .logo svg{ width: 28px !important; height: 28px !important; display: block !important; }
+  /* top-actions 그룹 (홈 페이지) */
+  [data-platform="mobile"] .header .top-actions{
+    display: flex !important; align-items: center !important; gap: 8px !important;
+  }
+  /* icon-btn 글라스 (44×44, blur, shadow) */
+  [data-platform="mobile"] .header .icon-btn{
+    width: 44px !important; height: 44px !important; border-radius: 50% !important;
+    background: rgba(255,255,255,.55) !important;
+    border: .5px solid rgba(255,255,255,.55) !important;
+    backdrop-filter: blur(12px) saturate(140%) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(140%) !important;
+    box-shadow: 0 1px 1px rgba(255,255,255,.6) inset, 0 4px 16px rgba(0,0,0,.06) !important;
+    display: inline-flex !important; align-items: center !important; justify-content: center !important;
+    cursor: pointer !important; text-decoration: none !important;
+    position: relative !important;
+    transition: transform .1s !important;
+  }
+  [data-platform="mobile"] .header .icon-btn:active{ transform: scale(.93); }
+  [data-platform="mobile"] .header .icon-btn iconify-icon{
+    font-size: 22px !important;
+    color: var(--color-accent-strong) !important;
+  }
+  [data-platform="mobile"] .header .icon-btn .notif-dot,
+  [data-platform="mobile"] .header .notif-dot{
+    position: absolute !important; top: 10px !important; right: 10px !important;
+    width: 8px !important; height: 8px !important; border-radius: 50% !important;
+    background: var(--color-danger) !important;
+    border: 1.5px solid white !important;
+    z-index: 2 !important;
+  }
+
+  /* Inline 대체 */
+  .card-hero__title--bill { font-size: var(--text-display); font-weight: var(--weight-bold); letter-spacing: -1.5px; }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <header class="header">
+    <div class="top-nav">
+      <a class="icon-btn" href="g05-mypage.html" aria-label="뒤로"><iconify-icon icon="fluent:chevron-left-24-filled"></iconify-icon></a>
+      <div class="title-block">
+        <h1 class="h-name">결제 / 청구</h1>
+      </div>
+      <button class="icon-btn" aria-label="영수증" type="button" onclick="mockToast(this,'영수증 발급 (mock)')"><iconify-icon icon="fluent:receipt-24-filled"></iconify-icon></button>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <div class="stack-loose u-pt-5">
+
+      <!-- 1순위: 이번 달 청구 hero (card-hero 1개만 색 면적 사용) -->
+      <section class="card-hero fade-in fade-in--d1" aria-label="이번 달 청구 금액">
+        <div class="card-hero__eyebrow">이번 달 청구 금액</div>
+        <div class="card-hero__title card-hero__title--bill">1,200,000원</div>
+        <div class="total-meta">
+          <span class="total-meta__period">2026.04.01 ~ 04.30</span>
+          <span class="total-meta__dday"><iconify-icon icon="fluent:calendar-24-filled"></iconify-icon> D-12</span>
+        </div>
+        <button type="button" class="btn btn--secondary btn--full total-cta" onclick="mockToast(this,'납부 처리 (mock)')">
+          <iconify-icon icon="fluent:payment-24-filled"></iconify-icon>
+          납부하기
+        </button>
+      </section>
+
+      <!-- 자동이체 — flat -->
+      <section class="card fade-in fade-in--d2">
+        <div class="autodebit">
+          <span class="autodebit__icon"><iconify-icon icon="fluent:building-bank-24-filled"></iconify-icon></span>
+          <div class="autodebit__body">
+            <div class="autodebit__bank">국민은행 123-456-***789 · 자동이체</div>
+            <div class="autodebit__main">매월 15일 출금</div>
+          </div>
+          <div class="autodebit__actions">
+            <button type="button" class="autodebit__btn" onclick="mockToast(this,'계좌 변경 (mock)')">계좌 변경</button>
+            <button type="button" class="autodebit__btn" onclick="mockToast(this,'알림 설정 (mock)')">알림</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 보험 적용 — flat -->
+      <section class="fade-in fade-in--d3">
+        <div class="sec-head__title">장기요양보험 적용 현황</div>
+        <div class="card">
+          <span class="badge badge--info"><iconify-icon icon="fluent:shield-checkmark-24-filled"></iconify-icon> 요양 3등급 · 본인부담률 20%</span>
+          <div class="u-mt-4">
+            <div class="row-line">
+              <span class="row-line__label">전체 서비스 비용</span>
+              <span class="row-line__value">1,500,000원</span>
+            </div>
+            <div class="row-line">
+              <span class="row-line__label">장기요양보험 적용</span>
+              <span class="row-line__value row-line__value--minus">− 300,000원</span>
+            </div>
+            <div class="row-line row-line--total">
+              <span class="row-line__label">실 청구 금액</span>
+              <span class="row-line__value">1,200,000원</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- AI 비용 인사이트 — flat (큰 컬러 면적 제거) -->
+      <section class="fade-in fade-in--d4">
+        <div class="sec-head__title">AI 비용 인사이트</div>
+        <div class="card">
+          <p class="u-text-callout">이달 전체 비용 중 <strong>요양 서비스(67%)</strong>가 가장 큰 비중을 차지해요.</p>
+          <div class="insight-list">
+            <div class="insight-item">간병비는 지난 3개월 <strong>0% 유지</strong> — 건강 상태 안정적이에요.</div>
+            <div class="insight-item">식비 증가는 영양보충식 추가 처방에 따른 것으로 보여요.</div>
+            <div class="insight-item">연말정산 의료비 공제 대상 금액: <strong>누계 4,680,000원</strong></div>
+          </div>
+          <a href="g-guardian-live.html?chat=1" class="btn btn--ghost u-mt-4-pl-0">
+            <iconify-icon icon="fluent:chat-24-filled"></iconify-icon>AI에게 비용 더 물어보기
+          </a>
+        </div>
+      </section>
+
+      <!-- 납부 이력 -->
+      <section>
+        <div class="sec-head__title">납부 이력</div>
+        <div class="card u-no-pad">
+          <div class="history-row">
+            <div>
+              <div class="history-row__date">2026.03.15</div>
+              <div class="history-row__title">3월 요양비</div>
+            </div>
+            <div class="u-tr">
+              <span class="badge badge--success">납부 완료</span>
+              <div class="history-row__amount u-mt-1">1,180,000원</div>
+            </div>
+          </div>
+          <div class="history-row">
+            <div>
+              <div class="history-row__date">2026.02.15</div>
+              <div class="history-row__title">2월 요양비</div>
+            </div>
+            <div class="u-tr">
+              <span class="badge badge--success">납부 완료</span>
+              <div class="history-row__amount u-mt-1">1,150,000원</div>
+            </div>
+          </div>
+          <div class="history-row">
+            <div>
+              <div class="history-row__date">2026.01.15</div>
+              <div class="history-row__title">1월 요양비</div>
+            </div>
+            <div class="u-tr">
+              <span class="badge badge--success">납부 완료</span>
+              <div class="history-row__amount u-mt-1">1,160,000원</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- 메인 탭바 — 마이 active (결제는 마이 하위) -->
+  <div class="bottom-bar">
+    <nav class="tabbar">
+      <a href="g-guardian-live.html" class="tab" aria-label="홈"><span class="tab-icon"><iconify-icon icon="fluent:home-24-filled" class="u-fs-26"></iconify-icon></span></a>
+      <a href="g02-ai-guide.html" class="tab" aria-label="AI 가이드"><span class="tab-icon"><iconify-icon icon="fluent:book-24-filled" class="u-fs-26"></iconify-icon></span></a>
+      <a href="g03-sotong.html" class="tab" aria-label="소통"><span class="tab-icon"><iconify-icon icon="fluent:chat-24-filled" class="text-22"></iconify-icon></span></a>
+      <a href="g05-records.html" class="tab" aria-label="기록"><span class="tab-icon"><iconify-icon icon="fluent:folder-24-filled" class="u-fs-26"></iconify-icon></span></a>
+      <a href="g05-mypage.html" class="tab active" aria-label="마이"><span class="tab-icon"><iconify-icon icon="fluent:person-24-filled" class="u-fs-26"></iconify-icon></span></a>
+    </nav>
+    <a href="g-guardian-live.html?chat=1" class="ai-fab" aria-label="AI 어시스턴트">
+      <svg width="22" height="22" viewBox="0 0 2526 2526" fill="var(--brand-blue-500)"><path d="M2521.32 2506.66C1239.65 2657.48 1239.65 1895.6 1239.65 1279.34L2497.69 0C2518.68 494.198 2522.27 1157.92 1658.86 1262.48C2641.88 1314.25 2521.32 2101.84 2521.32 2506.66Z"/><path d="M4.677 19.335C1286.35-131.481 1286.35 630.399 1286.35 1246.66L28.315 2526C7.322 2031.8 3.73 1368.08 867.143 1263.52C-115.881 1211.75 4.677 424.157 4.677 19.335Z"/></svg>
+    </a>
+  </div>
+
+</div>
+
+<script>
+  function mockToast(btn, msg){
+    btn.disabled = true;
+    var prev = btn.innerHTML;
+    btn.innerHTML = msg;
+    setTimeout(function(){ btn.innerHTML = prev; btn.disabled = false; }, 1500);
+  }
+</script>
+  <div class="bottom-scrim" aria-hidden="true"></div>
+</body>
+</html>

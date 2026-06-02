@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="ko" data-role="guardian" data-platform="mobile">
+<head>
+  <meta charset="UTF-8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#EFF6FF">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="icon" href="icon-192.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>하루안부 — AI 가이드</title>
+
+  <!-- v3.1 디자인 시스템 (sw cache-bust: v23) -->
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css?v=24">
+
+  <script src="../07_디자인/_app-theme.js"></script>
+  <link rel="stylesheet" href="../07_디자인/system/app.css?v=24">
+  <link rel="stylesheet" href="../07_디자인/system/components.css?v=20260523e">
+  <script src="../07_디자인/_iconify-icon.min.js"></script>
+
+  <style>
+    .app-shell { max-width: 430px; margin: 0 auto; }
+
+    /* 추천 카드 — card-action 변형 */
+    .rec-card {
+      cursor: pointer;
+    }
+    .rec-card__head {
+      display: flex; align-items: center; gap: var(--space-3);
+      margin-bottom: var(--space-3);
+    }
+    .rec-card__icon {
+      width: 28px; height: 28px; border-radius: 10px;
+      background: var(--color-accent-soft);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .rec-card__icon img { width: 16px; height: 16px; }
+    .rec-card__eyebrow {
+      font-size: var(--text-mini); font-weight: var(--weight-bold);
+      color: var(--color-accent);
+      letter-spacing: 0.04em; text-transform: uppercase;
+    }
+    .rec-card__title {
+      font-size: var(--text-headline); font-weight: var(--weight-bold);
+      line-height: var(--leading-tight);
+      margin-bottom: var(--space-3);
+    }
+    .rec-card__desc {
+      font-size: var(--text-callout); color: var(--color-text-secondary);
+      line-height: var(--leading-normal);
+    }
+    .rec-card__more {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      margin-top: var(--space-4);
+      font-size: var(--text-callout); font-weight: var(--weight-semibold);
+      color: var(--color-accent);
+    }
+
+    /* 섹션 헤더 */
+    .sec-head {
+      display: flex; align-items: baseline; justify-content: space-between;
+      margin-bottom: var(--space-3);
+    }
+    .sec-head__title {
+      font-size: var(--text-headline); font-weight: var(--weight-bold);
+    }
+    .sec-head__more {
+      font-size: var(--text-caption); font-weight: var(--weight-semibold);
+      color: var(--color-accent);
+      cursor: pointer; background: 0; border: 0;
+    }
+
+    /* 카테고리 칩 row */
+    .cat-row {
+      display: flex; gap: var(--space-2);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding-right: var(--space-7);
+    }
+    .cat-row::-webkit-scrollbar { display: none; }
+    .cat-row .chip { flex-shrink: 0; }
+
+    /* 질문 리스트 */
+    .q-list { display: flex; flex-direction: column; gap: var(--space-3); }
+    .q-item {
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-1);
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .q-item__row {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-4) var(--space-5);
+    }
+    .q-item__badge {
+      width: 24px; height: 24px; border-radius: var(--radius-pill);
+      background: var(--color-accent-soft);
+      color: var(--color-accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: var(--text-caption); font-weight: var(--weight-bold);
+      flex-shrink: 0;
+    }
+    .q-item__text {
+      flex: 1;
+      font-size: var(--text-callout); font-weight: var(--weight-semibold);
+    }
+    .q-item__arrow {
+      color: var(--color-text-tertiary);
+      transition: transform var(--motion-transition) var(--easing-standard);
+    }
+    .q-item.is-open .q-item__arrow { transform: rotate(90deg); }
+    .q-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height var(--motion-transition) var(--easing-standard);
+    }
+    .q-answer__inner {
+      padding: 0 var(--space-5) var(--space-5);
+      display: flex; gap: var(--space-3); align-items: flex-start;
+      border-top: 1px solid var(--color-border-subtle);
+      padding-top: var(--space-4);
+      flex-direction: column;
+    }
+    .q-answer__row { display: flex; gap: var(--space-3); align-items: flex-start; }
+    .q-answer__a {
+      width: 24px; height: 24px; border-radius: var(--radius-pill);
+      background: var(--color-success-soft);
+      color: var(--color-success);
+      display: flex; align-items: center; justify-content: center;
+      font-size: var(--text-caption); font-weight: var(--weight-bold);
+      flex-shrink: 0;
+    }
+    .q-answer__text {
+      font-size: var(--text-callout);
+      color: var(--color-text-secondary);
+      line-height: var(--leading-relaxed);
+    }
+
+    /* 케어 지식 — 카드 */
+    .article-list { display: flex; flex-direction: column; gap: var(--space-3); }
+    .article-card {
+      display: flex; gap: var(--space-4);
+      align-items: stretch;
+      cursor: pointer;
+    }
+    .article-card__body { flex: 1; min-width: 0; }
+    .article-card__tag {
+      display: inline-flex;
+      font-size: var(--text-mini); font-weight: var(--weight-bold);
+      padding: 3px 8px; border-radius: var(--radius-pill);
+      background: var(--color-accent-soft); color: var(--color-accent);
+      margin-bottom: var(--space-2);
+    }
+    .article-card__title {
+      font-size: var(--text-callout); font-weight: var(--weight-bold);
+      line-height: var(--leading-normal);
+      margin-bottom: var(--space-2);
+    }
+    .article-card__desc {
+      font-size: var(--text-mini);
+      color: var(--color-text-secondary);
+      line-height: var(--leading-normal);
+      word-break: keep-all;
+      overflow-wrap: anywhere;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .article-card__thumb {
+      width: 80px; height: 80px;
+      border-radius: var(--radius-card);
+      overflow: hidden;
+      flex-shrink: 0;
+      background: var(--color-bg-canvas);
+    }
+    .article-card__thumb img { width: 100%; height: 100%; object-fit: cover; }
+  </style>
+  <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(function(){})}</script>
+  <link rel="prefetch" href="g-guardian-live.html">
+  <link rel="prefetch" href="g03-sotong.html">
+  <link rel="prefetch" href="g05-records.html">
+  <link rel="prefetch" href="g05-mypage.html">
+
+  <!-- 보호자/요양보호사/의료진앱 공통 헤더·icon-btn 표준 (2026-05-22 통합) -->
+  <link rel="stylesheet" href="../v11_요양보호사앱/caregiver.css?v=20260525p">
+<style>
+  /* === 3앱 공통 헤더 표준 (d01-home 기준, 보호자앱에도 강제) === */
+  [data-platform="mobile"] .header{
+    padding: calc(env(safe-area-inset-top, 0px) + 6px) 20px 0 !important;
+    position: static !important;
+    background: transparent !important;
+  }
+  /* 기본 = 홈 패턴: 로고 + 액션 그룹 (flex space-between) */
+  [data-platform="mobile"] .header .top-nav{
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    margin-bottom: 24px !important;
+  }
+  /* 서브 패턴: title-block 있을 때 → grid 3-col (44 / 1fr / 44) */
+  [data-platform="mobile"] .header .top-nav:has(> .title-block){
+    display: grid !important;
+    grid-template-columns: 44px 1fr 44px !important;
+    margin-bottom: 8px !important;
+  }
+  [data-platform="mobile"] .header .top-nav:has(> .title-block) > .h-left{
+    width: 44px; height: 44px;
+  }
+  [data-platform="mobile"] .header .top-nav:has(> .title-block) > .title-block{
+    grid-column: 2; text-align: center; line-height: 1.2; min-width: 0;
+  }
+  [data-platform="mobile"] .header .top-nav:has(> .title-block) > .h-name{
+    font: 600 17px/1.2 inherit; color: var(--color-text-primary); letter-spacing: -.3px; text-align: center;
+  }
+  [data-platform="mobile"] .header .top-nav:has(> .title-block) > :first-child{
+    grid-column: 1; justify-self: start;
+  }
+  [data-platform="mobile"] .header .top-nav:has(> .title-block) > :last-child{
+    grid-column: 3; justify-self: end;
+  }
+  /* logo */
+  [data-platform="mobile"] .header .top-nav > .logo{
+    display: inline-flex !important;
+    align-items: center !important;
+    text-decoration: none !important;
+    color: inherit !important;
+    background: transparent !important;
+    border: 0 !important;
+    padding: 4px !important;
+    margin: -4px !important;
+    cursor: pointer !important;
+  }
+  [data-platform="mobile"] .header .top-nav > .logo svg{ width: 28px !important; height: 28px !important; display: block !important; }
+  /* top-actions 그룹 (홈 페이지) */
+  [data-platform="mobile"] .header .top-actions{
+    display: flex !important; align-items: center !important; gap: 8px !important;
+  }
+  /* icon-btn 글라스 (44×44, blur, shadow) */
+  [data-platform="mobile"] .header .icon-btn{
+    width: 44px !important; height: 44px !important; border-radius: 50% !important;
+    background: rgba(255,255,255,.55) !important;
+    border: .5px solid rgba(255,255,255,.55) !important;
+    backdrop-filter: blur(12px) saturate(140%) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(140%) !important;
+    box-shadow: 0 1px 1px rgba(255,255,255,.6) inset, 0 4px 16px rgba(0,0,0,.06) !important;
+    display: inline-flex !important; align-items: center !important; justify-content: center !important;
+    cursor: pointer !important; text-decoration: none !important;
+    position: relative !important;
+    transition: transform .1s !important;
+  }
+  [data-platform="mobile"] .header .icon-btn:active{ transform: scale(.93); }
+  [data-platform="mobile"] .header .icon-btn iconify-icon{
+    font-size: 22px !important;
+    color: var(--color-accent-strong) !important;
+  }
+  [data-platform="mobile"] .header .icon-btn .notif-dot,
+  [data-platform="mobile"] .header .notif-dot{
+    position: absolute !important; top: 10px !important; right: 10px !important;
+    width: 8px !important; height: 8px !important; border-radius: 50% !important;
+    background: var(--color-danger) !important;
+    border: 1.5px solid white !important;
+    z-index: 2 !important;
+  }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <header class="header">
+    <div class="top-nav">
+      <span class="h-left" aria-hidden="true"></span>
+      <div class="title-block">
+        <h1 class="h-name">AI 가이드</h1>
+      </div>
+      <a class="icon-btn" href="g06-alert.html" aria-label="알림"><iconify-icon icon="fluent:alert-24-filled"></iconify-icon></a>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <div class="stack-loose u-pt-5">
+
+      <!-- 추천 카드 (1차 콘텐츠 — AI 채팅과 분리) -->
+      <button type="button" class="card-action rec-card fade-in fade-in--d1" onclick="location.href='g-guardian-live.html?chat=1'">
+        <div class="rec-card__head">
+          <div class="rec-card__icon"><img src="../07_디자인/logo/brand-system/01_심볼단독.svg" alt="" aria-hidden="true"></div>
+          <span class="rec-card__eyebrow">영자님 맞춤 정보</span>
+        </div>
+        <div class="rec-card__title">아모디핀, 자몽과 함께 드시면 안 돼요</div>
+        <div class="rec-card__desc">아모디핀은 자몽 주스와 함께 복용하면 약물 농도가 높아질 수 있어요. 식사 시 주의사항을 확인해 보세요.</div>
+        <span class="rec-card__more">자세히 보기 <iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon></span>
+      </button>
+
+      <!-- 자주 묻는 질문 -->
+      <section class="fade-in fade-in--d2">
+        <div class="sec-head">
+          <span class="sec-head__title">자주 묻는 질문</span>
+          <button type="button" class="sec-head__more" id="q-more-btn" onclick="toggleAllQ()">전체보기</button>
+        </div>
+        <div class="cat-row" role="tablist">
+          <button class="chip is-active" type="button" onclick="filterQ('all',this)" aria-pressed="true">전체</button>
+          <button class="chip" type="button" onclick="filterQ('med',this)">복약·건강</button>
+          <button class="chip" type="button" onclick="filterQ('care',this)">일상 케어</button>
+          <button class="chip" type="button" onclick="filterQ('cost',this)">비용·제도</button>
+          <button class="chip" type="button" onclick="filterQ('mental',this)">감정 지원</button>
+        </div>
+        <div class="q-list u-mt-4">
+          <div class="q-item" data-cat="med" onclick="toggleQ(this)">
+            <div class="q-item__row">
+              <span class="q-item__badge">Q</span>
+              <span class="q-item__text">어머니 약 부작용이 걱정돼요</span>
+              <iconify-icon icon="fluent:chevron-right-24-filled" class="q-item__arrow"></iconify-icon>
+            </div>
+            <div class="q-answer"><div class="q-answer__inner">
+              <div class="q-answer__row"><span class="q-answer__a">A</span><p class="q-answer__text">두통, 어지럼증, 소화불량은 흔한 초기 반응입니다. 심한 알레르기 반응·호흡 곤란·의식 저하가 나타나면 즉시 병원에 가세요. 처방 약사·담당 의사에게 현재 복용 중인 모든 약을 알려 상호 작용도 확인하세요.</p></div>
+            </div></div>
+          </div>
+          <div class="q-item" data-cat="med" onclick="toggleQ(this)">
+            <div class="q-item__row">
+              <span class="q-item__badge">Q</span>
+              <span class="q-item__text">혈압·혈당 수치 어떻게 봐야 하나요?</span>
+              <iconify-icon icon="fluent:chevron-right-24-filled" class="q-item__arrow"></iconify-icon>
+            </div>
+            <div class="q-answer"><div class="q-answer__inner">
+              <div class="q-answer__row"><span class="q-answer__a">A</span><p class="q-answer__text">정상 혈압은 120/80mmHg 미만, 130 이상은 고혈압 전단계. 공복 혈당은 100mg/dL 미만이 정상, 126 이상은 당뇨로 진단합니다. 가정 측정은 아침 기상 후 안정 상태가 가장 정확해요.</p></div>
+            </div></div>
+          </div>
+          <div class="q-item" data-cat="care" onclick="toggleQ(this)">
+            <div class="q-item__row">
+              <span class="q-item__badge">Q</span>
+              <span class="q-item__text">고혈압 환자 식단 어떻게 하나요?</span>
+              <iconify-icon icon="fluent:chevron-right-24-filled" class="q-item__arrow"></iconify-icon>
+            </div>
+            <div class="q-answer"><div class="q-answer__inner">
+              <div class="q-answer__row"><span class="q-answer__a">A</span><p class="q-answer__text">하루 나트륨 2,000mg(소금 5g) 이하로. 국·찌개 국물 적게, 가공식품 피하고, 칼륨 풍부한 바나나·감자·토마토를 자주. 등 푸른 생선을 주 2회 이상 권장합니다.</p></div>
+            </div></div>
+          </div>
+          <div class="q-item" data-cat="care" onclick="toggleQ(this)">
+            <div class="q-item__row">
+              <span class="q-item__badge">Q</span>
+              <span class="q-item__text">낙상 예방하려면 어떤 운동이 좋을까요?</span>
+              <iconify-icon icon="fluent:chevron-right-24-filled" class="q-item__arrow"></iconify-icon>
+            </div>
+            <div class="q-answer"><div class="q-answer__inner">
+              <div class="q-answer__row"><span class="q-answer__a">A</span><p class="q-answer__text">의자를 잡고 한 발 서기, 발뒤꿈치 들기, 앉았다 일어서기. 하루 10–15분 꾸준히 하면 하체 근력·균형감각이 좋아져 낙상 위험을 크게 줄일 수 있어요.</p></div>
+            </div></div>
+          </div>
+          <div class="q-item" data-cat="cost" onclick="toggleQ(this)">
+            <div class="q-item__row">
+              <span class="q-item__badge">Q</span>
+              <span class="q-item__text">요양 등급 신청은 어떻게 하나요?</span>
+              <iconify-icon icon="fluent:chevron-right-24-filled" class="q-item__arrow"></iconify-icon>
+            </div>
+            <div class="q-answer"><div class="q-answer__inner">
+              <div class="q-answer__row"><span class="q-answer__a">A</span><p class="q-answer__text">국민건강보험공단 지사 방문, 전화(1577-1000), 또는 공단 홈페이지에서 신청 가능. 신청부터 판정까지 보통 30일 정도 걸려요.</p></div>
+            </div></div>
+          </div>
+          <div class="q-item" data-cat="cost" onclick="toggleQ(this)">
+            <div class="q-item__row">
+              <span class="q-item__badge">Q</span>
+              <span class="q-item__text">요양비 지원 받을 수 있는 제도가 있나요?</span>
+              <iconify-icon icon="fluent:chevron-right-24-filled" class="q-item__arrow"></iconify-icon>
+            </div>
+            <div class="q-answer"><div class="q-answer__inner">
+              <div class="q-answer__row"><span class="q-answer__a">A</span><p class="q-answer__text">장기요양보험 등급을 받으면 재가급여·시설급여 지원 가능. 가족요양비, 특례요양비, 요양병원 간병지원 등 다양한 제도가 있어요.</p></div>
+            </div></div>
+          </div>
+          <div class="q-item" data-cat="mental" onclick="toggleQ(this)">
+            <div class="q-item__row">
+              <span class="q-item__badge">Q</span>
+              <span class="q-item__text">보호자인 제가 너무 지칠 때는요?</span>
+              <iconify-icon icon="fluent:chevron-right-24-filled" class="q-item__arrow"></iconify-icon>
+            </div>
+            <div class="q-answer"><div class="q-answer__inner">
+              <div class="q-answer__row"><span class="q-answer__a">A</span><p class="q-answer__text">보호자 번아웃은 흔한 반응입니다. 하루 30분이라도 나만의 시간을 확보하고, 단기 보호 서비스(단기입소·주간보호)를 활용하세요.</p></div>
+            </div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 케어 지식 -->
+      <section class="fade-in fade-in--d3">
+        <div class="sec-head">
+          <span class="sec-head__title">케어 지식</span>
+          <button type="button" class="sec-head__more">전체보기</button>
+        </div>
+        <div class="article-list">
+          <article class="card article-card" onclick="location.href='g-guardian-live.html?chat=1'">
+            <div class="article-card__body">
+              <span class="article-card__tag">식단</span>
+              <div class="article-card__title">고혈압 환자를 위한 저염식 가이드</div>
+              <div class="article-card__desc">나트륨 섭취를 줄이면서도 맛있게 먹을 수 있는 조리법과 식단 구성 방법.</div>
+            </div>
+            <div class="article-card__thumb"><img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=160&q=80&fit=crop" alt="" aria-hidden="true"></div>
+          </article>
+          <article class="card article-card" onclick="location.href='g-guardian-live.html?chat=1'">
+            <div class="article-card__body">
+              <span class="article-card__tag">운동</span>
+              <div class="article-card__title">집에서 할 수 있는 낙상 예방 체조 5가지</div>
+              <div class="article-card__desc">하체 근력과 균형감각을 키우는 간단한 운동.</div>
+            </div>
+            <div class="article-card__thumb"><img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=160&q=80&fit=crop" alt="" aria-hidden="true"></div>
+          </article>
+          <article class="card article-card" onclick="location.href='g-guardian-live.html?chat=1'">
+            <div class="article-card__body">
+              <span class="article-card__tag">복약</span>
+              <div class="article-card__title">약 먹는 시간, 왜 중요한가요?</div>
+              <div class="article-card__desc">같은 약이라도 복용 시간에 따라 효과가 달라집니다.</div>
+            </div>
+            <div class="article-card__thumb"><img src="https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=160&q=80&fit=crop" alt="" aria-hidden="true"></div>
+          </article>
+          <article class="card article-card" onclick="location.href='g-guardian-live.html?chat=1'">
+            <div class="article-card__body">
+              <span class="article-card__tag">마음 건강</span>
+              <div class="article-card__title">보호자 번아웃, 이런 신호가 보이면 쉬세요</div>
+              <div class="article-card__desc">장기 간병은 보호자에게도 큰 부담이에요.</div>
+            </div>
+            <div class="article-card__thumb"><img src="https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=160&q=80&fit=crop" alt="" aria-hidden="true"></div>
+          </article>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <div class="bottom-bar">
+    <nav class="tabbar">
+      <a href="g-guardian-live.html" class="tab" aria-label="홈"><span class="tab-icon"><iconify-icon icon="fluent:home-24-filled" class="u-fs-26"></iconify-icon></span></a>
+      <a href="g02-ai-guide.html" class="tab active" aria-label="AI 가이드"><span class="tab-icon"><iconify-icon icon="fluent:book-24-filled" class="u-fs-26"></iconify-icon></span></a>
+      <a href="g03-sotong.html" class="tab" aria-label="소통"><span class="tab-icon"><iconify-icon icon="fluent:chat-24-filled" class="text-22"></iconify-icon></span></a>
+      <a href="g05-records.html" class="tab" aria-label="기록"><span class="tab-icon"><iconify-icon icon="fluent:folder-24-filled" class="u-fs-26"></iconify-icon></span></a>
+      <a href="g05-mypage.html" class="tab" aria-label="마이"><span class="tab-icon"><iconify-icon icon="fluent:person-24-filled" class="u-fs-26"></iconify-icon></span></a>
+    </nav>
+    <a href="g-guardian-live.html?chat=1" class="ai-fab" aria-label="AI 어시스턴트">
+      <svg width="22" height="22" viewBox="0 0 2526 2526" fill="var(--brand-blue-500)"><path d="M2521.32 2506.66C1239.65 2657.48 1239.65 1895.6 1239.65 1279.34L2497.69 0C2518.68 494.198 2522.27 1157.92 1658.86 1262.48C2641.88 1314.25 2521.32 2101.84 2521.32 2506.66Z"/><path d="M4.677 19.335C1286.35-131.481 1286.35 630.399 1286.35 1246.66L28.315 2526C7.322 2031.8 3.73 1368.08 867.143 1263.52C-115.881 1211.75 4.677 424.157 4.677 19.335Z"/></svg>
+    </a>
+  </div>
+
+</div>
+
+<script>
+  var qExpanded = false, currentCat = 'all';
+  function applyQVisibility(){
+    var items = document.querySelectorAll('.q-item');
+    var btn = document.getElementById('q-more-btn');
+    if(currentCat === 'all'){
+      var n = 0;
+      items.forEach(function(it){
+        if(qExpanded){ it.style.display=''; }
+        else { if(n < 3){ it.style.display=''; n++; } else it.style.display='none'; }
+      });
+      btn.style.display = '';
+      btn.textContent = qExpanded ? '접기' : '전체보기';
+    } else {
+      items.forEach(function(it){ it.style.display = it.getAttribute('data-cat') === currentCat ? '' : 'none'; });
+      btn.style.display = 'none';
+    }
+  }
+  function filterQ(cat, btn){
+    document.querySelectorAll('.cat-row .chip').forEach(function(c){ c.classList.remove('is-active'); c.setAttribute('aria-pressed','false'); });
+    btn.classList.add('is-active'); btn.setAttribute('aria-pressed','true');
+    currentCat = cat;
+    if(cat === 'all') qExpanded = false;
+    applyQVisibility();
+  }
+  function toggleAllQ(){ qExpanded = !qExpanded; applyQVisibility(); }
+  applyQVisibility();
+  function toggleQ(el){
+    var open = el.classList.contains('is-open');
+    document.querySelectorAll('.q-item.is-open').forEach(function(it){
+      it.classList.remove('is-open');
+      it.querySelector('.q-answer').style.maxHeight = '0';
+    });
+    if(!open){
+      el.classList.add('is-open');
+      var ans = el.querySelector('.q-answer');
+      ans.style.maxHeight = ans.scrollHeight + 'px';
+    }
+  }
+</script>
+  <div class="bottom-scrim" aria-hidden="true"></div>
+</body>
+</html>

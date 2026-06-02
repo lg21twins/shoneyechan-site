@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>인트로 미리보기 — 동심원 링</title>
+  <link rel="stylesheet" href="pretendard.css">
+  <script src="iconify.min.js"></script>
+  <style>
+    @property --reveal{syntax:'<percentage>';inherits:false;initial-value:130%}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    button{font-family:inherit;cursor:pointer}
+    html,body{background:#f8fbff;font-family:'Pretendard Variable','Pretendard',-apple-system,system-ui,sans-serif;color:#1C1C1E;-webkit-font-smoothing:antialiased;overflow:hidden;height:100%}
+
+    /* 배경 오브 */
+    .ai-orb-bg{position:fixed;top:50%;left:50%;width:560px;height:560px;max-width:110vw;max-height:110vw;transform:translate(-50%,-50%);pointer-events:none;z-index:1}
+    .ai-orb{position:absolute;inset:0;border-radius:50%;
+      background:radial-gradient(circle at 50% 32%,#1BE7EA 0%,rgba(70,195,230,.95) 38%,#46A8FF 72%,rgba(70,168,255,.3) 88%,transparent 100%);
+      filter:blur(22px) saturate(1.12) brightness(1.06);
+      animation:orbBreath 7s cubic-bezier(.45,.05,.55,.95) infinite;
+      will-change:transform,opacity,filter}
+    @keyframes orbBreath{
+      0%{transform:scale(1) translateY(0) translateX(0);opacity:.88;filter:blur(22px) saturate(1.12) brightness(1.06)}
+      18%{transform:scale(1.14) translateY(-14px) translateX(8px);opacity:.98;filter:blur(20px) saturate(1.12) brightness(1.06)}
+      35%{transform:scale(.96) translateY(6px) translateX(-6px);opacity:.85;filter:blur(28px) saturate(1.12) brightness(1.06)}
+      52%{transform:scale(1.22) translateY(-18px) translateX(-4px);opacity:1;filter:blur(18px) saturate(1.12) brightness(1.06)}
+      70%{transform:scale(1.04) translateY(-2px) translateX(10px);opacity:.92;filter:blur(23px) saturate(1.12) brightness(1.06)}
+      85%{transform:scale(1.16) translateY(-10px) translateX(-8px);opacity:.97;filter:blur(21px) saturate(1.12) brightness(1.06)}
+      100%{transform:scale(1) translateY(0) translateX(0);opacity:.88;filter:blur(22px) saturate(1.12) brightness(1.06)}
+    }
+
+    /* 인트로 스테이지 */
+    .intro{position:fixed;inset:0;z-index:2}
+    /* 흰 배경 — 중앙에서 구멍이 펴지듯 사라짐 (mask 애니메이션) */
+    .intro::before{content:'';position:absolute;inset:0;background:#fff;
+      -webkit-mask-image:radial-gradient(circle at center,transparent calc(var(--reveal) - 18%),rgba(0,0,0,.35) calc(var(--reveal) - 6%),rgba(0,0,0,.85) calc(var(--reveal) + 4%),#000 calc(var(--reveal) + 16%));
+      mask-image:radial-gradient(circle at center,transparent calc(var(--reveal) - 18%),rgba(0,0,0,.35) calc(var(--reveal) - 6%),rgba(0,0,0,.85) calc(var(--reveal) + 4%),#000 calc(var(--reveal) + 16%));
+      --reveal:130%;
+      pointer-events:none;z-index:0;
+      transition:--reveal 2.6s cubic-bezier(.22,1,.36,1)}
+    .intro.brand-only::before{--reveal:0%}
+    .intro-stage{position:fixed;inset:0;z-index:2;display:grid;place-items:center;pointer-events:none;transition:opacity .65s cubic-bezier(.22,1,.36,1)}
+    .intro-stage > *{grid-area:1/1}
+    .intro-stage.fade-out{opacity:0}
+    .intro-text{text-align:center;width:340px;max-width:90vw;align-self:center;justify-self:center;opacity:1;transform:translateY(0);transition:opacity .65s cubic-bezier(.22,1,.36,1),transform .7s cubic-bezier(.22,1,.36,1)}
+    .intro-text.fade-out{opacity:0;transform:translateY(-10px)}
+
+    /* Stage 0 — 브랜드 로고 */
+    .intro-brand{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) translateY(8px) scale(.94);opacity:0;display:flex;flex-direction:column;align-items:center;gap:14px;transition:opacity .95s cubic-bezier(.22,1,.36,1),transform 1.05s cubic-bezier(.22,1,.36,1);z-index:3;pointer-events:none}
+    .intro-brand.show{opacity:1;transform:translate(-50%,-50%) translateY(0) scale(1);transition:opacity .75s cubic-bezier(.22,1,.36,1),transform .85s cubic-bezier(.22,1,.36,1)}
+    .intro-brand-mark{width:112px;height:112px;display:flex;align-items:center;justify-content:center}
+    .intro-brand-mark svg{width:100%;height:100%;display:block}
+
+    .intro-address{font-size:15px;font-weight:500;letter-spacing:-.2px;color:rgba(28,28,30,.55);margin-bottom:10px;opacity:0;transform:translateY(6px);transition:opacity .7s cubic-bezier(.22,1,.36,1),transform .7s cubic-bezier(.22,1,.36,1)}
+    .intro-main{font-size:28px;font-weight:700;line-height:1.28;letter-spacing:-.7px;opacity:0;transform:translateY(8px);transition:opacity .85s cubic-bezier(.22,1,.36,1),transform .85s cubic-bezier(.22,1,.36,1)}
+    .intro-main b{color:#2C7AFC;font-weight:700;position:relative;display:inline-block}
+    .intro-main b::after{content:"";position:absolute;left:2%;right:2%;bottom:-4px;height:10px;background:linear-gradient(90deg,rgba(44,122,252,0),rgba(44,122,252,.22),rgba(44,122,252,0));filter:blur(5px);border-radius:8px;opacity:0;transform:scaleX(.4);transform-origin:left center;transition:opacity .7s ease,transform .9s cubic-bezier(.22,1,.36,1);transition-delay:.3s}
+    .intro-main.show b::after{opacity:1;transform:scaleX(1)}
+    .intro-address.show,.intro-main.show{opacity:1;transform:translateY(0)}
+
+    /* 동심원 링 차트 — grid place-items:center로 viewport 정중앙 */
+    .intro-rings{position:relative;width:min(85vw,320px);aspect-ratio:1;opacity:0;transform:scale(.96);transition:opacity .7s cubic-bezier(.22,1,.36,1),transform .8s cubic-bezier(.22,1,.36,1)}
+    .intro-rings.show{opacity:1;transform:scale(1)}
+    .intro-section-title{position:absolute;left:50%;top:-92px;transform:translateX(-50%);white-space:nowrap;text-align:center;font-size:28px;font-weight:700;line-height:1.22;letter-spacing:-.6px;color:rgba(28,28,30,.82);opacity:0;transition:opacity .6s cubic-bezier(.22,1,.36,1) .15s}
+    .intro-rings.show .intro-section-title{opacity:1}
+    .intro-ring-svg{width:100%;height:100%;display:block;overflow:visible}
+    .intro-ring-track{fill:none;stroke:rgba(255,255,255,.42);stroke-linecap:round}
+    .intro-ring-progress{fill:none;stroke-linecap:round;transform:rotate(-90deg);transform-origin:center;will-change:stroke-dashoffset}
+    .ring-group{opacity:0;visibility:hidden;transition:opacity .55s cubic-bezier(.22,1,.36,1)}
+    .ring-group.show{opacity:1;visibility:visible}
+
+    /* 가운데 — 현재 그려지는 링이 어떤 메트릭인지 / 마지막 요약 */
+    .intro-ring-center{position:absolute;top:50%;left:50%;width:42%;height:42%;transform:translate(-50%,-50%);pointer-events:none}
+    .intro-ring-center .center-card{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;opacity:0;transform:scale(.92);transition:opacity .55s cubic-bezier(.22,1,.36,1),transform .6s cubic-bezier(.22,1,.36,1)}
+    .intro-ring-center .center-card.show{opacity:1;transform:scale(1)}
+    .intro-ring-center .center-value{font-size:26px;font-weight:800;letter-spacing:-.6px;color:#1C1C1E;font-variant-numeric:tabular-nums;line-height:1;display:inline-flex;align-items:baseline}
+    .intro-ring-center .center-value em{font-style:normal;font-size:13px;font-weight:600;color:rgba(28,28,30,.5);margin-left:2px}
+    .intro-ring-center .center-label{font-size:12px;font-weight:600;color:rgba(28,28,30,.55);letter-spacing:-.2px}
+    .intro-ring-center .center-icon{font-size:18px;color:#2C7AFC;line-height:1;margin-top:2px}
+
+    .intro-ring-center .center-summary{position:absolute;inset:0;display:grid;grid-template-columns:max-content max-content;justify-content:center;align-content:center;column-gap:18px;row-gap:12px;opacity:0;transform:scale(.94);transition:opacity .55s cubic-bezier(.22,1,.36,1),transform .6s cubic-bezier(.22,1,.36,1)}
+    .intro-ring-center .center-summary.show{opacity:1;transform:scale(1)}
+    .intro-ring-center .summary-row{display:contents}
+    .intro-ring-center .summary-label{font-size:13px;color:rgba(28,28,30,.55);font-weight:600;text-align:left;letter-spacing:-.2px;line-height:1;align-self:center}
+    .intro-ring-center .summary-val{font-weight:800;color:#1C1C1E;font-variant-numeric:tabular-nums;font-size:26px;line-height:1;letter-spacing:-.5px;display:inline-flex;align-items:baseline;justify-self:end;align-self:center}
+    .intro-ring-center .summary-val em{font-style:normal;font-size:12px;font-weight:500;color:rgba(28,28,30,.5);margin-left:3px}
+
+    /* 미리보기 컨트롤 */
+    .replay{position:fixed;bottom:32px;left:50%;transform:translateX(-50%);z-index:10;padding:11px 22px;background:#1C1C1E;color:#fff;border:0;border-radius:999px;font-size:13px;font-weight:700;letter-spacing:-.2px;box-shadow:0 8px 24px rgba(0,0,0,.18);display:inline-flex;align-items:center;gap:6px;transition:transform .12s,opacity .15s}
+    .replay:active{transform:translateX(-50%) scale(.96)}
+    .replay iconify-icon{font-size:16px}
+    .label{position:fixed;top:18px;left:18px;z-index:10;font-size:11px;font-weight:700;letter-spacing:.5px;color:rgba(28,28,30,.45);text-transform:uppercase}
+
+    @media (max-width:359px){
+      .intro-rings{width:min(85vw,280px)}
+    }
+    @media (prefers-reduced-motion:reduce){
+      .ai-orb{animation:none}
+      .intro-rings,.intro-address,.intro-main{transition:opacity .15s ease}
+      .intro-ring-progress{transition:none!important}
+    }
+  </style>
+</head>
+<body>
+  <div class="label">Intro Stage 1 · Preview</div>
+
+  <div class="ai-orb-bg"><div class="ai-orb"></div></div>
+
+  <div class="intro brand-only" id="intro">
+    <div class="intro-brand" id="introBrand">
+      <div class="intro-brand-mark">
+        <svg viewBox="0 0 512 512" fill="none"><g transform="translate(50,50) scale(0.163)"><path d="M2521.32 2506.66C1239.65 2657.48 1239.65 1895.6 1239.65 1279.34L2497.69 0C2518.68 494.198 2522.27 1157.92 1658.86 1262.48C2641.88 1314.25 2521.32 2101.84 2521.32 2506.66Z" fill="#2C7AFC"/><path d="M4.677 19.335C1286.35-131.481 1286.35 630.399 1286.35 1246.66L28.315 2526C7.322 2031.8 3.73 1368.08 867.143 1263.52C-115.881 1211.75 4.677 424.157 4.677 19.335Z" fill="#2C7AFC"/></g></svg>
+      </div>
+    </div>
+    <div class="intro-stage" id="introStage">
+      <div class="intro-text">
+        <div class="intro-address">지욱님,</div>
+        <div class="intro-main">영자님은 오늘<br><b>잘 지내셨어요</b>.</div>
+      </div>
+      <div class="intro-rings">
+        <div class="intro-section-title">오늘의<br>하루안부</div>
+        <svg class="intro-ring-svg" viewBox="0 0 320 320" aria-hidden="true">
+          <g class="ring-group">
+            <circle class="intro-ring-track" cx="160" cy="160" r="148" stroke-width="24"/>
+            <circle class="intro-ring-progress" cx="160" cy="160" r="148" stroke="#FFFFFF" stroke-width="24" data-progress="0.83"/>
+          </g>
+          <g class="ring-group">
+            <circle class="intro-ring-track" cx="160" cy="160" r="114" stroke-width="24"/>
+            <circle class="intro-ring-progress" cx="160" cy="160" r="114" stroke="#FFFFFF" stroke-width="24" data-progress="1"/>
+          </g>
+          <g class="ring-group">
+            <circle class="intro-ring-track" cx="160" cy="160" r="80" stroke-width="24"/>
+            <circle class="intro-ring-progress" cx="160" cy="160" r="80" stroke="#FFFFFF" stroke-width="24" data-progress="1"/>
+          </g>
+        </svg>
+        <div class="intro-ring-center">
+          <div class="center-card" data-metric="walk">
+            <div class="center-value">25<em>분</em></div>
+            <div class="center-label">산책</div>
+            <iconify-icon class="center-icon" icon="fluent:person-walking-20-filled"></iconify-icon>
+          </div>
+          <div class="center-card" data-metric="food">
+            <div class="center-value">3<em>끼</em></div>
+            <div class="center-label">식사</div>
+            <iconify-icon class="center-icon" icon="fluent:food-24-filled"></iconify-icon>
+          </div>
+          <div class="center-card" data-metric="pill">
+            <div class="center-value">3<em>회</em></div>
+            <div class="center-label">투약</div>
+            <iconify-icon class="center-icon" icon="fluent:pill-24-filled"></iconify-icon>
+          </div>
+          <div class="center-summary">
+            <div class="summary-row">
+              <span class="summary-label">산책</span>
+              <span class="summary-val">25<em>분</em></span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">식사</span>
+              <span class="summary-val">3<em>끼</em></span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">투약</span>
+              <span class="summary-val">3<em>회</em></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button class="replay" id="replay" type="button">
+    <iconify-icon icon="fluent:arrow-counterclockwise-24-filled"></iconify-icon>
+    다시 재생
+  </button>
+
+  <script>
+    const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+    const intro = document.getElementById('intro');
+    const brandEl = document.getElementById('introBrand');
+    const stage = document.getElementById('introStage');
+    const textEl = stage.querySelector('.intro-text');
+    const addrEl = stage.querySelector('.intro-address');
+    const mainEl = stage.querySelector('.intro-main');
+    const ringsEl = stage.querySelector('.intro-rings');
+    const ringEls = stage.querySelectorAll('.intro-ring-progress');
+    const summaryEl = stage.querySelector('.center-summary');
+
+    const cards = stage.querySelectorAll('.center-card');
+    const ringGroups = stage.querySelectorAll('.ring-group');
+
+    function resetState(){
+      // Stage 0
+      intro.classList.add('brand-only');
+      brandEl.classList.remove('show');
+      // Stage 1
+      textEl.classList.remove('fade-out');
+      [addrEl, mainEl, ringsEl].forEach(el => el.classList.remove('show'));
+      summaryEl.classList.remove('show');
+      cards.forEach(c => c.classList.remove('show'));
+      ringGroups.forEach(g => g.classList.remove('show'));
+      ringEls.forEach(r => {
+        const len = r.getTotalLength();
+        r.style.transition = 'none';
+        r.style.strokeDasharray = len;
+        r.style.strokeDashoffset = len;
+      });
+    }
+
+    async function play(){
+      resetState();
+      // 다음 프레임에 시작 (transition: none이 commit되도록)
+      await sleep(60);
+
+      // Stage 0 — 브랜드 로고 페이드인 → 페이드아웃 → 흰 배경 페이드아웃 (오브 등장)
+      brandEl.classList.add('show');
+      await sleep(1100);
+
+      brandEl.classList.remove('show');
+      await sleep(680);
+
+      intro.classList.remove('brand-only');
+      await sleep(820);
+
+      // Stage 1 — 호명 (가운데 등장 → 머무름 → 페이드아웃)
+      addrEl.classList.add('show');
+      await sleep(560);
+
+      mainEl.classList.add('show');
+      await sleep(1700);
+
+      // 멘트 페이드아웃 — 완전히 사라진 뒤 링 등장
+      textEl.classList.add('fade-out');
+      addrEl.classList.remove('show');
+      mainEl.classList.remove('show');
+      await sleep(720);
+
+      // 링 등장
+      ringsEl.classList.add('show');
+      await sleep(420);
+
+      // 안쪽 링부터 — 그룹 fade-in → 카드 전환 → 드로잉 → 머무름 (inner → middle → outer)
+      for (let i = ringEls.length - 1; i >= 0; i--){
+        ringGroups[i].classList.add('show');
+        cards.forEach((c, idx) => c.classList.toggle('show', idx === i));
+        await sleep(220);
+
+        const r = ringEls[i];
+        const len = r.getTotalLength();
+        const progress = parseFloat(r.dataset.progress || '1');
+        r.style.transition = 'stroke-dashoffset 0.8s cubic-bezier(.22,1,.36,1)';
+        r.style.strokeDashoffset = len * (1 - progress);
+
+        await sleep(800 + 220); // 드로잉 + 머무름
+      }
+
+      // 모든 링 완료 — 회전 카드 페이드아웃, 가운데에 요약 페이드인
+      await sleep(180);
+      cards.forEach(c => c.classList.remove('show'));
+      await sleep(360);
+      summaryEl.classList.add('show');
+    }
+
+    document.getElementById('replay').addEventListener('click', play);
+    window.addEventListener('load', () => setTimeout(play, 200));
+  </script>
+</body>
+</html>

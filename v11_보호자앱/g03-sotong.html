@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="ko" data-role="guardian" data-platform="mobile">
+<head>
+  <meta charset="UTF-8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#EFF6FF">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="icon" href="icon-192.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>하루안부 — 소통</title>
+
+  <!-- v3.1 디자인 시스템 -->
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css?v=24">
+
+  <script src="../07_디자인/_app-theme.js"></script>
+  <link rel="stylesheet" href="../07_디자인/system/app.css?v=24">
+  <link rel="stylesheet" href="../07_디자인/system/components.css?v=20260523e">
+  <script src="../07_디자인/_iconify-icon.min.js"></script>
+
+  <style>
+    .app-shell { max-width: 430px; margin: 0 auto; }
+
+    /* 미확인 요약 — count 기준 통일: 항상 "전체 미확인" 만 노출 */
+    .summary-bar {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-4) var(--space-5);
+      background: var(--color-accent-soft);
+      border-radius: var(--radius-card);
+      cursor: pointer;
+      text-decoration: none; color: inherit;
+    }
+    .summary-bar__dot {
+      width: 8px; height: 8px; border-radius: var(--radius-pill);
+      background: var(--color-accent);
+      flex-shrink: 0;
+      animation: haru-pulse 2s ease-in-out infinite;
+    }
+    .summary-bar__text { font-size: var(--text-callout); font-weight: var(--weight-semibold); flex: 1; line-height: 1.4; }
+    .summary-bar__text b { color: var(--color-accent); }
+    .summary-bar iconify-icon { color: var(--color-text-tertiary); font-size: var(--size-icon-sm); }
+
+    /* 필터 칩 row */
+    .filter-row {
+      display: flex; gap: var(--space-2);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding-right: var(--space-5);
+      mask-image: linear-gradient(90deg, black 88%, transparent 100%);
+      -webkit-mask-image: linear-gradient(90deg, black 88%, transparent 100%);
+    }
+
+    /* 섹션 라벨 */
+    .sec-label {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-3) var(--space-1) var(--space-2);
+      cursor: pointer;
+    }
+    .sec-label__text {
+      font-size: var(--text-mini); font-weight: var(--weight-bold);
+      color: var(--color-text-secondary); letter-spacing: 0.2px;
+    }
+    .sec-label__count {
+      font-size: var(--text-mini); font-weight: var(--weight-bold);
+      color: var(--color-accent);
+      background: var(--color-accent-soft);
+      padding: 2px 9px; border-radius: var(--radius-pill);
+    }
+    .sec-label__chevron {
+      margin-left: auto; color: var(--color-text-tertiary);
+      transition: transform var(--motion-transition) var(--easing-standard);
+    }
+    .sec-label.is-collapsed .sec-label__chevron { transform: rotate(-90deg); }
+
+    .msg-list {
+      display: flex; flex-direction: column; gap: var(--space-2);
+      overflow: hidden;
+      transition: max-height var(--motion-transition) var(--easing-standard),
+                  opacity var(--motion-micro) var(--easing-standard);
+    }
+    .msg-list.is-collapsed { max-height: 0 !important; opacity: 0; }
+
+    /* 메시지 카드 — 일반 / 업무성 차등 */
+    .msg-item {
+      display: flex; align-items: center; gap: var(--space-4);
+      padding: var(--space-4) var(--space-5);
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-1);
+      text-decoration: none; color: inherit;
+      transition: var(--motion-micro) var(--easing-standard);
+    }
+    .msg-item:active { transform: scale(0.98); }
+    .msg-item.is-unread { border-color: rgba(var(--color-accent-rgb), 0.18); }
+
+    .av {
+      width: 44px; height: 44px; border-radius: var(--radius-pill);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: var(--weight-bold); color: var(--color-accent-on);
+      flex-shrink: 0; position: relative; overflow: hidden;
+    }
+    .av img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+    .av--nurse  { background: var(--brand-blue-500); }
+    .av--family { background: var(--brand-orange-400); }
+    .av--doctor { background: var(--brand-green-500); }
+    .av--system {
+      background: var(--color-bg-canvas); color: var(--color-text-secondary);
+      border: 1px solid var(--color-border-subtle);
+    }
+    /* 의미별 컬러 변형 — soft 배경 + 진한 아이콘 색 */
+    .av--system.is-care     { background: var(--color-danger-soft);  color: var(--color-danger);      border-color: transparent; }
+    .av--system.is-med      { background: var(--color-success-soft); color: var(--brand-green-700);   border-color: transparent; }
+    .av--system.is-food     { background: var(--color-warning-soft); color: var(--palette-amber-700); border-color: transparent; }
+    .av--system.is-schedule { background: var(--color-info-soft);    color: var(--color-info);        border-color: transparent; }
+    .av--system.is-billing  { background: rgba(139,92,246,.10);      color: var(--avatar-manager);                  border-color: transparent; }
+    .av--online::after {
+      content: ''; position: absolute; bottom: 1px; right: 1px;
+      width: 11px; height: 11px; border-radius: var(--radius-pill);
+      background: var(--color-success);
+      border: 2.5px solid var(--color-bg-surface);
+    }
+
+    .msg-body { flex: 1; min-width: 0; }
+    .msg-name-row { display: flex; align-items: center; gap: var(--space-2); margin-bottom: 2px; }
+    .msg-name { font-size: var(--text-callout); font-weight: var(--weight-bold); white-space: nowrap; }
+    .msg-preview {
+      font-size: var(--text-caption); color: var(--color-text-secondary);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .msg-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+    .msg-time { font-size: var(--text-mini); color: var(--color-text-tertiary); font-weight: var(--weight-medium); }
+    .msg-badge {
+      background: var(--color-accent); color: var(--color-accent-on);
+      font-size: 11px; font-weight: var(--weight-bold);
+      border-radius: var(--radius-pill);
+      padding: 1px 7px; min-width: 20px; text-align: center; line-height: 18px;
+    }
+
+    /* 카테고리 라벨 — Soft-fill pill (옵션 2: 디자인 시스템 기본 .badge) */
+    .msg-name-row .badge {
+      height: 16px;
+      padding: 0 7px;
+      border-radius: 999px;
+      font-size: 10.5px; font-weight: 700;
+      line-height: 1;
+      display: inline-flex; align-items: center;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+    .msg-name-row .badge--info    { background: var(--color-accent-soft);  color: var(--color-accent);  }
+    .msg-name-row .badge--success { background: var(--color-success-soft); color: var(--color-success); }
+    .msg-name-row .badge--warning { background: var(--color-warning-soft); color: var(--palette-amber-700); }
+    .msg-name-row .badge--critical{ background: var(--color-danger-soft);  color: var(--color-danger);  }
+
+    /* msg-cta는 system/components.css?v=20260523e 표준 사용 (v3.2.14) */
+
+    .stack { padding-top: var(--space-5); }
+
+    /* 진입 애니메이션 — 섹션 라벨 + 메시지 아이템 스태거 */
+    .sec-label {
+      animation: haru-fade-in-up var(--motion-enter) var(--easing-standard) both;
+      animation-delay: 150ms;
+    }
+    .msg-item {
+      animation: haru-fade-in-up var(--motion-enter) var(--easing-standard) both;
+    }
+    .msg-list > .msg-item:nth-child(1) { animation-delay: 200ms; }
+    .msg-list > .msg-item:nth-child(2) { animation-delay: 260ms; }
+    .msg-list > .msg-item:nth-child(3) { animation-delay: 320ms; }
+    .msg-list > .msg-item:nth-child(4) { animation-delay: 380ms; }
+    .msg-list > .msg-item:nth-child(5) { animation-delay: 440ms; }
+    .msg-list > .msg-item:nth-child(n+6) { animation-delay: 500ms; }
+    @media (prefers-reduced-motion: reduce) {
+      .sec-label, .msg-item { animation: none !important; }
+    }
+  </style>
+  <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(function(){})}</script>
+  <link rel="prefetch" href="g-guardian-live.html">
+  <link rel="prefetch" href="g02-ai-guide.html">
+  <link rel="prefetch" href="g05-records.html">
+  <link rel="prefetch" href="g05-mypage.html">
+
+  <!-- 보호자/요양보호사/의료진앱 공통 헤더·icon-btn 표준 (2026-05-22 통합) -->
+  <link rel="stylesheet" href="../v11_요양보호사앱/caregiver.css?v=20260525p">
+<style>
+  /* === 3앱 공통 헤더 표준 (d01-home 기준, 보호자앱에도 강제) === */
+  [data-platform="mobile"] .header{
+    padding: calc(env(safe-area-inset-top, 0px) + 6px) 20px 0 !important;
+    position: static !important;
+    background: transparent !important;
+  }
+  /* 기본 = 홈 패턴: 로고 + 액션 그룹 (flex space-between) */
+  [data-platform="mobile"] .header .top-nav{
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    margin-bottom: 24px !important;
+  }
+  /* 서브 패턴: title-block 있을 때 → grid 3-col (44 / 1fr / 44) */
+  [data-platform="mobile"] .header .top-nav:has(> .title-block){
+    display: grid !important;
+    grid-template-columns: 44px 1fr 44px !important;
+    margin-bottom: 8px !important;
+  }
+  [data-platform="mobile"] .header .top-nav:has(> .title-block) > .h-left{
+    width: 44px; height: 44px;
+  }
+  [data-platform="mobile"] .header .top-nav:has(> .title-block) > .title-block{
+    grid-column: 2; text-align: center; line-height: 1.2; min-width: 0;
+  }
+  [data-platform="mobile"] .header .top-nav:has(> .title-block) > .h-name{
+    font: 600 17px/1.2 inherit; color: var(--color-text-primary); letter-spacing: -.3px; text-align: center;
+  }
+  [data-platform="mobile"] .header .top-nav:has(> .title-block) > :first-child{
+    grid-column: 1; justify-self: start;
+  }
+  [data-platform="mobile"] .header .top-nav:has(> .title-block) > :last-child{
+    grid-column: 3; justify-self: end;
+  }
+  /* logo */
+  [data-platform="mobile"] .header .top-nav > .logo{
+    display: inline-flex !important;
+    align-items: center !important;
+    text-decoration: none !important;
+    color: inherit !important;
+    background: transparent !important;
+    border: 0 !important;
+    padding: 4px !important;
+    margin: -4px !important;
+    cursor: pointer !important;
+  }
+  [data-platform="mobile"] .header .top-nav > .logo svg{ width: 28px !important; height: 28px !important; display: block !important; }
+  /* top-actions 그룹 (홈 페이지) */
+  [data-platform="mobile"] .header .top-actions{
+    display: flex !important; align-items: center !important; gap: 8px !important;
+  }
+  /* icon-btn 글라스 (44×44, blur, shadow) */
+  [data-platform="mobile"] .header .icon-btn{
+    width: 44px !important; height: 44px !important; border-radius: 50% !important;
+    background: rgba(255,255,255,.55) !important;
+    border: .5px solid rgba(255,255,255,.55) !important;
+    backdrop-filter: blur(12px) saturate(140%) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(140%) !important;
+    box-shadow: 0 1px 1px rgba(255,255,255,.6) inset, 0 4px 16px rgba(0,0,0,.06) !important;
+    display: inline-flex !important; align-items: center !important; justify-content: center !important;
+    cursor: pointer !important; text-decoration: none !important;
+    position: relative !important;
+    transition: transform .1s !important;
+  }
+  [data-platform="mobile"] .header .icon-btn:active{ transform: scale(.93); }
+  [data-platform="mobile"] .header .icon-btn iconify-icon{
+    font-size: 22px !important;
+    color: var(--color-accent-strong) !important;
+  }
+  [data-platform="mobile"] .header .icon-btn .notif-dot,
+  [data-platform="mobile"] .header .notif-dot{
+    position: absolute !important; top: 10px !important; right: 10px !important;
+    width: 8px !important; height: 8px !important; border-radius: 50% !important;
+    background: var(--color-danger) !important;
+    border: 1.5px solid white !important;
+    z-index: 2 !important;
+  }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <header class="header">
+    <div class="top-nav">
+      <span class="h-left" aria-hidden="true"></span>
+      <div class="title-block">
+        <h1 class="h-name">소통</h1>
+      </div>
+      <button class="icon-btn" aria-label="새 메시지"><iconify-icon icon="fluent:compose-24-filled"></iconify-icon></button>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <div class="stack stack-loose">
+
+      <!-- 미확인 5건 — 단일 기준 -->
+      <a href="#unread" class="summary-bar fade-in fade-in--d1">
+        <span class="summary-bar__dot"></span>
+        <span class="summary-bar__text">읽지 않은 메시지 <b>5건</b> · 내일 오전 검진 예정</span>
+        <iconify-icon icon="fluent:chevron-right-24-filled"></iconify-icon>
+      </a>
+
+      <!-- 필터 칩 -->
+      <div class="filter-row fade-in fade-in--d2" role="tablist">
+        <button class="chip is-active" type="button" onclick="filterMsg('all',this)" aria-pressed="true">전체 5</button>
+        <button class="chip" type="button" onclick="filterMsg('care',this)">케어</button>
+        <button class="chip" type="button" onclick="filterMsg('schedule',this)">일정</button>
+        <button class="chip" type="button" onclick="filterMsg('billing',this)">결제</button>
+        <button class="chip" type="button" onclick="filterMsg('chat',this)">대화</button>
+      </div>
+
+      <!-- 읽지 않음 -->
+      <section id="unread">
+        <div class="sec-label" onclick="toggleSection(this)">
+          <span class="sec-label__text">읽지 않음</span>
+          <iconify-icon icon="fluent:chevron-down-24-filled" class="sec-label__chevron"></iconify-icon>
+        </div>
+        <div class="msg-list">
+
+          <a href="g03-chat-nurse.html" class="msg-item is-unread" data-type="chat">
+            <div class="av av--nurse av--online"><img src="img/간호사.png" alt="김서연"></div>
+            <div class="msg-body">
+              <div class="msg-name-row">
+                <span class="msg-name">김서연 간호사</span>
+                <span class="badge badge--success">근무 중</span>
+              </div>
+              <div class="msg-preview">저녁 투약도 완료했습니다. 오늘 하루 컨디션…</div>
+            </div>
+            <div class="msg-meta">
+              <span class="msg-time">오후 6:05</span>
+              <span class="msg-badge">4</span>
+            </div>
+          </a>
+
+          <!-- 업무성: 확인 필요 -->
+          <div class="msg-item is-unread is-action" data-type="care">
+            <div class="av av--system is-care"><iconify-icon icon="fluent:heart-pulse-24-filled" class="u-icon-sm"></iconify-icon></div>
+            <div class="msg-body">
+              <div class="msg-name-row">
+                <span class="msg-name">혈당 검사 처치 안내</span>
+                <span class="badge badge--info">케어</span>
+              </div>
+              <div class="msg-preview">손가락 끝에서 소량의 혈액을 채취하는 간단한 검사입니다</div>
+              <div class="msg-actions">
+                <button type="button" class="msg-cta" onclick="confirmAction(this,'안내 확인')">확인</button>
+                <button type="button" class="msg-cta msg-cta--secondary">자세히</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="msg-item is-unread is-action" data-type="care">
+            <div class="av av--system is-med"><iconify-icon icon="fluent:pill-24-filled" class="u-icon-sm"></iconify-icon></div>
+            <div class="msg-body">
+              <div class="msg-name-row">
+                <span class="msg-name">투약 시간 변경</span>
+                <span class="badge badge--info">케어</span>
+              </div>
+              <div class="msg-preview">저녁 투약 18:00 → 18:30 변경 (식후 복용)</div>
+              <div class="msg-actions">
+                <button type="button" class="msg-cta" onclick="confirmAction(this,'변경 동의')">동의</button>
+                <a href="g03-chat-nurse.html" class="msg-cta msg-cta--secondary">전화</a>
+              </div>
+            </div>
+          </div>
+
+          <a href="g03-chat-patient.html" class="msg-item is-unread" data-type="chat">
+            <div class="av av--family"><img src="img/환자.png" alt="박영자"></div>
+            <div class="msg-body">
+              <div class="msg-name-row"><span class="msg-name">영자님 (어머니)</span></div>
+              <div class="msg-preview">오늘 날씨 좋다~</div>
+            </div>
+            <div class="msg-meta">
+              <span class="msg-time">오후 3:20</span>
+              <span class="msg-badge">1</span>
+            </div>
+          </a>
+
+        </div>
+      </section>
+
+      <!-- 오늘 -->
+      <section>
+        <div class="sec-label is-collapsed" onclick="toggleSection(this)">
+          <span class="sec-label__text">오늘</span>
+          <iconify-icon icon="fluent:chevron-down-24-filled" class="sec-label__chevron"></iconify-icon>
+        </div>
+        <div class="msg-list is-collapsed">
+          <div class="msg-item" data-type="care">
+            <div class="av av--system is-food"><iconify-icon icon="fluent:food-24-filled" class="u-icon-sm"></iconify-icon></div>
+            <div class="msg-body">
+              <div class="msg-name-row"><span class="msg-name">점심 식사 완료</span><span class="badge badge--info">케어</span></div>
+              <div class="msg-preview">밥 + 된장국 + 반찬 3종, 섭취율 80%</div>
+            </div>
+            <div class="msg-meta"><span class="msg-time">12:05</span></div>
+          </div>
+          <div class="msg-item" data-type="schedule">
+            <div class="av av--system is-schedule"><iconify-icon icon="fluent:calendar-24-filled" class="u-icon-sm"></iconify-icon></div>
+            <div class="msg-body">
+              <div class="msg-name-row"><span class="msg-name">내일 오전 검진 예정</span><span class="badge badge--warning">일정</span></div>
+              <div class="msg-preview">4/17(목) 오전 10시 · 공복 검사</div>
+            </div>
+            <div class="msg-meta"><span class="msg-time">오전 9:00</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 이전 -->
+      <section>
+        <div class="sec-label is-collapsed" onclick="toggleSection(this)">
+          <span class="sec-label__text">이전</span>
+          <iconify-icon icon="fluent:chevron-down-24-filled" class="sec-label__chevron"></iconify-icon>
+        </div>
+        <div class="msg-list is-collapsed">
+          <a href="g03-chat-family.html" class="msg-item" data-type="chat">
+            <div class="av av--nurse">이</div>
+            <div class="msg-body">
+              <div class="msg-name-row"><span class="msg-name">이수진 간호사</span></div>
+              <div class="msg-preview">내일 오전 검진 일정 안내드려요</div>
+            </div>
+            <div class="msg-meta"><span class="msg-time">어제</span></div>
+          </a>
+          <a href="g08-billing.html" class="msg-item" data-type="billing">
+            <div class="av av--system is-billing"><iconify-icon icon="fluent:receipt-24-filled" class="u-icon-sm"></iconify-icon></div>
+            <div class="msg-body">
+              <div class="msg-name-row"><span class="msg-name">4월 요양비 청구서</span><span class="badge badge--info">결제</span></div>
+              <div class="msg-preview">1,245,000원 · 납부기한 4/25 (D-9)</div>
+            </div>
+            <div class="msg-meta"><span class="msg-time">어제</span></div>
+          </a>
+          <a href="g03-chat-family.html" class="msg-item" data-type="chat">
+            <div class="av av--doctor"><img src="img/의사.png" alt="정현우"></div>
+            <div class="msg-body">
+              <div class="msg-name-row"><span class="msg-name">정현우 전문의</span></div>
+              <div class="msg-preview">다음 주 검진 결과 나오면 말씀드릴게요</div>
+            </div>
+            <div class="msg-meta"><span class="msg-time">4/14</span></div>
+          </a>
+          <a href="g03-chat-family.html" class="msg-item" data-type="chat">
+            <div class="av av--family"><iconify-icon icon="fluent:people-24-filled" class="u-icon-sm"></iconify-icon></div>
+            <div class="msg-body">
+              <div class="msg-name-row"><span class="msg-name">가족 그룹</span></div>
+              <div class="msg-preview">주말에 면회 갈 수 있을까?</div>
+            </div>
+            <div class="msg-meta"><span class="msg-time">4/14</span></div>
+          </a>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- v3.1 통일 탭바 -->
+  <div class="bottom-bar">
+    <nav class="tabbar">
+      <a href="g-guardian-live.html" class="tab" aria-label="홈"><span class="tab-icon"><iconify-icon icon="fluent:home-24-filled" class="u-fs-26"></iconify-icon></span></a>
+      <a href="g02-ai-guide.html" class="tab" aria-label="AI 가이드"><span class="tab-icon"><iconify-icon icon="fluent:book-24-filled" class="u-fs-26"></iconify-icon></span></a>
+      <a href="g03-sotong.html" class="tab active" aria-label="소통"><span class="tab-icon"><iconify-icon icon="fluent:chat-24-filled" class="text-22"></iconify-icon></span></a>
+      <a href="g05-records.html" class="tab" aria-label="기록"><span class="tab-icon"><iconify-icon icon="fluent:folder-24-filled" class="u-fs-26"></iconify-icon></span></a>
+      <a href="g05-mypage.html" class="tab" aria-label="마이"><span class="tab-icon"><iconify-icon icon="fluent:person-24-filled" class="u-fs-26"></iconify-icon></span></a>
+    </nav>
+    <a href="g-guardian-live.html?chat=1" class="ai-fab" aria-label="AI 어시스턴트">
+      <svg width="22" height="22" viewBox="0 0 2526 2526" fill="var(--brand-blue-500)"><path d="M2521.32 2506.66C1239.65 2657.48 1239.65 1895.6 1239.65 1279.34L2497.69 0C2518.68 494.198 2522.27 1157.92 1658.86 1262.48C2641.88 1314.25 2521.32 2101.84 2521.32 2506.66Z"/><path d="M4.677 19.335C1286.35-131.481 1286.35 630.399 1286.35 1246.66L28.315 2526C7.322 2031.8 3.73 1368.08 867.143 1263.52C-115.881 1211.75 4.677 424.157 4.677 19.335Z"/></svg>
+    </a>
+  </div>
+
+</div>
+
+<script>
+  function toggleSection(label){
+    var list = label.nextElementSibling;
+    if(!list) return;
+    var isCollapsed = label.classList.contains('is-collapsed');
+    if(isCollapsed){
+      label.classList.remove('is-collapsed');
+      list.classList.remove('is-collapsed');
+      list.style.maxHeight = list.scrollHeight + 'px';
+      setTimeout(function(){ list.style.maxHeight = 'none'; }, 250);
+    } else {
+      list.style.maxHeight = list.scrollHeight + 'px';
+      list.offsetHeight;
+      label.classList.add('is-collapsed');
+      list.classList.add('is-collapsed');
+      list.style.maxHeight = '0';
+    }
+  }
+  function filterMsg(type, btn){
+    document.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('is-active'); c.setAttribute('aria-pressed','false'); });
+    btn.classList.add('is-active'); btn.setAttribute('aria-pressed','true');
+    document.querySelectorAll('.msg-item').forEach(function(item){
+      if(type === 'all'){ item.style.display = ''; return; }
+      item.style.display = item.getAttribute('data-type') === type ? '' : 'none';
+    });
+  }
+  function confirmAction(btn, label){
+    btn.disabled = true;
+    btn.textContent = label + ' 완료';
+  }
+</script>
+  <div class="bottom-scrim" aria-hidden="true"></div>
+</body>
+</html>

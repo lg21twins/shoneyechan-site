@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ko" data-role="guardian" data-platform="mobile">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>최근 기록 아이콘 다양화 — 옵션 비교</title>
+
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css">
+  <link rel="stylesheet" href="../07_디자인/system/app.css">
+  <link rel="stylesheet" href="../07_디자인/system/components.css">
+  <script src="../07_디자인/_iconify-icon.min.js"></script>
+
+  <style>
+    body { background: var(--color-bg-canvas); }
+    .app-shell { max-width: 430px; margin: 0 auto; padding: 16px; }
+    .opt-head {
+      font-size: 13px; font-weight: 800; color: var(--color-text-tertiary);
+      letter-spacing: 0.4px; text-transform: uppercase;
+      margin: 32px 0 4px; padding-left: 4px;
+    }
+    .opt-head:first-of-type { margin-top: 0; }
+    .opt-source { font-size: 11px; color: var(--color-text-tertiary); font-weight: 600; margin-bottom: 12px; padding-left: 4px; }
+    .sec-head {
+      display: flex; align-items: baseline; justify-content: space-between;
+      margin-bottom: var(--space-3);
+    }
+    .sec-head__title { font-size: var(--text-headline); font-weight: var(--weight-bold); }
+    .feed-card { padding: 0; overflow: hidden; }
+
+    /* ============================================================
+       옵션 0 — 현재 (모든 아이콘이 같은 둥근 사각 컨테이너)
+    ============================================================ */
+    .v0 .feed-item {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-4) var(--space-5);
+      text-decoration: none; color: inherit;
+    }
+    .v0 .feed-item + .feed-item { border-top: 1px solid var(--color-border-subtle); }
+    .v0 .feed-dot {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      background: var(--color-bg-canvas);
+    }
+    .v0 .feed-dot iconify-icon { font-size: 18px; color: var(--color-text-secondary); }
+    .v0 .feed-dot--success { background: var(--color-success-soft); }
+    .v0 .feed-dot--success iconify-icon { color: var(--color-success); }
+    .v0 .feed-dot--warning { background: var(--color-warning-soft); }
+    .v0 .feed-dot--warning iconify-icon { color: var(--palette-amber-700, #B45309); }
+    .v0 .feed-dot--info { background: var(--color-accent-soft); }
+    .v0 .feed-dot--info iconify-icon { color: var(--color-accent); }
+    .v0 .feed-body { flex: 1; min-width: 0; }
+    .v0 .feed-text { font-size: 14px; font-weight: 700; }
+    .v0 .feed-meta { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+    .v0 .feed-time { font-size: 12px; color: var(--color-text-tertiary); flex-shrink: 0; }
+
+    /* ============================================================
+       옵션 A — Timeline rail (좌측 세로선 + 컬러 dot)
+    ============================================================ */
+    .vA .feed-card { padding: var(--space-4) var(--space-5); }
+    .vA .tl {
+      position: relative;
+      padding-left: 22px;
+    }
+    .vA .tl::before {
+      content: ''; position: absolute;
+      left: 5px; top: 8px; bottom: 8px;
+      width: 2px; background: var(--color-border-subtle);
+    }
+    .vA .tl__item {
+      position: relative;
+      padding: 8px 0;
+      display: flex; align-items: flex-start; gap: 12px;
+    }
+    .vA .tl__item + .tl__item { padding-top: 12px; }
+    .vA .tl__dot {
+      position: absolute; left: -22px; top: 14px;
+      width: 12px; height: 12px; border-radius: 50%;
+      background: var(--color-accent);
+      box-shadow: 0 0 0 3px var(--color-bg-surface);
+    }
+    .vA .tl__dot--success { background: var(--color-success); }
+    .vA .tl__dot--warning { background: var(--palette-amber-700, #B45309); }
+    .vA .tl__dot--info    { background: var(--color-accent); }
+    .vA .tl__body { flex: 1; }
+    .vA .tl__title { font-size: 14px; font-weight: 700; }
+    .vA .tl__meta { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+    .vA .tl__time { font-size: 11px; color: var(--color-text-tertiary); flex-shrink: 0; padding-top: 2px; }
+
+    /* ============================================================
+       옵션 B — Status indicators (아이콘이 데이터를 말함)
+    ============================================================ */
+    .vB .feed-item {
+      display: flex; align-items: center; gap: var(--space-4);
+      padding: var(--space-4) var(--space-5);
+      text-decoration: none; color: inherit;
+    }
+    .vB .feed-item + .feed-item { border-top: 1px solid var(--color-border-subtle); }
+    .vB .indicator {
+      width: 44px; height: 44px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800;
+    }
+    /* 투약 완료 — 큰 체크 */
+    .vB .indicator--check {
+      border-radius: 50%; background: var(--color-success);
+      color: #fff;
+    }
+    .vB .indicator--check iconify-icon { font-size: 24px; }
+    /* 식사 — 원형 progress */
+    .vB .indicator--ring {
+      position: relative;
+    }
+    .vB .indicator--ring svg { display: block; }
+    .vB .indicator--ring .num {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 800; color: var(--palette-amber-700, #B45309);
+    }
+    /* 진료 — 문서 아이콘 (filled blue) */
+    .vB .indicator--doc {
+      border-radius: 10px; background: var(--color-accent-soft);
+      color: var(--color-accent);
+    }
+    .vB .indicator--doc iconify-icon { font-size: 24px; }
+    /* 검사 결과 — 큰 숫자 */
+    .vB .indicator--value {
+      border-radius: 10px; background: var(--color-accent-soft);
+      flex-direction: column; gap: 0;
+      color: var(--color-accent);
+    }
+    .vB .indicator--value .v { font-size: 14px; font-weight: 800; line-height: 1; }
+    .vB .indicator--value .u { font-size: 8px; font-weight: 600; }
+    /* 청구 — ₩ amber */
+    .vB .indicator--bill {
+      border-radius: 12px; background: var(--color-warning-soft);
+      color: var(--palette-amber-700, #B45309);
+      font-size: 22px;
+    }
+    .vB .feed-body { flex: 1; min-width: 0; }
+    .vB .feed-text { font-size: 14px; font-weight: 700; }
+    .vB .feed-meta { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+    .vB .feed-time { font-size: 12px; color: var(--color-text-tertiary); flex-shrink: 0; }
+
+    /* ============================================================
+       옵션 C — 좌측 컬러바 + 텍스트만 (아이콘 제거)
+    ============================================================ */
+    .vC .feed-item {
+      position: relative;
+      display: flex; align-items: center;
+      padding: var(--space-4) var(--space-5) var(--space-4) calc(var(--space-5) + 8px);
+      text-decoration: none; color: inherit;
+    }
+    .vC .feed-item + .feed-item { border-top: 1px solid var(--color-border-subtle); }
+    .vC .feed-item::before {
+      content: ''; position: absolute;
+      left: var(--space-4); top: 14px; bottom: 14px;
+      width: 3px; border-radius: 3px;
+      background: var(--color-accent);
+    }
+    .vC .feed-item--success::before { background: var(--color-success); }
+    .vC .feed-item--warning::before { background: var(--palette-amber-700, #B45309); }
+    .vC .feed-item--info::before    { background: var(--color-accent); }
+    .vC .feed-item--neutral::before { background: var(--color-text-tertiary); }
+    .vC .feed-body { flex: 1; min-width: 0; }
+    .vC .feed-text { font-size: 14px; font-weight: 700; }
+    .vC .feed-meta { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+    .vC .feed-time { font-size: 12px; color: var(--color-text-tertiary); flex-shrink: 0; }
+
+    /* ============================================================
+       옵션 D — 무배경 아이콘 (컨테이너 제거, 형상 자체로 구분)
+    ============================================================ */
+    .vD .feed-item {
+      display: flex; align-items: center; gap: var(--space-4);
+      padding: var(--space-4) var(--space-5);
+      text-decoration: none; color: inherit;
+    }
+    .vD .feed-item + .feed-item { border-top: 1px solid var(--color-border-subtle); }
+    .vD .raw-icon {
+      width: 32px; height: 32px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .vD .raw-icon iconify-icon { font-size: 28px; }
+    .vD .raw-icon--success { color: var(--color-success); }
+    .vD .raw-icon--warning { color: var(--palette-amber-700, #B45309); }
+    .vD .raw-icon--accent  { color: var(--color-accent); }
+    .vD .raw-icon--neutral { color: var(--color-text-secondary); }
+    .vD .feed-body { flex: 1; min-width: 0; }
+    .vD .feed-text { font-size: 14px; font-weight: 700; }
+    .vD .feed-meta { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+    .vD .feed-time { font-size: 12px; color: var(--color-text-tertiary); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<div class="app-shell">
+  <h1 style="font-size:22px;font-weight:800;margin:8px 0 4px;">최근 기록 — 아이콘 다양화 옵션</h1>
+  <p style="font-size:13px;color:var(--color-text-secondary);margin:0 0 24px;">
+    같은 5개 이벤트 5가지 변형. 번호로 알려주세요.
+  </p>
+
+  <!-- 옵션 0 -->
+  <div class="opt-head">옵션 0 — 현재 (참고)</div>
+  <div class="opt-source">모든 아이콘이 같은 둥근 사각 컨테이너</div>
+  <div class="v0">
+    <div class="sec-head"><span class="sec-head__title">최근 기록</span></div>
+    <div class="card feed-card">
+      <a class="feed-item"><span class="feed-dot feed-dot--success"><iconify-icon icon="fluent:checkmark-circle-24-filled"></iconify-icon></span><div class="feed-body"><div class="feed-text">아침 투약 완료</div><div class="feed-meta">혈압약 · 당뇨약 복용</div></div><span class="feed-time">오늘 08:20</span></a>
+      <a class="feed-item"><span class="feed-dot feed-dot--warning"><iconify-icon icon="fluent:food-24-filled"></iconify-icon></span><div class="feed-body"><div class="feed-text">점심 식사 · 섭취율 80%</div><div class="feed-meta">밥 + 국 + 반찬 3종</div></div><span class="feed-time">오늘 12:05</span></a>
+      <a class="feed-item"><span class="feed-dot feed-dot--info"><iconify-icon icon="fluent:folder-24-filled"></iconify-icon></span><div class="feed-body"><div class="feed-text">정기 진료 결과 등록</div><div class="feed-meta">고혈압·당뇨 경과 양호</div></div><span class="feed-time">4/10</span></a>
+      <a class="feed-item"><span class="feed-dot feed-dot--info"><iconify-icon icon="fluent:beaker-24-filled"></iconify-icon></span><div class="feed-body"><div class="feed-text">혈액 검사 결과</div><div class="feed-meta">콜레스테롤 215 경계</div></div><span class="feed-time">4/5</span></a>
+      <a class="feed-item"><span class="feed-dot"><iconify-icon icon="fluent:receipt-24-filled"></iconify-icon></span><div class="feed-body"><div class="feed-text">4월 청구서 발행</div><div class="feed-meta">1,245,000원 · 납부기한 4/25</div></div><span class="feed-time">4/1</span></a>
+    </div>
+  </div>
+
+  <!-- 옵션 A -->
+  <div class="opt-head">옵션 A — Timeline rail</div>
+  <div class="opt-source">좌측 세로선 + 컬러 dot 마커. 시간 순서 강조. Forest 패턴</div>
+  <div class="vA">
+    <div class="sec-head"><span class="sec-head__title">최근 기록</span></div>
+    <div class="card feed-card">
+      <div class="tl">
+        <div class="tl__item"><span class="tl__dot tl__dot--success"></span><div class="tl__body"><div class="tl__title">아침 투약 완료</div><div class="tl__meta">혈압약 · 당뇨약 복용</div></div><span class="tl__time">08:20</span></div>
+        <div class="tl__item"><span class="tl__dot tl__dot--warning"></span><div class="tl__body"><div class="tl__title">점심 식사 · 섭취율 80%</div><div class="tl__meta">밥 + 국 + 반찬 3종</div></div><span class="tl__time">12:05</span></div>
+        <div class="tl__item"><span class="tl__dot tl__dot--info"></span><div class="tl__body"><div class="tl__title">정기 진료 결과 등록</div><div class="tl__meta">고혈압·당뇨 경과 양호</div></div><span class="tl__time">4/10</span></div>
+        <div class="tl__item"><span class="tl__dot tl__dot--info"></span><div class="tl__body"><div class="tl__title">혈액 검사 결과</div><div class="tl__meta">콜레스테롤 215 경계</div></div><span class="tl__time">4/5</span></div>
+        <div class="tl__item"><span class="tl__dot"></span><div class="tl__body"><div class="tl__title">4월 청구서 발행</div><div class="tl__meta">1,245,000원 · 납부기한 4/25</div></div><span class="tl__time">4/1</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 옵션 B -->
+  <div class="opt-head">옵션 B — Status indicators</div>
+  <div class="opt-source">아이콘 대신 상태 시각화 (체크 / 원형 progress / 큰 숫자). 노년 가독성 최고</div>
+  <div class="vB">
+    <div class="sec-head"><span class="sec-head__title">최근 기록</span></div>
+    <div class="card feed-card">
+      <a class="feed-item">
+        <span class="indicator indicator--check"><iconify-icon icon="fluent:checkmark-24-filled"></iconify-icon></span>
+        <div class="feed-body"><div class="feed-text">아침 투약 완료</div><div class="feed-meta">혈압약 · 당뇨약</div></div>
+        <span class="feed-time">오늘 08:20</span>
+      </a>
+      <a class="feed-item">
+        <span class="indicator indicator--ring">
+          <svg width="44" height="44" viewBox="0 0 44 44">
+            <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(0,0,0,.08)" stroke-width="4"/>
+            <circle cx="22" cy="22" r="18" fill="none" stroke="var(--palette-amber-700, #B45309)" stroke-width="4" stroke-linecap="round" stroke-dasharray="90 113" transform="rotate(-90 22 22)"/>
+          </svg>
+          <span class="num">80%</span>
+        </span>
+        <div class="feed-body"><div class="feed-text">점심 식사</div><div class="feed-meta">밥 + 국 + 반찬 3종</div></div>
+        <span class="feed-time">오늘 12:05</span>
+      </a>
+      <a class="feed-item">
+        <span class="indicator indicator--doc"><iconify-icon icon="fluent:document-checkmark-24-filled"></iconify-icon></span>
+        <div class="feed-body"><div class="feed-text">정기 진료 결과 등록</div><div class="feed-meta">고혈압·당뇨 경과 양호</div></div>
+        <span class="feed-time">4/10</span>
+      </a>
+      <a class="feed-item">
+        <span class="indicator indicator--value"><span class="v">215</span><span class="u">mg/dL</span></span>
+        <div class="feed-body"><div class="feed-text">혈액 검사 결과</div><div class="feed-meta">콜레스테롤 경계</div></div>
+        <span class="feed-time">4/5</span>
+      </a>
+      <a class="feed-item">
+        <span class="indicator indicator--bill">₩</span>
+        <div class="feed-body"><div class="feed-text">4월 청구서 발행</div><div class="feed-meta">1,245,000원 · 4/25 납부</div></div>
+        <span class="feed-time">4/1</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- 옵션 C -->
+  <div class="opt-head">옵션 C — 좌측 컬러바, 아이콘 제거</div>
+  <div class="opt-source">가장 미니멀. 카테고리 컬러만으로 구분. Slack threads / Liven 패턴</div>
+  <div class="vC">
+    <div class="sec-head"><span class="sec-head__title">최근 기록</span></div>
+    <div class="card feed-card">
+      <a class="feed-item feed-item--success"><div class="feed-body"><div class="feed-text">아침 투약 완료</div><div class="feed-meta">혈압약 · 당뇨약 복용</div></div><span class="feed-time">오늘 08:20</span></a>
+      <a class="feed-item feed-item--warning"><div class="feed-body"><div class="feed-text">점심 식사 · 섭취율 80%</div><div class="feed-meta">밥 + 국 + 반찬 3종</div></div><span class="feed-time">오늘 12:05</span></a>
+      <a class="feed-item feed-item--info"><div class="feed-body"><div class="feed-text">정기 진료 결과 등록</div><div class="feed-meta">고혈압·당뇨 경과 양호</div></div><span class="feed-time">4/10</span></a>
+      <a class="feed-item feed-item--info"><div class="feed-body"><div class="feed-text">혈액 검사 결과</div><div class="feed-meta">콜레스테롤 215 경계</div></div><span class="feed-time">4/5</span></a>
+      <a class="feed-item feed-item--neutral"><div class="feed-body"><div class="feed-text">4월 청구서 발행</div><div class="feed-meta">1,245,000원 · 4/25 납부</div></div><span class="feed-time">4/1</span></a>
+    </div>
+  </div>
+
+  <!-- 옵션 D -->
+  <div class="opt-head">옵션 D — 무배경 아이콘 (컨테이너 제거)</div>
+  <div class="opt-source">아이콘 형상 자체로 구분. 다른 fluent 아이콘 사용. Alan Care events 패턴</div>
+  <div class="vD">
+    <div class="sec-head"><span class="sec-head__title">최근 기록</span></div>
+    <div class="card feed-card">
+      <a class="feed-item">
+        <span class="raw-icon raw-icon--success"><iconify-icon icon="fluent:checkmark-circle-24-filled"></iconify-icon></span>
+        <div class="feed-body"><div class="feed-text">아침 투약 완료</div><div class="feed-meta">혈압약 · 당뇨약 복용</div></div>
+        <span class="feed-time">오늘 08:20</span>
+      </a>
+      <a class="feed-item">
+        <span class="raw-icon raw-icon--warning"><iconify-icon icon="fluent:bowl-chopsticks-24-filled"></iconify-icon></span>
+        <div class="feed-body"><div class="feed-text">점심 식사 · 섭취율 80%</div><div class="feed-meta">밥 + 국 + 반찬 3종</div></div>
+        <span class="feed-time">오늘 12:05</span>
+      </a>
+      <a class="feed-item">
+        <span class="raw-icon raw-icon--accent"><iconify-icon icon="fluent:document-heart-pulse-24-filled"></iconify-icon></span>
+        <div class="feed-body"><div class="feed-text">정기 진료 결과 등록</div><div class="feed-meta">고혈압·당뇨 경과 양호</div></div>
+        <span class="feed-time">4/10</span>
+      </a>
+      <a class="feed-item">
+        <span class="raw-icon raw-icon--accent"><iconify-icon icon="fluent:beaker-24-filled"></iconify-icon></span>
+        <div class="feed-body"><div class="feed-text">혈액 검사 결과</div><div class="feed-meta">콜레스테롤 215 경계</div></div>
+        <span class="feed-time">4/5</span>
+      </a>
+      <a class="feed-item">
+        <span class="raw-icon raw-icon--neutral"><iconify-icon icon="fluent:receipt-24-filled"></iconify-icon></span>
+        <div class="feed-body"><div class="feed-text">4월 청구서 발행</div><div class="feed-meta">1,245,000원 · 납부기한 4/25</div></div>
+        <span class="feed-time">4/1</span>
+      </a>
+    </div>
+  </div>
+
+  <div style="height: 80px;"></div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="ko" data-role="guardian" data-platform="mobile">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>케어 대상자 카드 — 4가지 옵션 비교</title>
+
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css">
+  <script src="../07_디자인/_app-theme.js"></script>
+  <link rel="stylesheet" href="../07_디자인/system/app.css">
+  <link rel="stylesheet" href="../07_디자인/system/components.css">
+  <script src="../07_디자인/_iconify-icon.min.js"></script>
+
+  <style>
+    body {
+      background: var(--color-bg-canvas);
+      padding: var(--space-6);
+      font-family: var(--font-family-base, -apple-system, BlinkMacSystemFont, system-ui, sans-serif);
+    }
+
+    .page-head {
+      max-width: 1200px; margin: 0 auto var(--space-7);
+    }
+    .page-head h1 {
+      font-size: 22px; font-weight: 800; margin: 0 0 8px;
+      color: var(--color-text-primary);
+    }
+    .page-head p {
+      font-size: 13px; color: var(--color-text-secondary); margin: 0;
+    }
+
+    .grid {
+      max-width: 1200px; margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+      gap: var(--space-6);
+    }
+
+    .col {
+      background: transparent;
+    }
+    .col__head {
+      display: flex; align-items: baseline; gap: 10px;
+      margin-bottom: var(--space-3);
+    }
+    .col__tag {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 26px; height: 26px; border-radius: 8px;
+      background: var(--color-accent);
+      color: #fff; font-weight: 800; font-size: 13px;
+    }
+    .col__title {
+      font-size: 15px; font-weight: 700; color: var(--color-text-primary);
+    }
+    .col__desc {
+      font-size: 12px; color: var(--color-text-secondary);
+      margin: 0 0 var(--space-4); line-height: 1.5;
+    }
+
+    .phone {
+      background: var(--color-bg-surface);
+      border-radius: var(--radius-card);
+      padding: 20px;
+      box-shadow: var(--shadow-1);
+      border: 1px solid var(--color-border-subtle);
+    }
+
+    /* =========================================================
+       옵션 A — Hero 헤더 + 라벨/값 테이블 (Apple Health 스타일)
+       ========================================================= */
+    .a-hero {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 8px 0 18px;
+    }
+    .a-hero__av {
+      width: 88px; height: 88px; border-radius: 999px;
+      overflow: hidden;
+      border: 3px solid var(--color-accent-soft);
+      margin-bottom: 12px;
+    }
+    .a-hero__av img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+    .a-hero__name { font-size: 22px; font-weight: 800; color: var(--color-text-primary); }
+    .a-hero__sub  { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+    .a-hero__status {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 999px;
+      background: var(--color-success-soft); color: var(--color-success);
+      font-size: 12px; font-weight: 700;
+      margin-top: 12px;
+    }
+    .a-hero__status::before {
+      content: ''; width: 6px; height: 6px; border-radius: 999px;
+      background: var(--color-success);
+    }
+    .a-table {
+      border-top: 1px solid var(--color-border-subtle);
+    }
+    .a-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 4px;
+      border-bottom: 1px solid var(--color-border-subtle);
+    }
+    .a-row:last-child { border-bottom: 0; }
+    .a-row__label { font-size: 14px; color: var(--color-text-secondary); }
+    .a-row__val   { font-size: 15px; font-weight: 700; color: var(--color-text-primary); }
+
+    /* =========================================================
+       옵션 B — 헤더 + 2x2 메트릭 그리드
+       ========================================================= */
+    .b-top { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+    .b-av {
+      width: 56px; height: 56px; border-radius: 999px;
+      overflow: hidden; flex-shrink: 0;
+      border: 2px solid var(--color-accent-soft);
+    }
+    .b-av img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+    .b-name { font-size: 17px; font-weight: 800; }
+    .b-sub  { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+    .b-status {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px; border-radius: 999px;
+      background: var(--color-success-soft); color: var(--color-success);
+      font-size: 11px; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .b-status::before {
+      content: ''; width: 5px; height: 5px; border-radius: 999px;
+      background: var(--color-success);
+    }
+    .b-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    }
+    .b-cell {
+      background: var(--color-bg-surface-muted);
+      border-radius: 14px;
+      padding: 12px;
+      display: flex; flex-direction: column; gap: 6px;
+      border: 1px solid var(--color-border-subtle);
+    }
+    .b-cell__head {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11px; color: var(--color-text-secondary);
+      font-weight: 600;
+    }
+    .b-cell__head iconify-icon {
+      font-size: 14px;
+    }
+    .b-cell__val {
+      font-size: 15px; font-weight: 800; color: var(--color-text-primary);
+      line-height: 1.3;
+    }
+    .b-cell--info  .b-cell__head iconify-icon { color: var(--color-info); }
+    .b-cell--green .b-cell__head iconify-icon { color: var(--color-success); }
+    .b-cell--gray  .b-cell__head iconify-icon { color: var(--color-text-secondary); }
+    .b-cell--accent {
+      background: var(--color-danger-soft);
+      border-color: transparent;
+    }
+    .b-cell--accent .b-cell__head { color: var(--color-danger); }
+    .b-cell--accent .b-cell__head iconify-icon { color: var(--color-danger); }
+    .b-cell--accent .b-cell__val { color: var(--color-danger); }
+
+    /* =========================================================
+       옵션 C — 현재 디자인 정련 (한 줄 라벨/값 + 컬러 아이콘)
+       ========================================================= */
+    .c-top { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+    .c-av {
+      width: 64px; height: 64px; border-radius: 999px;
+      overflow: hidden; flex-shrink: 0; position: relative;
+      border: 2px solid var(--color-accent-soft);
+    }
+    .c-av img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+    .c-name { font-size: 18px; font-weight: 800; }
+    .c-sub  { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+    .c-status {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 11px; border-radius: 999px;
+      background: var(--color-success-soft); color: var(--color-success);
+      font-size: 11px; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .c-status::before {
+      content: ''; width: 5px; height: 5px; border-radius: 999px;
+      background: var(--color-success);
+    }
+    .c-rows {}
+    .c-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 0;
+      border-top: 1px solid var(--color-border-subtle);
+    }
+    .c-row__icon {
+      width: 32px; height: 32px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .c-row__icon iconify-icon { font-size: 16px; }
+    .c-row__icon--info   { background: var(--color-info-soft); }
+    .c-row__icon--info iconify-icon { color: var(--color-info); }
+    .c-row__icon--green  { background: var(--color-success-soft); }
+    .c-row__icon--green iconify-icon { color: var(--color-success); }
+    .c-row__icon--gray   { background: var(--color-bg-canvas); }
+    .c-row__icon--gray iconify-icon { color: var(--color-text-secondary); }
+    .c-row__icon--red    { background: var(--color-danger-soft); }
+    .c-row__icon--red iconify-icon { color: var(--color-danger); }
+    .c-row__label { flex: 1; font-size: 13px; color: var(--color-text-secondary); }
+    .c-row__val   { font-size: 14px; font-weight: 700; color: var(--color-text-primary); text-align: right; }
+
+    /* =========================================================
+       옵션 D — 컴팩트 리스트 카드 (chip 형식)
+       ========================================================= */
+    .d-row { display: flex; align-items: flex-start; gap: 14px; }
+    .d-av {
+      width: 56px; height: 56px; border-radius: 999px;
+      overflow: hidden; flex-shrink: 0;
+      border: 2px solid var(--color-accent-soft);
+    }
+    .d-av img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+    .d-body { flex: 1; min-width: 0; }
+    .d-head {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    }
+    .d-name { font-size: 17px; font-weight: 800; }
+    .d-age  { font-size: 13px; color: var(--color-text-secondary); }
+    .d-status {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 8px; border-radius: 999px;
+      background: var(--color-success-soft); color: var(--color-success);
+      font-size: 10px; font-weight: 700;
+      margin-left: auto;
+    }
+    .d-status::before {
+      content: ''; width: 5px; height: 5px; border-radius: 999px;
+      background: var(--color-success);
+    }
+    .d-meta {
+      display: flex; flex-wrap: wrap; gap: 4px 10px;
+      margin-top: 6px;
+      font-size: 12px; color: var(--color-text-secondary);
+    }
+    .d-meta span { display: inline-flex; align-items: center; gap: 4px; }
+    .d-meta iconify-icon { font-size: 13px; color: var(--color-text-tertiary); }
+    .d-chips {
+      display: flex; flex-wrap: wrap; gap: 5px;
+      margin-top: 10px;
+    }
+    .d-chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 4px 10px; border-radius: 999px;
+      background: var(--color-danger-soft); color: var(--color-danger);
+      font-size: 11px; font-weight: 700;
+    }
+    .d-chip iconify-icon { font-size: 12px; }
+
+    /* 비교 노트 */
+    .notes {
+      max-width: 1200px; margin: var(--space-7) auto 0;
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-card);
+      padding: 20px 24px;
+    }
+    .notes h2 {
+      font-size: 15px; font-weight: 700; margin: 0 0 12px;
+      color: var(--color-text-primary);
+    }
+    .notes table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .notes th, .notes td {
+      text-align: left; padding: 8px 12px;
+      border-bottom: 1px solid var(--color-border-subtle);
+      vertical-align: top;
+    }
+    .notes th {
+      font-weight: 700; color: var(--color-text-secondary);
+      font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px;
+    }
+    .notes td:first-child { font-weight: 700; color: var(--color-accent); width: 80px; }
+  </style>
+</head>
+<body>
+  <header class="page-head">
+    <h1>케어 대상자 카드 — 4가지 옵션</h1>
+    <p>현재 디자인(g05-mypage.html)을 기준으로 모빈 레퍼런스(Apple Health · Shangri‑La · Microsoft Teams)에서 도출한 4가지 방향. 동일한 데이터로 직접 비교하세요.</p>
+  </header>
+
+  <div class="grid">
+
+    <!-- ===================== 옵션 A ===================== -->
+    <div class="col">
+      <div class="col__head">
+        <span class="col__tag">A</span>
+        <span class="col__title">Hero 헤더 + 라벨/값 테이블</span>
+      </div>
+      <p class="col__desc">Apple Health Medical ID 패턴. 큰 중앙 아바타로 식별성 ↑, 우측 정렬 값으로 위계 명확. 시니어 가독성에 가장 유리.</p>
+      <section class="phone">
+        <div class="a-hero">
+          <div class="a-hero__av"><img src="img/환자.png" alt="박영자"></div>
+          <div class="a-hero__name">박영자</div>
+          <div class="a-hero__sub">케어 대상 · 78세</div>
+          <span class="a-hero__status">케어 중</span>
+        </div>
+        <div class="a-table">
+          <div class="a-row"><div class="a-row__label">호실</div><div class="a-row__val">302호</div></div>
+          <div class="a-row"><div class="a-row__label">담당 간호사</div><div class="a-row__val">김서연 간호사</div></div>
+          <div class="a-row"><div class="a-row__label">입소일</div><div class="a-row__val">2025.09.15</div></div>
+          <div class="a-row"><div class="a-row__label">주요 진단</div><div class="a-row__val">고혈압 · 당뇨 관리</div></div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ===================== 옵션 B ===================== -->
+    <div class="col">
+      <div class="col__head">
+        <span class="col__tag">B</span>
+        <span class="col__title">헤더 + 2×2 메트릭 그리드</span>
+      </div>
+      <p class="col__desc">정보 4개를 동등한 카드로 분리. 한눈에 스캔, 진단 카드만 액센트 컬러로 강조 가능. 대시보드형 화면에 적합.</p>
+      <section class="phone">
+        <div class="b-top">
+          <div class="b-av"><img src="img/환자.png" alt="박영자"></div>
+          <div style="flex:1; min-width:0;">
+            <div class="b-name">박영자</div>
+            <div class="b-sub">케어 대상 · 78세</div>
+          </div>
+          <span class="b-status">케어 중</span>
+        </div>
+        <div class="b-grid">
+          <div class="b-cell b-cell--info">
+            <div class="b-cell__head"><iconify-icon icon="fluent:door-24-filled"></iconify-icon>호실</div>
+            <div class="b-cell__val">302호</div>
+          </div>
+          <div class="b-cell b-cell--green">
+            <div class="b-cell__head"><iconify-icon icon="fluent:stethoscope-24-filled"></iconify-icon>담당 간호사</div>
+            <div class="b-cell__val">김서연</div>
+          </div>
+          <div class="b-cell b-cell--gray">
+            <div class="b-cell__head"><iconify-icon icon="fluent:calendar-24-filled"></iconify-icon>입소일</div>
+            <div class="b-cell__val">2025.09.15</div>
+          </div>
+          <div class="b-cell b-cell--accent">
+            <div class="b-cell__head"><iconify-icon icon="fluent:heart-pulse-24-filled"></iconify-icon>주요 진단</div>
+            <div class="b-cell__val">고혈압 · 당뇨</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ===================== 옵션 C ===================== -->
+    <div class="col">
+      <div class="col__head">
+        <span class="col__tag">C</span>
+        <span class="col__title">현재 디자인 정련 (Minimal Refactor)</span>
+      </div>
+      <p class="col__desc">현재 구조 유지. 라벨/값을 한 줄로 통합해 세로 공간 절약 + 아이콘 컨테이너를 정보 성격별 컬러 코딩(파랑·녹색·회색·빨강).</p>
+      <section class="phone">
+        <div class="c-top">
+          <div class="c-av"><img src="img/환자.png" alt="박영자"></div>
+          <div style="flex:1; min-width:0;">
+            <div class="c-name">박영자</div>
+            <div class="c-sub">케어 대상 · 78세</div>
+          </div>
+          <span class="c-status">케어 중</span>
+        </div>
+        <div class="c-rows">
+          <div class="c-row">
+            <div class="c-row__icon c-row__icon--info"><iconify-icon icon="fluent:door-24-filled"></iconify-icon></div>
+            <div class="c-row__label">호실</div>
+            <div class="c-row__val">302호</div>
+          </div>
+          <div class="c-row">
+            <div class="c-row__icon c-row__icon--green"><iconify-icon icon="fluent:stethoscope-24-filled"></iconify-icon></div>
+            <div class="c-row__label">담당 간호사</div>
+            <div class="c-row__val">김서연 간호사</div>
+          </div>
+          <div class="c-row">
+            <div class="c-row__icon c-row__icon--gray"><iconify-icon icon="fluent:calendar-24-filled"></iconify-icon></div>
+            <div class="c-row__label">입소일</div>
+            <div class="c-row__val">2025.09.15</div>
+          </div>
+          <div class="c-row">
+            <div class="c-row__icon c-row__icon--red"><iconify-icon icon="fluent:heart-pulse-24-filled"></iconify-icon></div>
+            <div class="c-row__label">주요 진단</div>
+            <div class="c-row__val">고혈압 · 당뇨 관리</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ===================== 옵션 D ===================== -->
+    <div class="col">
+      <div class="col__head">
+        <span class="col__tag">D</span>
+        <span class="col__title">컴팩트 리스트 카드</span>
+      </div>
+      <p class="col__desc">아바타 + 이름 + 핵심 메타를 한 줄로 압축, 진단은 chip 태그로. 다중 케어 대상자 리스트나 의료진 대시보드에 최적.</p>
+      <section class="phone">
+        <div class="d-row">
+          <div class="d-av"><img src="img/환자.png" alt="박영자"></div>
+          <div class="d-body">
+            <div class="d-head">
+              <span class="d-name">박영자</span>
+              <span class="d-age">78세</span>
+              <span class="d-status">케어 중</span>
+            </div>
+            <div class="d-meta">
+              <span><iconify-icon icon="fluent:door-24-filled"></iconify-icon>302호</span>
+              <span><iconify-icon icon="fluent:stethoscope-24-filled"></iconify-icon>김서연 간호사</span>
+              <span><iconify-icon icon="fluent:calendar-24-filled"></iconify-icon>2025.09.15 입소</span>
+            </div>
+            <div class="d-chips">
+              <span class="d-chip"><iconify-icon icon="fluent:heart-pulse-24-filled"></iconify-icon>고혈압</span>
+              <span class="d-chip"><iconify-icon icon="fluent:drop-24-filled"></iconify-icon>당뇨 관리</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  </div>
+
+  <section class="notes">
+    <h2>옵션별 비교</h2>
+    <table>
+      <thead>
+        <tr><th>옵션</th><th>강점</th><th>주의</th><th>추천 컨텍스트</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>A</td>
+          <td>식별성·시니어 가독성 최고, iOS 네이티브 익숙함</td>
+          <td>카드 높이가 가장 큼, 아이콘 없음</td>
+          <td>마이페이지·프로필 상세</td>
+        </tr>
+        <tr>
+          <td>B</td>
+          <td>4개 정보 균등 비교, 진단 강조 가능</td>
+          <td>값이 긴 경우 줄바꿈 발생, 카드 안 카드</td>
+          <td>대시보드형 홈, 한눈에 보기</td>
+        </tr>
+        <tr>
+          <td>C</td>
+          <td>현재 시스템 변경 최소, 아이콘 컬러로 위계 강화</td>
+          <td>차별화 적음, 라벨/값 정렬 변경만</td>
+          <td>안정적 점진 개선</td>
+        </tr>
+        <tr>
+          <td>D</td>
+          <td>공간 효율 최고, 리스트/검색에 강함</td>
+          <td>단일 상세에는 정보 밀도 부족</td>
+          <td>의료진 환자 리스트, 가족 다중 케어</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</body>
+</html>

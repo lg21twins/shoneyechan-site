@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ko" data-role="guardian" data-platform="mobile">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>빠른 액션 — D 변형 모음</title>
+
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css">
+  <link rel="stylesheet" href="../07_디자인/system/app.css">
+  <link rel="stylesheet" href="../07_디자인/system/components.css">
+  <script src="../07_디자인/_iconify-icon.min.js"></script>
+
+  <style>
+    body { background: var(--color-bg-canvas); }
+    .app-shell { max-width: 430px; margin: 0 auto; padding: 16px; }
+    .opt-head {
+      font-size: 13px; font-weight: 800; color: var(--color-text-tertiary);
+      letter-spacing: 0.4px; text-transform: uppercase;
+      margin: 32px 0 4px; padding-left: 4px;
+    }
+    .opt-head:first-of-type { margin-top: 0; }
+    .opt-note { font-size: 12px; color: var(--color-text-secondary); margin: 0 4px 12px; line-height: 1.4; }
+    .opt-source { font-size: 11px; color: var(--color-text-tertiary); font-weight: 600; }
+
+    /* 공통 카드 base */
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    /* ============================================================
+       D1 — Stat hero (Forest): 큰 숫자가 카드의 주연
+    ============================================================ */
+    .vD1 .cell {
+      padding: 16px;
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: 16px;
+      display: flex; flex-direction: column; gap: 4px;
+      text-decoration: none; color: inherit;
+      position: relative;
+      box-shadow: var(--shadow-1);
+    }
+    .vD1 .ic {
+      width: 38px; height: 38px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 8px;
+    }
+    .vD1 .ic iconify-icon { font-size: 20px; }
+    .vD1 .ic--accent  { background: var(--color-accent-soft); }
+    .vD1 .ic--accent iconify-icon { color: var(--color-accent); }
+    .vD1 .ic--warning { background: var(--color-warning-soft); }
+    .vD1 .ic--warning iconify-icon { color: var(--palette-amber-700, #B45309); }
+    .vD1 .ic--success { background: var(--color-success-soft); }
+    .vD1 .ic--success iconify-icon { color: var(--color-success); }
+    .vD1 .ic--neutral { background: var(--color-bg-canvas); }
+    .vD1 .ic--neutral iconify-icon { color: var(--color-text-secondary); }
+    .vD1 .lbl { font-size: 12px; color: var(--color-text-secondary); font-weight: 600; }
+    .vD1 .val {
+      font-size: 22px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.1;
+    }
+    .vD1 .val em { font-size: 12px; font-weight: 600; font-style: normal; color: var(--color-text-tertiary); margin-left: 2px; }
+    .vD1 .sub-chip {
+      align-self: flex-start;
+      display: inline-flex; align-items: center; gap: 3px;
+      margin-top: 6px;
+      font-size: 10px; font-weight: 700;
+      padding: 2px 6px; border-radius: 999px;
+      background: var(--color-bg-canvas); color: var(--color-text-secondary);
+    }
+    .vD1 .sub-chip--warning { background: var(--color-warning-soft); color: var(--palette-amber-700, #B45309); }
+    .vD1 .sub-chip--success { background: var(--color-success-soft); color: var(--color-success); }
+    .vD1 .sub-chip iconify-icon { font-size: 10px; }
+
+    /* ============================================================
+       D2 — Pastel bg per cell (Alan): 각 셀이 옅은 컬러
+    ============================================================ */
+    .vD2 .cell {
+      padding: 16px;
+      border-radius: 16px;
+      display: flex; flex-direction: column; gap: 8px;
+      text-decoration: none; color: inherit;
+      position: relative; overflow: hidden;
+      border: 0;
+    }
+    .vD2 .cell::after {
+      content: ''; position: absolute; right: -20px; bottom: -20px;
+      width: 100px; height: 100px;
+      background: rgba(255,255,255,0.5);
+      border-radius: 50%;
+      filter: blur(20px);
+      pointer-events: none;
+    }
+    .vD2 .cell--accent  { background: linear-gradient(135deg, #DBEAFE, #BFDBFE); }
+    .vD2 .cell--warning { background: linear-gradient(135deg, #FEF3C7, #FDE68A); }
+    .vD2 .cell--success { background: linear-gradient(135deg, #D1FAE5, #A7F3D0); }
+    .vD2 .cell--neutral { background: linear-gradient(135deg, #F3F4F6, #E5E7EB); }
+    .vD2 .ic { font-size: 26px; position: relative; z-index: 1; }
+    .vD2 .ic--accent  iconify-icon { color: var(--color-accent); }
+    .vD2 .ic--warning iconify-icon { color: var(--palette-amber-700, #B45309); }
+    .vD2 .ic--success iconify-icon { color: var(--color-success); }
+    .vD2 .ic--neutral iconify-icon { color: var(--color-text-secondary); }
+    .vD2 .lbl { font-size: 15px; font-weight: 800; position: relative; z-index: 1; }
+    .vD2 .sub { font-size: 11px; color: rgba(0,0,0,0.55); font-weight: 600; position: relative; z-index: 1; }
+
+    /* ============================================================
+       D3 — Asymmetric featured (1 큰 + 3 작은)
+    ============================================================ */
+    .vD3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 12px;
+    }
+    .vD3 .hero {
+      grid-row: span 2;
+      background: linear-gradient(135deg, var(--color-accent), #5B9BFF);
+      color: #fff;
+      padding: 18px;
+      border-radius: 18px;
+      display: flex; flex-direction: column; justify-content: space-between;
+      text-decoration: none;
+      position: relative; overflow: hidden;
+    }
+    .vD3 .hero::after {
+      content: ''; position: absolute; right: -30px; top: -30px;
+      width: 140px; height: 140px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 50%;
+    }
+    .vD3 .hero iconify-icon.big { font-size: 28px; position: relative; z-index: 1; }
+    .vD3 .hero .lbl { font-size: 11px; opacity: 0.85; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; position: relative; z-index: 1; }
+    .vD3 .hero .title { font-size: 17px; font-weight: 800; line-height: 1.2; position: relative; z-index: 1; }
+    .vD3 .hero .desc { font-size: 11px; opacity: 0.85; margin-top: 4px; position: relative; z-index: 1; }
+    .vD3 .mini {
+      padding: 12px 14px;
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: 14px;
+      display: flex; flex-direction: column; gap: 6px;
+      text-decoration: none; color: inherit;
+      box-shadow: var(--shadow-1);
+    }
+    .vD3 .mini .ic {
+      width: 32px; height: 32px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .vD3 .mini .ic iconify-icon { font-size: 18px; }
+    .vD3 .mini .ic--warning { background: var(--color-warning-soft); }
+    .vD3 .mini .ic--warning iconify-icon { color: var(--palette-amber-700, #B45309); }
+    .vD3 .mini .ic--success { background: var(--color-success-soft); }
+    .vD3 .mini .ic--success iconify-icon { color: var(--color-success); }
+    .vD3 .mini .ic--neutral { background: var(--color-bg-canvas); }
+    .vD3 .mini .ic--neutral iconify-icon { color: var(--color-text-secondary); }
+    .vD3 .mini .lbl { font-size: 12px; font-weight: 700; }
+
+    /* ============================================================
+       D4 — Status badge dots (notification 표시)
+    ============================================================ */
+    .vD4 .cell {
+      padding: 16px;
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: 16px;
+      display: flex; flex-direction: column; gap: 8px;
+      text-decoration: none; color: inherit;
+      position: relative;
+      box-shadow: var(--shadow-1);
+    }
+    .vD4 .ic {
+      width: 38px; height: 38px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .vD4 .ic iconify-icon { font-size: 20px; }
+    .vD4 .ic--accent  { background: var(--color-accent-soft); }
+    .vD4 .ic--accent iconify-icon { color: var(--color-accent); }
+    .vD4 .ic--warning { background: var(--color-warning-soft); }
+    .vD4 .ic--warning iconify-icon { color: var(--palette-amber-700, #B45309); }
+    .vD4 .ic--success { background: var(--color-success-soft); }
+    .vD4 .ic--success iconify-icon { color: var(--color-success); }
+    .vD4 .ic--neutral { background: var(--color-bg-canvas); }
+    .vD4 .ic--neutral iconify-icon { color: var(--color-text-secondary); }
+    .vD4 .lbl { font-size: 14px; font-weight: 800; }
+    .vD4 .sub { font-size: 11px; color: var(--color-text-secondary); }
+    .vD4 .dot {
+      position: absolute; top: 14px; right: 14px;
+      min-width: 18px; height: 18px; padding: 0 5px;
+      border-radius: 999px;
+      background: var(--color-danger);
+      color: #fff;
+      font-size: 10px; font-weight: 800;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .vD4 .dot--new {
+      background: var(--color-accent); padding: 0; min-width: 8px; width: 8px;
+    }
+
+    /* ============================================================
+       D5 — Glass / 미세 그라데이션 카드 (이용자 hero 톤)
+    ============================================================ */
+    .vD5 .cell {
+      padding: 16px;
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: 16px;
+      display: flex; align-items: flex-start; gap: 12px;
+      text-decoration: none; color: inherit;
+      box-shadow: var(--shadow-1);
+      position: relative;
+      overflow: hidden;
+    }
+    .vD5 .cell::before {
+      content: ''; position: absolute;
+      left: 0; right: 0; top: 0; height: 3px;
+      background: var(--color-accent);
+    }
+    .vD5 .cell--accent::before  { background: var(--color-accent); }
+    .vD5 .cell--warning::before { background: var(--palette-amber-700, #B45309); }
+    .vD5 .cell--success::before { background: var(--color-success); }
+    .vD5 .cell--neutral::before { background: var(--color-text-tertiary); }
+    .vD5 .ic {
+      width: 32px; height: 32px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .vD5 .ic iconify-icon { font-size: 18px; }
+    .vD5 .ic--accent  { background: var(--color-accent-soft); }
+    .vD5 .ic--accent iconify-icon { color: var(--color-accent); }
+    .vD5 .ic--warning { background: var(--color-warning-soft); }
+    .vD5 .ic--warning iconify-icon { color: var(--palette-amber-700, #B45309); }
+    .vD5 .ic--success { background: var(--color-success-soft); }
+    .vD5 .ic--success iconify-icon { color: var(--color-success); }
+    .vD5 .ic--neutral { background: var(--color-bg-canvas); }
+    .vD5 .ic--neutral iconify-icon { color: var(--color-text-secondary); }
+    .vD5 .body { flex: 1; min-width: 0; }
+    .vD5 .lbl { font-size: 14px; font-weight: 800; }
+    .vD5 .val { font-size: 16px; font-weight: 800; margin-top: 2px; }
+    .vD5 .sub { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+  </style>
+</head>
+<body>
+
+<div class="app-shell">
+  <h1 style="font-size:22px;font-weight:800;margin:8px 0 4px;">빠른 액션 — D 디자인 변형</h1>
+  <p style="font-size:13px;color:var(--color-text-secondary);margin:0 0 24px;">
+    옵션 D(2x2 큰 카드) 기반 5가지 강화 버전.
+  </p>
+
+  <!-- D1 -->
+  <div class="opt-head">D1 — Stat hero (큰 숫자가 주연)</div>
+  <div class="opt-note">각 카드의 hero는 숫자(3명·₩125K·3건). 사용자가 들어가지 않아도 현재 상태 즉시 인식. <span class="opt-source">Forest 패턴</span></div>
+  <div class="vD1 grid">
+    <a class="cell">
+      <div class="ic ic--accent"><iconify-icon icon="fluent:people-24-filled"></iconify-icon></div>
+      <span class="lbl">가족</span>
+      <span class="val">3<em>명</em></span>
+    </a>
+    <a class="cell">
+      <div class="ic ic--warning"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon></div>
+      <span class="lbl">결제</span>
+      <span class="val">₩125K<em>/월</em></span>
+      <span class="sub-chip sub-chip--success"><iconify-icon icon="fluent:checkmark-12-filled"></iconify-icon>납부완료</span>
+    </a>
+    <a class="cell">
+      <div class="ic ic--success"><iconify-icon icon="fluent:alert-24-filled"></iconify-icon></div>
+      <span class="lbl">알림</span>
+      <span class="val">3<em>건</em></span>
+      <span class="sub-chip sub-chip--warning"><iconify-icon icon="fluent:circle-12-filled"></iconify-icon>미확인</span>
+    </a>
+    <a class="cell">
+      <div class="ic ic--neutral"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon></div>
+      <span class="lbl">설정</span>
+      <span class="val" style="font-size:14px;color:var(--color-text-tertiary);">앱 환경</span>
+    </a>
+  </div>
+
+  <!-- D2 -->
+  <div class="opt-head">D2 — Pastel 그라데이션 (각 셀이 컬러)</div>
+  <div class="opt-note">각 항목 카테고리 컬러로 옅게 채움. 시각적 다양성 ↑. <span class="opt-source">Alan Records</span></div>
+  <div class="vD2 grid">
+    <a class="cell cell--accent">
+      <span class="ic ic--accent"><iconify-icon icon="fluent:people-24-filled"></iconify-icon></span>
+      <span class="lbl">가족</span>
+      <span class="sub">초대 · 권한</span>
+    </a>
+    <a class="cell cell--warning">
+      <span class="ic ic--warning"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon></span>
+      <span class="lbl">결제</span>
+      <span class="sub">월 ₩125,000</span>
+    </a>
+    <a class="cell cell--success">
+      <span class="ic ic--success"><iconify-icon icon="fluent:alert-24-filled"></iconify-icon></span>
+      <span class="lbl">알림</span>
+      <span class="sub">3건 미확인</span>
+    </a>
+    <a class="cell cell--neutral">
+      <span class="ic ic--neutral"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon></span>
+      <span class="lbl">설정</span>
+      <span class="sub">앱 환경</span>
+    </a>
+  </div>
+
+  <!-- D3 -->
+  <div class="opt-head">D3 — Asymmetric (1 hero + 3 mini)</div>
+  <div class="opt-note">알림이 hero (긴급), 나머지 3개는 작게. 위계가 시각적으로 명확. <span class="opt-source">대시보드 패턴</span></div>
+  <div class="vD3">
+    <a class="hero">
+      <iconify-icon icon="fluent:alert-24-filled" class="big"></iconify-icon>
+      <div>
+        <div class="lbl">미확인 알림</div>
+        <div class="title">3건 확인 필요</div>
+        <div class="desc">긴급 1건 · 일정 2건</div>
+      </div>
+    </a>
+    <a class="mini"><div class="ic ic--warning"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon></div><span class="lbl">결제</span></a>
+    <a class="mini"><div class="ic ic--success"><iconify-icon icon="fluent:people-24-filled"></iconify-icon></div><span class="lbl">가족</span></a>
+    <a class="mini"><div class="ic ic--neutral"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon></div><span class="lbl">설정</span></a>
+    <!-- D3 grid는 hero가 row span 2 -->
+  </div>
+
+  <!-- D4 -->
+  <div class="opt-head">D4 — Status badge dots (알림 표시)</div>
+  <div class="opt-note">새 항목 있는 카드에 빨간 배지/점. 기본 D와 거의 같지만 상태 인지력 ↑</div>
+  <div class="vD4 grid">
+    <a class="cell">
+      <div class="ic ic--accent"><iconify-icon icon="fluent:people-24-filled"></iconify-icon></div>
+      <span class="lbl">가족</span>
+      <span class="sub">초대 · 권한 관리</span>
+    </a>
+    <a class="cell">
+      <div class="ic ic--warning"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon></div>
+      <span class="lbl">결제</span>
+      <span class="sub">월 ₩125,000</span>
+    </a>
+    <a class="cell">
+      <span class="dot">3</span>
+      <div class="ic ic--success"><iconify-icon icon="fluent:alert-24-filled"></iconify-icon></div>
+      <span class="lbl">알림</span>
+      <span class="sub">미확인 3건</span>
+    </a>
+    <a class="cell">
+      <div class="ic ic--neutral"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon></div>
+      <span class="lbl">설정</span>
+      <span class="sub">앱 환경</span>
+    </a>
+  </div>
+
+  <!-- D5 -->
+  <div class="opt-head">D5 — Top color bar + horizontal layout</div>
+  <div class="opt-note">각 카드 상단에 가는 컬러 띠. 내부는 좌 아이콘 + 우 라벨/값. 카테고리 컬러 강조</div>
+  <div class="vD5 grid">
+    <a class="cell cell--accent">
+      <span class="ic ic--accent"><iconify-icon icon="fluent:people-24-filled"></iconify-icon></span>
+      <div class="body">
+        <div class="lbl">가족</div>
+        <div class="val">3명</div>
+      </div>
+    </a>
+    <a class="cell cell--warning">
+      <span class="ic ic--warning"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon></span>
+      <div class="body">
+        <div class="lbl">결제</div>
+        <div class="val">₩125K</div>
+      </div>
+    </a>
+    <a class="cell cell--success">
+      <span class="ic ic--success"><iconify-icon icon="fluent:alert-24-filled"></iconify-icon></span>
+      <div class="body">
+        <div class="lbl">알림</div>
+        <div class="val">3건</div>
+      </div>
+    </a>
+    <a class="cell cell--neutral">
+      <span class="ic ic--neutral"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon></span>
+      <div class="body">
+        <div class="lbl">설정</div>
+        <div class="sub">앱 환경</div>
+      </div>
+    </a>
+  </div>
+
+  <div style="height:80px;"></div>
+</div>
+
+</body>
+</html>

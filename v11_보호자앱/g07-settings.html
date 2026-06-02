@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ko" data-role="guardian" data-platform="mobile">
+<head>
+  <meta charset="UTF-8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#EFF6FF">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="icon" href="icon-192.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>하루안부 — 알림 설정</title>
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css?v=24">
+  <script src="../07_디자인/_app-theme.js"></script>
+  <link rel="stylesheet" href="../07_디자인/system/app.css?v=24">
+  <link rel="stylesheet" href="../07_디자인/system/components.css?v=20260523e">
+  <script src="../07_디자인/_iconify-icon.min.js"></script>
+  <style>
+    .app-shell { max-width: 430px; margin: 0 auto; }
+    .group-title {
+      font-size: var(--text-mini); font-weight: var(--weight-bold);
+      color: var(--color-text-secondary);
+      letter-spacing: 0.4px; text-transform: uppercase;
+      margin: 0 0 var(--space-3);
+    }
+    .setting-item {
+      display: flex; align-items: center; gap: var(--space-4);
+      padding: 16px 18px;
+    }
+    .setting-item + .setting-item { border-top: 1px solid var(--color-border-subtle); }
+    .setting-info { flex: 1; }
+    .setting-label { font-size: var(--text-callout); font-weight: var(--weight-semibold); }
+    .setting-desc { font-size: var(--text-mini); color: var(--color-text-secondary); margin-top: 2px; }
+    .group-card { padding: 0; overflow: hidden; }
+  </style>
+
+  <!-- 보호자/요양보호사/의료진앱 공통 헤더·icon-btn 표준 (2026-05-22 통합) -->
+  <link rel="stylesheet" href="../v11_요양보호사앱/caregiver.css?v=20260525p">
+<style>
+  /* === 3앱 공통 헤더 표준 (d01-home 기준, 보호자앱에도 강제) === */
+  [data-platform="mobile"] .header{
+    padding: calc(env(safe-area-inset-top, 0px) + 6px) 20px 0 !important;
+    position: static !important;
+    background: transparent !important;
+  }
+  /* 기본 = 홈 패턴: 로고 + 액션 그룹 (flex space-between) */
+  [data-platform="mobile"] .header .top-nav{
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    margin-bottom: 24px !important;
+  }
+  /* 서브 패턴: title-block 있을 때 → grid 3-col (44 / 1fr / 44) */
+  [data-platform="mobile"] .header .top-nav:has(> .title-block){
+    display: grid !important;
+    grid-template-columns: 44px 1fr 44px !important;
+    margin-bottom: 8px !important;
+  }
+  [data-platform="mobile"] .header .top-nav:has(> .title-block) > .h-left{
+    width: 44px; height: 44px;
+  }
+  [data-platform="mobile"] .header .top-nav:has(> .title-block) > .title-block{
+    grid-column: 2; text-align: center; line-height: 1.2; min-width: 0;
+  }
+  [data-platform="mobile"] .header .top-nav:has(> .title-block) > .h-name{
+    font: 600 17px/1.2 inherit; color: var(--color-text-primary); letter-spacing: -.3px; text-align: center;
+  }
+  [data-platform="mobile"] .header .top-nav:has(> .title-block) > :first-child{
+    grid-column: 1; justify-self: start;
+  }
+  [data-platform="mobile"] .header .top-nav:has(> .title-block) > :last-child{
+    grid-column: 3; justify-self: end;
+  }
+  /* logo */
+  [data-platform="mobile"] .header .top-nav > .logo{
+    display: inline-flex !important;
+    align-items: center !important;
+    text-decoration: none !important;
+    color: inherit !important;
+    background: transparent !important;
+    border: 0 !important;
+    padding: 4px !important;
+    margin: -4px !important;
+    cursor: pointer !important;
+  }
+  [data-platform="mobile"] .header .top-nav > .logo svg{ width: 28px !important; height: 28px !important; display: block !important; }
+  /* top-actions 그룹 (홈 페이지) */
+  [data-platform="mobile"] .header .top-actions{
+    display: flex !important; align-items: center !important; gap: 8px !important;
+  }
+  /* icon-btn 글라스 (44×44, blur, shadow) */
+  [data-platform="mobile"] .header .icon-btn{
+    width: 44px !important; height: 44px !important; border-radius: 50% !important;
+    background: rgba(255,255,255,.55) !important;
+    border: .5px solid rgba(255,255,255,.55) !important;
+    backdrop-filter: blur(12px) saturate(140%) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(140%) !important;
+    box-shadow: 0 1px 1px rgba(255,255,255,.6) inset, 0 4px 16px rgba(0,0,0,.06) !important;
+    display: inline-flex !important; align-items: center !important; justify-content: center !important;
+    cursor: pointer !important; text-decoration: none !important;
+    position: relative !important;
+    transition: transform .1s !important;
+  }
+  [data-platform="mobile"] .header .icon-btn:active{ transform: scale(.93); }
+  [data-platform="mobile"] .header .icon-btn iconify-icon{
+    font-size: 22px !important;
+    color: var(--color-accent-strong) !important;
+  }
+  [data-platform="mobile"] .header .icon-btn .notif-dot,
+  [data-platform="mobile"] .header .notif-dot{
+    position: absolute !important; top: 10px !important; right: 10px !important;
+    width: 8px !important; height: 8px !important; border-radius: 50% !important;
+    background: var(--color-danger) !important;
+    border: 1.5px solid white !important;
+    z-index: 2 !important;
+  }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <header class="header">
+    <div class="top-nav">
+      <a class="icon-btn" href="g05-mypage.html" aria-label="뒤로"><iconify-icon icon="fluent:chevron-left-24-filled"></iconify-icon></a>
+      <div class="title-block">
+        <h1 class="h-name">알림 설정</h1>
+      </div>
+      <div class="icon-btn" aria-hidden="true"></div>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <div class="stack-loose u-pt-5">
+
+      <section class="fade-in fade-in--d1">
+        <div class="group-title">화면 설정</div>
+        <div class="card group-card u-mb-7">
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">글자 크게</div>
+              <div class="setting-desc">본문이 한 단계 더 커져요</div>
+            </div>
+            <button type="button" id="toggle-text" class="toggle" role="switch" aria-checked="false"></button>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info">
+              <div class="setting-label">고대비 모드</div>
+              <div class="setting-desc">글자와 배경 대비를 강하게 해요 (7:1)</div>
+            </div>
+            <button type="button" id="toggle-contrast" class="toggle" role="switch" aria-checked="false"></button>
+          </div>
+        </div>
+      </section>
+
+      <section class="fade-in fade-in--d2">
+        <div class="group-title">케어 알림</div>
+        <div class="card group-card">
+          <div class="setting-item">
+            <div class="setting-info"><div class="setting-label">긴급 알림</div><div class="setting-desc">SOS, 혈압 이상 등 긴급 상황</div></div>
+            <button type="button" class="toggle is-on" role="switch" aria-checked="true" onclick="toggleSwitch(this)"></button>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info"><div class="setting-label">일일 리포트</div><div class="setting-desc">매일 오후 5시 AI 케어 리포트</div></div>
+            <button type="button" class="toggle is-on" role="switch" aria-checked="true" onclick="toggleSwitch(this)"></button>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info"><div class="setting-label">투약 완료 알림</div><div class="setting-desc">투약이 완료될 때마다</div></div>
+            <button type="button" class="toggle is-on" role="switch" aria-checked="true" onclick="toggleSwitch(this)"></button>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info"><div class="setting-label">식사 기록 알림</div><div class="setting-desc">식사 기록이 업데이트될 때</div></div>
+            <button type="button" class="toggle" role="switch" aria-checked="false" onclick="toggleSwitch(this)"></button>
+          </div>
+        </div>
+      </section>
+
+      <section class="fade-in fade-in--d2">
+        <div class="group-title">채팅</div>
+        <div class="card group-card">
+          <div class="setting-item">
+            <div class="setting-info"><div class="setting-label">새 메시지 알림</div><div class="setting-desc">간호사로부터 메시지 수신</div></div>
+            <button type="button" class="toggle is-on" role="switch" aria-checked="true" onclick="toggleSwitch(this)"></button>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info"><div class="setting-label">소리</div></div>
+            <button type="button" class="toggle is-on" role="switch" aria-checked="true" onclick="toggleSwitch(this)"></button>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info"><div class="setting-label">진동</div></div>
+            <button type="button" class="toggle is-on" role="switch" aria-checked="true" onclick="toggleSwitch(this)"></button>
+          </div>
+        </div>
+      </section>
+
+      <section class="fade-in fade-in--d3">
+        <div class="group-title">기타</div>
+        <div class="card group-card">
+          <div class="setting-item">
+            <div class="setting-info"><div class="setting-label">처방전 변경 알림</div><div class="setting-desc">처방 내용이 변경될 때</div></div>
+            <button type="button" class="toggle is-on" role="switch" aria-checked="true" onclick="toggleSwitch(this)"></button>
+          </div>
+          <div class="setting-item">
+            <div class="setting-info"><div class="setting-label">마케팅 알림</div><div class="setting-desc">이벤트, 공지사항</div></div>
+            <button type="button" class="toggle" role="switch" aria-checked="false" onclick="toggleSwitch(this)"></button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <div class="bottom-bar">
+    <nav class="tabbar">
+      <a href="g-guardian-live.html" class="tab" aria-label="홈"><span class="tab-icon"><iconify-icon icon="fluent:home-24-filled" class="u-fs-26"></iconify-icon></span></a>
+      <a href="g02-ai-guide.html" class="tab" aria-label="AI 가이드"><span class="tab-icon"><iconify-icon icon="fluent:book-24-filled" class="u-fs-26"></iconify-icon></span></a>
+      <a href="g03-sotong.html" class="tab" aria-label="소통"><span class="tab-icon"><iconify-icon icon="fluent:chat-24-filled" class="text-22"></iconify-icon></span></a>
+      <a href="g05-records.html" class="tab" aria-label="기록"><span class="tab-icon"><iconify-icon icon="fluent:folder-24-filled" class="u-fs-26"></iconify-icon></span></a>
+      <a href="g05-mypage.html" class="tab active" aria-label="마이"><span class="tab-icon"><iconify-icon icon="fluent:person-24-filled" class="u-fs-26"></iconify-icon></span></a>
+    </nav>
+    <a href="g-guardian-live.html?chat=1" class="ai-fab" aria-label="AI 어시스턴트">
+      <svg width="22" height="22" viewBox="0 0 2526 2526" fill="var(--brand-blue-500)"><path d="M2521.32 2506.66C1239.65 2657.48 1239.65 1895.6 1239.65 1279.34L2497.69 0C2518.68 494.198 2522.27 1157.92 1658.86 1262.48C2641.88 1314.25 2521.32 2101.84 2521.32 2506.66Z"/><path d="M4.677 19.335C1286.35-131.481 1286.35 630.399 1286.35 1246.66L28.315 2526C7.322 2031.8 3.73 1368.08 867.143 1263.52C-115.881 1211.75 4.677 424.157 4.677 19.335Z"/></svg>
+    </a>
+  </div>
+
+</div>
+<script>
+  function toggleSwitch(btn){
+    var on = btn.classList.toggle('is-on');
+    btn.setAttribute('aria-checked', on ? 'true' : 'false');
+  }
+
+  // ---- v3.2.3 화면 설정 토글 바인딩 (다크는 봉인, 글자크게·고대비만) ----
+  (function () {
+    const T = window.HaruTheme;
+    if (!T) return;
+
+    function syncToggle(btn, on) {
+      btn.classList.toggle('is-on', on);
+      btn.setAttribute('aria-checked', on ? 'true' : 'false');
+    }
+
+    const text     = document.getElementById('toggle-text');
+    const contrast = document.getElementById('toggle-contrast');
+
+    syncToggle(text, T.getTextSize() === 'large');
+    syncToggle(contrast, T.getContrast() === 'high');
+
+    text.addEventListener('click', () => {
+      const next = !text.classList.contains('is-on');
+      T.setTextSize(next ? 'large' : 'normal');
+      syncToggle(text, next);
+    });
+
+    contrast.addEventListener('click', () => {
+      const next = !contrast.classList.contains('is-on');
+      T.setContrast(next ? 'high' : 'normal');
+      syncToggle(contrast, next);
+    });
+  })();
+</script>
+  <div class="bottom-scrim" aria-hidden="true"></div>
+</body>
+</html>

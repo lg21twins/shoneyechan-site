@@ -1,0 +1,1739 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>일일 리포트 — 시안 3종 (A/B/C)</title>
+<link rel="stylesheet" href="pretendard.css">
+<script src="../07_디자인/_iconify-icon.min.js"></script>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --blue:#2C7AFC;--blue-l:#5B9BFF;--blue-d:#1D6AF2;
+    --green:#34D399;--green-d:#059669;
+    --amber:#F59E0B;--red:#E32B25;--purple:#7C3AED;--cyan:#22D3EE;
+    --t1:#111827;--t2:rgba(0,0,0,.5);--t3:rgba(0,0,0,.35);--t4:rgba(0,0,0,.18);
+    --bg:#fafaf6;--sheet:#ecf2fa;--card:#fff;
+    --font:'Pretendard Variable','Pretendard',-apple-system,system-ui,sans-serif;
+  }
+  html,body{background:var(--bg);overscroll-behavior:none}
+  body{font-family:var(--font);color:var(--t1);-webkit-font-smoothing:antialiased;padding-bottom:120px}
+  a,button{touch-action:manipulation;-webkit-tap-highlight-color:transparent;cursor:pointer;font-family:inherit}
+
+  /* 시안 스위처 */
+  .switcher{position:sticky;top:0;z-index:50;background:rgba(250,250,246,.86);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid rgba(0,0,0,.05);padding:14px 16px 10px}
+  .switcher h1{font-size:13px;font-weight:800;letter-spacing:-.2px;color:var(--t1);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+  .switcher h1 iconify-icon{font-size:14px;color:var(--blue)}
+  .switcher h1 small{font-size:11px;font-weight:500;color:var(--t3);margin-left:4px}
+  .tab-row{display:flex;gap:6px;background:rgba(0,0,0,.04);padding:4px;border-radius:12px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .tab-row::-webkit-scrollbar{display:none}
+  .tab-row button{flex:0 0 auto;min-width:90px;padding:8px 12px;border:0;background:transparent;font-size:12px;font-weight:700;color:var(--t2);border-radius:9px;letter-spacing:-.1px;transition:background .18s,color .18s;white-space:nowrap}
+  .tab-row button.active{background:#fff;color:var(--t1);box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .tab-row button small{display:block;font-size:9.5px;font-weight:500;color:var(--t3);margin-top:1px;letter-spacing:0}
+  .tab-row button.active small{color:var(--blue)}
+
+  /* 폰 프레임 — 시트 영역만 보여줌 */
+  .phone{max-width:430px;margin:18px auto 60px;border-radius:32px;overflow:hidden;background:#d4e4ff;box-shadow:0 16px 48px rgba(0,0,0,.12),0 2px 10px rgba(0,0,0,.04);position:relative}
+  .phone-peek{height:120px;display:flex;align-items:flex-end;padding:16px 18px;background:radial-gradient(circle at 50% 110%,rgba(70,168,255,.35),transparent 60%),#d4e4ff;color:#2a1810}
+  .phone-peek .greet-main{font-size:18px;font-weight:700;letter-spacing:-.4px;line-height:1.25}
+  .phone-peek .greet-sub{font-size:12px;color:rgba(42,24,16,.55);margin-top:4px;font-weight:500}
+  .phone-peek .badge{margin-left:auto;font-size:10px;font-weight:700;color:var(--blue);background:rgba(255,255,255,.6);padding:4px 9px;border-radius:999px;letter-spacing:.2px}
+
+  /* 시트 */
+  .sheet{background:linear-gradient(180deg,rgba(236,242,250,.92) 0%,rgba(236,242,250,.92) 64px,var(--sheet) 144px,var(--sheet) 100%);border-radius:22px 22px 0 0;border-top:.5px solid rgba(255,255,255,.88);padding:14px 16px 80px;min-height:1200px;position:relative}
+  .sheet::before{content:'';width:40px;height:5px;border-radius:3px;background:rgba(0,0,0,.15);margin:0 auto 14px;display:block}
+  .sheet-head{display:flex;align-items:center;justify-content:space-between;padding:6px 4px 12px}
+  .sheet-head .ttl{font-size:17px;font-weight:800;letter-spacing:-.3px}
+  .sheet-head .date{font-size:12px;color:var(--t3);font-weight:600}
+
+  /* ─── 공통 카드 토큰 ─── */
+  .card{background:var(--card);border:1px solid rgba(0,0,0,.04);border-radius:20px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,.04),0 1px 3px rgba(0,0,0,.03)}
+  .card+.card{margin-top:10px}
+  .card-tt{font-size:11px;font-weight:800;letter-spacing:.3px;color:var(--blue);text-transform:uppercase;display:flex;align-items:center;gap:5px;margin-bottom:8px}
+  .card-tt iconify-icon{font-size:13px}
+  .h2{font-size:16px;font-weight:800;color:var(--t1);letter-spacing:-.3px;display:flex;align-items:center;gap:6px}
+  .h2 iconify-icon{font-size:18px}
+  .meta{font-size:11.5px;color:var(--t3);font-weight:500}
+  .pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:-.1px}
+  .pill iconify-icon{font-size:12px}
+  .pill.ok{background:rgba(52,211,153,.14);color:var(--green-d)}
+  .pill.warn{background:rgba(245,158,11,.14);color:#B45309}
+  .pill.alert{background:rgba(227, 43, 37,.12);color:#B91C1C}
+  .pill.info{background:rgba(44,122,252,.10);color:var(--blue-d)}
+  .pill.muted{background:rgba(0,0,0,.05);color:var(--t2)}
+  .section-gap{margin-top:18px;padding:0 4px;display:flex;align-items:center;justify-content:space-between}
+  .section-gap h3{font-size:14px;font-weight:800;letter-spacing:-.3px}
+  .section-gap a{font-size:12px;font-weight:700;color:var(--blue);text-decoration:none;display:inline-flex;align-items:center;gap:2px}
+
+  /* ═════════════════════════════════════════════
+     변종 A — 안심 카드 (Reassurance-led)
+     Hero: 상태 한 줄 + AI 진단 / 어제와 다른 점 / 사진
+  ═════════════════════════════════════════════ */
+  .va .hero{background:linear-gradient(135deg,#fff 0%,#f0f6ff 100%);border:1px solid rgba(44,122,252,.12);border-radius:22px;padding:20px;box-shadow:0 6px 22px rgba(44,122,252,.08)}
+  .va .hero .status-row{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+  .va .hero .status-orb{width:32px;height:32px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#5BFFB3 0%,var(--green) 60%,var(--green-d) 100%);box-shadow:0 0 0 4px rgba(52,211,153,.18);flex-shrink:0}
+  .va .hero .status-text{font-size:11px;font-weight:800;color:var(--green-d);letter-spacing:.4px}
+  .va .hero .status-text small{display:block;font-size:10px;font-weight:600;color:var(--t3);letter-spacing:.1px;margin-top:1px}
+  .va .hero .status-time{margin-left:auto;font-size:10.5px;color:var(--t3);font-weight:600}
+  .va .hero h2{font-size:22px;font-weight:800;letter-spacing:-.6px;line-height:1.3;color:var(--t1)}
+  .va .hero h2 b{color:var(--blue)}
+  .va .hero h2 .warn{color:#B45309}
+  .va .hero p{font-size:13.5px;color:var(--t2);line-height:1.55;margin-top:8px;letter-spacing:-.2px}
+  .va .hero .actions{display:flex;gap:8px;margin-top:14px}
+  .va .hero .actions button{flex:1;padding:10px 12px;border-radius:12px;border:0;background:rgba(44,122,252,.08);color:var(--blue);font-size:12.5px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:5px;letter-spacing:-.2px}
+  .va .hero .actions button.primary{background:var(--blue);color:#fff}
+  .va .hero .actions button iconify-icon{font-size:14px}
+
+  /* 어제와 다른 점 — 칩 카드 */
+  .va .diff{background:#fff;border-radius:20px;padding:14px 16px;border:1px solid rgba(0,0,0,.04);box-shadow:0 2px 10px rgba(0,0,0,.04)}
+  .va .diff-head{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+  .va .diff-head .tt{font-size:13px;font-weight:800;color:var(--t1)}
+  .va .diff-list{display:flex;flex-direction:column;gap:8px}
+  .va .diff-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(245,158,11,.06)}
+  .va .diff-item.ok{background:rgba(52,211,153,.06)}
+  .va .diff-item .ico{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(245,158,11,.18)}
+  .va .diff-item.ok .ico{background:rgba(52,211,153,.18)}
+  .va .diff-item .ico iconify-icon{font-size:15px;color:#B45309}
+  .va .diff-item.ok .ico iconify-icon{color:var(--green-d)}
+  .va .diff-item .body{flex:1;min-width:0}
+  .va .diff-item .body strong{font-size:13px;font-weight:700;color:var(--t1);display:block;letter-spacing:-.2px;line-height:1.3}
+  .va .diff-item .body span{font-size:11.5px;color:var(--t2);font-weight:500;margin-top:1px;display:block;line-height:1.4}
+  .va .diff-item .delta{font-size:11px;font-weight:800;color:#B45309;flex-shrink:0;align-self:center;font-variant-numeric:tabular-nums}
+  .va .diff-item.ok .delta{color:var(--green-d)}
+
+  /* 오늘의 순간 */
+  .moment{display:block;background:#fff;border-radius:20px;overflow:hidden;border:1px solid rgba(0,0,0,.04);box-shadow:0 2px 10px rgba(0,0,0,.04);text-decoration:none;color:inherit}
+  .moment-photo{height:180px;background:linear-gradient(135deg,#f4e0c8,#d6b994);position:relative;display:flex;align-items:flex-end;padding:14px}
+  .moment-photo::before{content:'';position:absolute;inset:0;background:url("mockup.png") center/cover no-repeat;opacity:.95}
+  .moment-photo::after{content:'';position:absolute;inset:auto 0 0 0;height:60%;background:linear-gradient(180deg,transparent,rgba(0,0,0,.45));pointer-events:none}
+  .moment-photo .tag{position:relative;z-index:2;display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.85);backdrop-filter:blur(8px);font-size:10.5px;font-weight:800;color:#92400E;letter-spacing:.2px}
+  .moment-body{padding:14px 18px 16px}
+  .moment-body .q{font-size:14px;font-weight:600;line-height:1.5;color:var(--t1);letter-spacing:-.2px}
+  .moment-body .meta{margin-top:6px;display:flex;align-items:center;gap:6px}
+  .moment-body .meta .avatar{width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,#FECACA,#F87171);font-size:9px;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center}
+
+  /* 6칸 그리드 */
+  .grid6{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
+  .mini{background:#fff;border-radius:14px;padding:12px 11px;border:1px solid rgba(0,0,0,.04);box-shadow:0 1px 4px rgba(0,0,0,.03);position:relative}
+  .mini.warn{border-color:rgba(245,158,11,.35);background:linear-gradient(180deg,#fff,#FFF7ED)}
+  .mini .ico-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .mini .ico-row iconify-icon{font-size:15px}
+  .mini .ico-row .dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+  .mini .ico-row .dot.warn{background:var(--amber);box-shadow:0 0 0 3px rgba(245,158,11,.18)}
+  .mini .v{font-size:20px;font-weight:800;letter-spacing:-.6px;line-height:1.05;color:var(--t1)}
+  .mini .v small{font-size:11px;font-weight:600;color:var(--t3);margin-left:1px}
+  .mini .l{font-size:10.5px;color:var(--t3);font-weight:600;margin-top:3px;letter-spacing:-.1px}
+  .mini .l b{color:var(--green-d);font-weight:700}
+  .mini.warn .l b{color:#B45309}
+
+  /* 활동·위생 (2칸) */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .va .activity-c{background:#fff;border-radius:16px;padding:14px;border:1px solid rgba(0,0,0,.04);box-shadow:0 1px 4px rgba(0,0,0,.03)}
+  .va .activity-c .h{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .va .activity-c .h iconify-icon{font-size:16px;color:var(--amber)}
+  .va .activity-c .h .t{font-size:12px;font-weight:800}
+  .va .activity-c .v{font-size:24px;font-weight:800;letter-spacing:-.7px;line-height:1}
+  .va .activity-c .v small{font-size:11px;color:var(--t3);font-weight:600;margin-left:2px}
+  .va .activity-c .bars{display:flex;align-items:flex-end;gap:3px;height:36px;margin:10px 0 8px}
+  .va .activity-c .bars span{flex:1;border-radius:3px 3px 0 0;background:linear-gradient(180deg,#FED7AA,#F59E0B)}
+  .va .activity-c .desc{font-size:10.5px;color:var(--t3);font-weight:600}
+  .va .hygiene{background:#fff;border-radius:16px;padding:14px;border:1px solid rgba(0,0,0,.04);box-shadow:0 1px 4px rgba(0,0,0,.03)}
+  .va .hygiene .h{display:flex;align-items:center;gap:5px;margin-bottom:10px}
+  .va .hygiene .h iconify-icon{font-size:16px;color:#2DD4BF}
+  .va .hygiene .h .t{font-size:12px;font-weight:800}
+  .va .hygiene .item{display:flex;align-items:center;gap:6px;padding:5px 0;font-size:12px;font-weight:600;color:var(--t1)}
+  .va .hygiene .item .chk{width:16px;height:16px;border-radius:5px;background:#2DD4BF;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;color:#fff;font-weight:800}
+  .va .hygiene .item.todo .chk{background:transparent;border:1.5px solid rgba(0,0,0,.12)}
+  .va .hygiene .item.todo{color:var(--t3)}
+  .va .hygiene .item time{font-size:10px;color:var(--t3);font-weight:600;margin-left:auto}
+
+  /* 케어 일지 timeline */
+  .care-log{margin-top:10px;background:#fff;border-radius:20px;padding:16px;border:1px solid rgba(0,0,0,.04);box-shadow:0 2px 10px rgba(0,0,0,.04)}
+  .care-log .head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+  .care-log .head .avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#FECACA,#F87171);font-size:11px;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .care-log .head .name{font-size:13px;font-weight:800;line-height:1.2}
+  .care-log .head .role{font-size:10.5px;color:var(--t3);font-weight:500}
+  .care-log .head .pill{margin-left:auto}
+  .care-log .quote{font-size:13px;font-weight:600;line-height:1.55;color:var(--t1);letter-spacing:-.2px;padding:12px 14px;background:rgba(44,122,252,.04);border-radius:12px;border-left:3px solid var(--blue);margin-bottom:12px}
+  .care-tasks{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .care-task{display:flex;align-items:center;gap:6px;padding:8px 10px;background:rgba(0,0,0,.025);border-radius:9px;font-size:11.5px;font-weight:600;color:var(--t1)}
+  .care-task iconify-icon{font-size:13px;color:var(--green-d)}
+
+  /* 보호자 할 일 */
+  .todo-card{margin-top:10px;background:linear-gradient(135deg,#fff 0%,#FFF7ED 100%);border:1px solid rgba(245,158,11,.18);border-radius:20px;padding:16px;box-shadow:0 2px 10px rgba(245,158,11,.06)}
+  .todo-card .head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .todo-card .head .t{font-size:13px;font-weight:800;display:flex;align-items:center;gap:6px}
+  .todo-card .head .t iconify-icon{font-size:15px;color:var(--amber)}
+  .todo-card .head .count{font-size:10.5px;font-weight:700;color:#B45309;background:rgba(245,158,11,.16);padding:3px 9px;border-radius:999px}
+  .todo-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px dashed rgba(245,158,11,.18)}
+  .todo-item:first-of-type{border-top:0}
+  .todo-item .ck{width:18px;height:18px;border-radius:6px;border:2px solid rgba(0,0,0,.15);background:#fff;flex-shrink:0}
+  .todo-item .body{flex:1;min-width:0}
+  .todo-item .body strong{font-size:13px;font-weight:700;display:block;letter-spacing:-.2px}
+  .todo-item .body span{font-size:11px;color:var(--t3);font-weight:500;margin-top:1px;display:block}
+  .todo-item .due{font-size:10.5px;font-weight:800;color:#B45309;flex-shrink:0}
+
+  /* 일정 미니 */
+  .va .sched{margin-top:10px;background:#fff;border-radius:20px;padding:16px;border:1px solid rgba(0,0,0,.04);box-shadow:0 2px 10px rgba(0,0,0,.04)}
+  .va .sched .head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .va .sched .head .t{font-size:13px;font-weight:800}
+  .va .sched .head .more{font-size:11px;font-weight:700;color:var(--blue)}
+  .va .sched .next{background:rgba(44,122,252,.06);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:12px;margin-bottom:8px}
+  .va .sched .next .time{font-size:24px;font-weight:800;color:var(--blue);letter-spacing:-1px;line-height:1;font-variant-numeric:tabular-nums}
+  .va .sched .next .body{flex:1}
+  .va .sched .next .body strong{font-size:13.5px;font-weight:700;display:block}
+  .va .sched .next .body span{font-size:11px;color:var(--t3);font-weight:500;margin-top:1px;display:block}
+  .va .sched .next .badge{font-size:10px;font-weight:700;color:var(--blue);background:#fff;padding:3px 8px;border-radius:999px;letter-spacing:.1px}
+  .va .sched .row{display:flex;align-items:center;gap:8px;padding:6px 4px;font-size:12px}
+  .va .sched .row time{font-variant-numeric:tabular-nums;font-weight:700;color:var(--t2);width:38px;flex-shrink:0;font-size:11px}
+  .va .sched .row .name{flex:1;font-weight:600;color:var(--t1)}
+  .va .sched .row .pip{width:5px;height:5px;border-radius:50%;background:rgba(0,0,0,.15)}
+
+  /* ═════════════════════════════════════════════
+     변종 B — 지표 대시 (Data-led, Whoop·Bevel style)
+  ═════════════════════════════════════════════ */
+  .vb .ring-hero{background:linear-gradient(180deg,#fff 0%,#f0f6ff 100%);border-radius:22px;padding:18px 16px;border:1px solid rgba(0,0,0,.04);box-shadow:0 6px 22px rgba(0,0,0,.06)}
+  .vb .ring-hero .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .vb .ring-hero .top .t{font-size:11px;font-weight:800;color:var(--blue);letter-spacing:.4px}
+  .vb .ring-hero .top time{font-size:10.5px;color:var(--t3);font-weight:600}
+  .vb .ring-hero h2{font-size:22px;font-weight:800;letter-spacing:-.6px;line-height:1.25;margin-bottom:12px}
+  .vb .ring-hero h2 b{color:var(--blue)}
+  .vb .rings{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px}
+  .vb .ring{display:flex;flex-direction:column;align-items:center}
+  .vb .ring .donut{width:78px;height:78px;position:relative}
+  .vb .ring .donut svg{width:100%;height:100%;transform:rotate(-90deg)}
+  .vb .ring .donut .track{fill:none;stroke:rgba(0,0,0,.06);stroke-width:8}
+  .vb .ring .donut .prog{fill:none;stroke-width:8;stroke-linecap:round}
+  .vb .ring .donut .num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .vb .ring .donut .num b{font-size:22px;font-weight:800;letter-spacing:-.5px;line-height:1}
+  .vb .ring .donut .num small{font-size:9.5px;font-weight:700;color:var(--t3);margin-top:2px;letter-spacing:.2px}
+  .vb .ring .lbl{font-size:11px;font-weight:700;color:var(--t1);margin-top:6px;letter-spacing:-.1px}
+  .vb .ring .sub{font-size:10px;color:var(--t3);font-weight:500;margin-top:1px}
+  .vb .ring-hero .prose{padding:12px;border-radius:12px;background:rgba(44,122,252,.05);font-size:12.5px;line-height:1.55;color:var(--t1);letter-spacing:-.2px;display:flex;gap:8px;align-items:flex-start}
+  .vb .ring-hero .prose .ai{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--blue));display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+  .vb .ring-hero .prose .ai iconify-icon{font-size:13px;color:#fff}
+  .vb .ring-hero .prose b{color:var(--blue);font-weight:700}
+  .vb .ring-hero .prose .warn{color:#B45309;font-weight:700}
+
+  /* 바이탈 row */
+  .vb .vital-row{margin-top:10px;background:#fff;border-radius:18px;padding:14px 12px;border:1px solid rgba(0,0,0,.04);box-shadow:0 2px 10px rgba(0,0,0,.04)}
+  .vb .vital-row .head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:0 4px}
+  .vb .vital-row .head .t{font-size:12px;font-weight:800}
+  .vb .vital-row .head .pill{font-size:10px}
+  .vb .vitals{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+  .vb .vital{display:flex;flex-direction:column;align-items:center;padding:8px 4px;border-radius:10px}
+  .vb .vital .gauge{width:36px;height:18px;position:relative;margin-bottom:5px}
+  .vb .vital .gauge .arc{position:absolute;inset:0;border-radius:36px 36px 0 0;border:3px solid rgba(0,0,0,.06);border-bottom:0}
+  .vb .vital .gauge .ind{position:absolute;width:4px;height:8px;background:var(--green);border-radius:2px;bottom:-2px;left:50%;transform-origin:bottom center}
+  .vb .vital.ok .ind{background:var(--green)}
+  .vb .vital.warn .ind{background:var(--amber)}
+  .vb .vital b{font-size:13px;font-weight:800;letter-spacing:-.2px;line-height:1;color:var(--t1)}
+  .vb .vital b small{font-size:8.5px;font-weight:600;color:var(--t3);margin-left:1px}
+  .vb .vital .l{font-size:9.5px;color:var(--t3);font-weight:600;margin-top:3px}
+
+  /* 복약 progress */
+  .vb .med{margin-top:10px;background:#fff;border-radius:18px;padding:16px;border:1px solid rgba(0,0,0,.04);box-shadow:0 2px 10px rgba(0,0,0,.04)}
+  .vb .med .top{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:12px}
+  .vb .med .top .t{font-size:13px;font-weight:800;display:flex;align-items:center;gap:5px}
+  .vb .med .top .t iconify-icon{font-size:16px;color:var(--green-d)}
+  .vb .med .top .v{font-size:24px;font-weight:800;letter-spacing:-.5px;line-height:1;font-variant-numeric:tabular-nums}
+  .vb .med .top .v small{font-size:11px;color:var(--t3);font-weight:600}
+  .vb .med .progress{height:10px;border-radius:999px;background:rgba(0,0,0,.06);overflow:hidden;display:flex;margin-bottom:10px}
+  .vb .med .progress .done{background:linear-gradient(90deg,var(--green) 0%,#10B981 100%);height:100%}
+  .vb .med .progress .late{background:linear-gradient(90deg,#FCD34D,#F59E0B);height:100%}
+  .vb .med .progress .pending{background:rgba(0,0,0,.04);height:100%;flex:1}
+  .vb .med .timeline{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .vb .med .pill-time{padding:8px 10px;border-radius:10px;text-align:center;background:rgba(0,0,0,.025)}
+  .vb .med .pill-time.done{background:rgba(52,211,153,.10)}
+  .vb .med .pill-time.miss{background:rgba(245,158,11,.10)}
+  .vb .med .pill-time time{font-size:10.5px;font-weight:700;color:var(--t2);display:block;letter-spacing:.2px}
+  .vb .med .pill-time .stat{font-size:11px;font-weight:800;margin-top:3px;display:flex;align-items:center;justify-content:center;gap:3px}
+  .vb .med .pill-time.done .stat{color:var(--green-d)}
+  .vb .med .pill-time.miss .stat{color:#B45309}
+  .vb .med .pill-time iconify-icon{font-size:12px}
+
+  /* 식사 stacked compare */
+  .vb .meal{margin-top:10px;background:#fff;border-radius:18px;padding:16px;border:1px solid rgba(0,0,0,.04);box-shadow:0 2px 10px rgba(0,0,0,.04)}
+  .vb .meal .head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .vb .meal .head .t{font-size:13px;font-weight:800;display:flex;align-items:center;gap:5px}
+  .vb .meal .head .t iconify-icon{font-size:16px;color:var(--amber)}
+  .vb .meal .head .ratio{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
+  .vb .meal .head .ratio small{font-size:10px;color:var(--t3);font-weight:600;margin-left:2px}
+  .vb .meal .cmp{display:flex;align-items:flex-end;gap:10px;height:90px;padding-top:8px}
+  .vb .meal .bar-grp{flex:1;display:flex;align-items:flex-end;gap:3px;border-bottom:1px dashed rgba(0,0,0,.08);padding-bottom:4px;position:relative}
+  .vb .meal .bar-grp .l{position:absolute;bottom:-22px;left:0;right:0;text-align:center;font-size:10px;font-weight:700;color:var(--t3)}
+  .vb .meal .bar{flex:1;border-radius:4px 4px 0 0;position:relative;min-height:6px}
+  .vb .meal .bar.y{background:rgba(0,0,0,.10)}
+  .vb .meal .bar.t{background:linear-gradient(180deg,#FED7AA,#F59E0B)}
+  .vb .meal .bar.t.warn{background:linear-gradient(180deg,#FCA5A5,#E32B25)}
+  .vb .meal .bar::after{content:attr(data-v);position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:800;color:var(--t2)}
+  .vb .meal .legend{display:flex;gap:14px;font-size:10.5px;color:var(--t3);margin-top:32px;font-weight:600}
+  .vb .meal .legend span{display:flex;align-items:center;gap:4px}
+  .vb .meal .legend i{width:8px;height:8px;border-radius:2px;background:rgba(0,0,0,.1);display:inline-block}
+  .vb .meal .legend .today i{background:linear-gradient(180deg,#FED7AA,#F59E0B)}
+
+  /* 수분 glasses */
+  .vb .water{margin-top:10px;background:#fff;border-radius:18px;padding:16px;border:1px solid rgba(0,0,0,.04);box-shadow:0 2px 10px rgba(0,0,0,.04)}
+  .vb .water .head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:12px}
+  .vb .water .head .t{font-size:13px;font-weight:800;display:flex;align-items:center;gap:5px}
+  .vb .water .head .t iconify-icon{font-size:16px;color:var(--blue)}
+  .vb .water .head .v{font-size:22px;font-weight:800;letter-spacing:-.5px;line-height:1;font-variant-numeric:tabular-nums}
+  .vb .water .head .v small{font-size:11px;color:var(--t3);font-weight:600}
+  .vb .water .glasses{display:flex;gap:5px;justify-content:space-between}
+  .vb .water .glass{flex:1;aspect-ratio:.55;border-radius:3px 3px 8px 8px;border:1.5px solid rgba(44,122,252,.3);background:linear-gradient(180deg,transparent 0%,transparent 100%);position:relative;overflow:hidden}
+  .vb .water .glass.full{background:linear-gradient(180deg,#7CC4FF 0%,var(--blue) 100%);border-color:var(--blue-d)}
+  .vb .water .glass.half{background:linear-gradient(180deg,transparent 0%,transparent 55%,#7CC4FF 55%,var(--blue) 100%);border-color:rgba(44,122,252,.5)}
+  .vb .water .sub{font-size:11px;color:#B45309;font-weight:700;margin-top:10px;display:flex;align-items:center;gap:4px}
+  .vb .water .sub iconify-icon{font-size:13px}
+
+  /* 수면 stages */
+  .vb .sleep{margin-top:10px;background:#fff;border-radius:18px;padding:16px;border:1px solid rgba(0,0,0,.04);box-shadow:0 2px 10px rgba(0,0,0,.04)}
+  .vb .sleep .head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:12px}
+  .vb .sleep .head .t{font-size:13px;font-weight:800;display:flex;align-items:center;gap:5px}
+  .vb .sleep .head .t iconify-icon{font-size:16px;color:#7C3AED}
+  .vb .sleep .head .v{font-size:24px;font-weight:800;letter-spacing:-.7px;line-height:1;font-variant-numeric:tabular-nums}
+  .vb .sleep .head .v small{font-size:11px;color:var(--t3);font-weight:600}
+  .vb .sleep-stages{display:flex;height:60px;border-radius:6px;overflow:hidden;background:rgba(0,0,0,.04);margin-bottom:6px;position:relative}
+  .vb .sleep-stages .seg{height:100%}
+  .vb .sleep-stages .deep{background:#5B21B6}
+  .vb .sleep-stages .core{background:#7C3AED}
+  .vb .sleep-stages .rem{background:#A78BFA}
+  .vb .sleep-stages .awake{background:#FCA5A5}
+  .vb .sleep-x{display:flex;justify-content:space-between;font-size:10px;color:var(--t3);font-weight:600;margin-bottom:10px}
+  .vb .sleep-legend{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  .vb .sleep-legend .l{display:flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:var(--t2)}
+  .vb .sleep-legend .l i{width:8px;height:8px;border-radius:2px}
+  .vb .sleep-legend .l b{color:var(--t1);font-weight:800;margin-left:2px}
+
+  /* 활동·기분 2칸 */
+  .vb .duo{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .vb .duo .c{background:#fff;border-radius:16px;padding:14px;border:1px solid rgba(0,0,0,.04);box-shadow:0 1px 4px rgba(0,0,0,.03)}
+  .vb .duo .c .t{font-size:11.5px;font-weight:800;color:var(--t1);margin-bottom:8px;display:flex;align-items:center;gap:4px}
+  .vb .duo .c .t iconify-icon{font-size:14px}
+  .vb .duo .c .v{font-size:26px;font-weight:800;letter-spacing:-.8px;line-height:1;font-variant-numeric:tabular-nums}
+  .vb .duo .c .v small{font-size:11px;color:var(--t3);font-weight:600;margin-left:2px}
+  .vb .duo .act .v{color:var(--amber)}
+  .vb .duo .mood .v{color:var(--blue)}
+  .vb .duo .bar-week{display:flex;align-items:flex-end;gap:3px;height:36px;margin:8px 0 6px}
+  .vb .duo .bar-week i{flex:1;border-radius:3px 3px 0 0;background:rgba(44,122,252,.18)}
+  .vb .duo .bar-week i.t{background:linear-gradient(180deg,#5B9BFF,var(--blue))}
+  .vb .duo .bar-week i.warn{background:linear-gradient(180deg,#FCA5A5,#E32B25)}
+  .vb .duo .desc{font-size:10.5px;color:var(--t3);font-weight:600}
+
+  /* AI 인사이트 (사진 포함) */
+  .vb .insight{margin-top:10px;background:#fff;border-radius:18px;padding:16px;border:1px solid rgba(0,0,0,.04);box-shadow:0 2px 10px rgba(0,0,0,.04)}
+  .vb .insight .h{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  .vb .insight .h .ai{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--blue));display:flex;align-items:center;justify-content:center}
+  .vb .insight .h .ai iconify-icon{font-size:14px;color:#fff}
+  .vb .insight .h .t{font-size:12px;font-weight:800}
+  .vb .insight .h .t small{display:block;font-size:10.5px;color:var(--t3);font-weight:500;margin-top:1px}
+  .vb .insight .body{font-size:13px;line-height:1.55;color:var(--t1);letter-spacing:-.2px;margin-bottom:10px}
+  .vb .insight .body b{color:var(--blue);font-weight:700}
+  .vb .insight .cards{display:flex;gap:8px}
+  .vb .insight .cards .ph{flex:1;aspect-ratio:1.2;border-radius:12px;background:linear-gradient(135deg,#E0F2FE,#BFDBFE);position:relative}
+  .vb .insight .cards .ph.meal{background:linear-gradient(135deg,#FED7AA,#F59E0B)}
+  .vb .insight .cta{margin-top:12px;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:rgba(44,122,252,.06);border-radius:10px;font-size:12px;font-weight:700;color:var(--blue)}
+  .vb .insight .cta iconify-icon{font-size:14px}
+
+  /* ═════════════════════════════════════════════
+     변종 C — Story Feed (Narrative timeline)
+  ═════════════════════════════════════════════ */
+  .vc .story-hero{background:#fff;border-radius:22px;padding:18px;border:1px solid rgba(0,0,0,.04);box-shadow:0 2px 10px rgba(0,0,0,.04);display:flex;align-items:center;gap:12px}
+  .vc .story-hero .av{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#F4E0C8,#D6B994);font-size:18px;font-weight:800;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:2.5px solid #fff;box-shadow:0 0 0 2px var(--green)}
+  .vc .story-hero .body{flex:1;min-width:0}
+  .vc .story-hero .body h2{font-size:17px;font-weight:800;letter-spacing:-.4px;line-height:1.3;margin-bottom:4px}
+  .vc .story-hero .body p{font-size:12.5px;color:var(--t2);line-height:1.45;letter-spacing:-.2px}
+  .vc .story-hero .body p b{color:var(--green-d);font-weight:700}
+
+  .vc .feed-photo{margin-top:10px;border-radius:22px;overflow:hidden;background:#fff;border:1px solid rgba(0,0,0,.04);box-shadow:0 2px 10px rgba(0,0,0,.04)}
+  .vc .feed-photo .img{height:280px;background:url("mockup.png") center/cover no-repeat,linear-gradient(135deg,#F4E0C8,#D6B994);position:relative}
+  .vc .feed-photo .img::after{content:'';position:absolute;inset:auto 0 0 0;height:50%;background:linear-gradient(180deg,transparent,rgba(0,0,0,.5))}
+  .vc .feed-photo .img .tag{position:absolute;top:14px;left:14px;display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.85);backdrop-filter:blur(8px);font-size:10.5px;font-weight:800;color:#92400E;letter-spacing:.2px}
+  .vc .feed-photo .img .tag iconify-icon{font-size:13px}
+  .vc .feed-photo .img .caption{position:absolute;left:14px;right:14px;bottom:14px;color:#fff;font-size:14px;font-weight:600;letter-spacing:-.2px;line-height:1.4;text-shadow:0 1px 3px rgba(0,0,0,.35)}
+  .vc .feed-photo .meta{padding:12px 16px 14px;display:flex;align-items:center;gap:8px}
+  .vc .feed-photo .meta .av{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#FECACA,#F87171);font-size:10px;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center}
+  .vc .feed-photo .meta .name{font-size:12px;font-weight:700}
+  .vc .feed-photo .meta .role{font-size:10.5px;color:var(--t3);font-weight:500}
+  .vc .feed-photo .meta time{margin-left:auto;font-size:10.5px;color:var(--t3);font-weight:600}
+
+  /* 시간순 모멘트 timeline */
+  .vc .timeline{margin-top:18px;position:relative;padding-left:18px}
+  .vc .timeline::before{content:'';position:absolute;left:7px;top:8px;bottom:24px;width:2px;background:linear-gradient(180deg,var(--blue) 0%,rgba(44,122,252,.15) 100%);border-radius:2px}
+  .vc .tl-item{position:relative;margin-bottom:14px}
+  .vc .tl-item::before{content:'';position:absolute;left:-18px;top:14px;width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--blue);box-shadow:0 0 0 3px #fff}
+  .vc .tl-item.warn::before{border-color:var(--amber)}
+  .vc .tl-item.miss::before{border-color:var(--red)}
+  .vc .tl-item .time{font-size:11px;font-weight:800;color:var(--blue);letter-spacing:.2px;margin-bottom:4px;font-variant-numeric:tabular-nums}
+  .vc .tl-item.warn .time{color:#B45309}
+  .vc .tl-item.miss .time{color:#B91C1C}
+  .vc .tl-card{background:#fff;border-radius:14px;padding:12px 14px;border:1px solid rgba(0,0,0,.04);box-shadow:0 1px 4px rgba(0,0,0,.03)}
+  .vc .tl-card.miss{border-color:rgba(227, 43, 37,.18);background:linear-gradient(180deg,#fff,#FEF2F2)}
+  .vc .tl-card .ttl{font-size:13px;font-weight:700;letter-spacing:-.2px;display:flex;align-items:center;gap:6px}
+  .vc .tl-card .ttl iconify-icon{font-size:14px}
+  .vc .tl-card .desc{font-size:12px;color:var(--t2);font-weight:500;line-height:1.45;margin-top:4px;letter-spacing:-.1px}
+  .vc .tl-card .desc b{color:var(--t1);font-weight:700}
+  .vc .tl-card .photo{margin-top:10px;height:120px;border-radius:10px;background:url("mockup.png") center/cover no-repeat,#F3E9DC;position:relative;overflow:hidden}
+  .vc .tl-card .stat-row{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+  .vc .tl-card .chip{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:999px;background:rgba(0,0,0,.04);color:var(--t2)}
+  .vc .tl-card .chip.ok{background:rgba(52,211,153,.14);color:var(--green-d)}
+  .vc .tl-card .chip.warn{background:rgba(245,158,11,.14);color:#B45309}
+
+  /* 종합 미니 카드 */
+  .vc .sum{margin-top:14px;background:linear-gradient(135deg,#fff,#f0f6ff);border-radius:18px;padding:16px;border:1px solid rgba(44,122,252,.1);box-shadow:0 2px 10px rgba(0,0,0,.04)}
+  .vc .sum .t{font-size:11px;font-weight:800;color:var(--blue);letter-spacing:.3px;margin-bottom:10px}
+  .vc .sum .row{display:grid;grid-template-columns:repeat(4,1fr)}
+  .vc .sum .row .c{text-align:center;position:relative;padding:0 6px}
+  .vc .sum .row .c+.c::before{content:'';position:absolute;left:0;top:4px;bottom:4px;width:1px;background:rgba(0,0,0,.07)}
+  .vc .sum .row .c iconify-icon{font-size:18px;color:var(--blue);margin-bottom:4px}
+  .vc .sum .row .c b{display:block;font-size:15px;font-weight:800;letter-spacing:-.4px;line-height:1}
+  .vc .sum .row .c span{display:block;font-size:10px;color:var(--t3);font-weight:600;margin-top:2px}
+
+  /* 보호자 메시지 */
+  .vc .msg{margin-top:14px;background:#fff;border-radius:18px;padding:18px;border:1px solid rgba(0,0,0,.04);box-shadow:0 2px 10px rgba(0,0,0,.04);position:relative}
+  .vc .msg::before{content:'';position:absolute;left:18px;top:-1px;width:36px;height:3px;background:var(--blue);border-radius:0 0 3px 3px}
+  .vc .msg .from{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  .vc .msg .av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#FECACA,#F87171);font-size:11px;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center}
+  .vc .msg .name{font-size:12.5px;font-weight:800}
+  .vc .msg .role{font-size:10.5px;color:var(--t3);font-weight:500}
+  .vc .msg .body{font-size:13.5px;line-height:1.6;color:var(--t1);letter-spacing:-.2px}
+  .vc .msg .body b{color:var(--blue);font-weight:700}
+  .vc .msg .actions{display:flex;gap:6px;margin-top:14px;padding-top:14px;border-top:1px dashed rgba(0,0,0,.06)}
+  .vc .msg .actions button{flex:1;padding:9px;border-radius:10px;border:0;background:rgba(44,122,252,.06);color:var(--blue);font-size:11.5px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:4px}
+  .vc .msg .actions button iconify-icon{font-size:13px}
+
+  /* 내일은요 */
+  .vc .tomorrow{margin-top:14px;background:linear-gradient(135deg,#1B2944 0%,#0F1A2F 100%);color:#fff;border-radius:18px;padding:18px;box-shadow:0 4px 16px rgba(15,26,47,.18);position:relative;overflow:hidden}
+  .vc .tomorrow::before{content:'';position:absolute;top:-60px;right:-60px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(70,168,255,.4),transparent 70%);pointer-events:none}
+  .vc .tomorrow .t{font-size:11px;font-weight:800;letter-spacing:.4px;color:#7CC4FF;margin-bottom:6px;position:relative}
+  .vc .tomorrow h3{font-size:18px;font-weight:800;letter-spacing:-.4px;line-height:1.35;margin-bottom:10px;position:relative}
+  .vc .tomorrow .item{display:flex;align-items:flex-start;gap:8px;padding:8px 0;font-size:12.5px;line-height:1.4;font-weight:500;color:rgba(255,255,255,.88);border-top:1px solid rgba(255,255,255,.08);position:relative}
+  .vc .tomorrow .item:first-of-type{border-top:0}
+  .vc .tomorrow .item iconify-icon{font-size:14px;color:#7CC4FF;margin-top:2px;flex-shrink:0}
+  .vc .tomorrow .item b{color:#fff;font-weight:700}
+
+  /* ═════════════════════════════════════════════
+     변종 D — 미니멀 텍스트 (Editorial)
+     레퍼런스: stoic / Asana 'Project summary'
+     보호자 핵심: 한 줄 인사이트 + 단락형 상세
+  ═════════════════════════════════════════════ */
+  .vd{font-family:var(--font)}
+  .vd .ed-hero{padding:8px 6px 22px}
+  .vd .ed-hero .kicker{font-size:10.5px;font-weight:800;letter-spacing:2px;color:var(--blue);text-transform:uppercase;margin-bottom:10px}
+  .vd .ed-hero h1{font-family:Georgia,'Times New Roman',serif;font-size:30px;font-weight:700;letter-spacing:-.8px;line-height:1.22;color:var(--t1)}
+  .vd .ed-hero h1 em{font-style:italic;color:var(--blue);font-weight:600}
+  .vd .ed-hero .sub{font-size:13px;color:var(--t2);margin-top:10px;line-height:1.55;letter-spacing:-.1px}
+  .vd .ed-rule{border:0;border-top:1px solid rgba(0,0,0,.08);margin:0}
+  .vd .ed-stats{display:flex;justify-content:space-between;padding:14px 4px;text-align:center}
+  .vd .ed-stats .c{flex:1;position:relative}
+  .vd .ed-stats .c+.c::before{content:'';position:absolute;left:0;top:6px;bottom:6px;width:1px;background:rgba(0,0,0,.08)}
+  .vd .ed-stats b{display:block;font-family:Georgia,serif;font-size:22px;font-weight:700;letter-spacing:-.5px;line-height:1;color:var(--t1)}
+  .vd .ed-stats b small{font-size:11px;font-weight:600;color:var(--t3);letter-spacing:0;margin-left:1px}
+  .vd .ed-stats span{display:block;font-size:10.5px;color:var(--t3);font-weight:600;margin-top:6px;letter-spacing:.2px;text-transform:uppercase}
+  .vd .ed-block{padding:18px 4px;border-top:1px solid rgba(0,0,0,.08)}
+  .vd .ed-block .lbl{font-size:10.5px;font-weight:800;letter-spacing:2px;color:var(--blue);text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+  .vd .ed-block .lbl iconify-icon{font-size:13px}
+  .vd .ed-block .lbl.warn{color:#B45309}
+  .vd .ed-block h3{font-family:Georgia,serif;font-size:18px;font-weight:700;letter-spacing:-.3px;line-height:1.35;color:var(--t1);margin-bottom:8px}
+  .vd .ed-block p{font-size:13.5px;line-height:1.65;color:var(--t2);letter-spacing:-.1px}
+  .vd .ed-block p b{color:var(--t1);font-weight:700}
+  .vd .ed-photo{margin-top:14px;border-radius:4px;height:160px;background:url("mockup.png") center/cover no-repeat,linear-gradient(135deg,#F4E0C8,#D6B994);position:relative;filter:saturate(.9)}
+  .vd .ed-photo .cap{position:absolute;left:14px;bottom:10px;color:#fff;font-size:11px;font-weight:600;letter-spacing:-.1px;text-shadow:0 1px 3px rgba(0,0,0,.5);font-family:Georgia,serif;font-style:italic}
+  .vd .ed-pullquote{margin:18px 4px;padding:18px 0;border-top:1px solid rgba(0,0,0,.08);border-bottom:1px solid rgba(0,0,0,.08);text-align:center}
+  .vd .ed-pullquote q{font-family:Georgia,serif;font-size:16px;font-style:italic;font-weight:600;line-height:1.5;letter-spacing:-.3px;color:var(--t1);display:block;quotes:'"\201C" "\201D"'}
+  .vd .ed-pullquote q::before{content:open-quote;color:var(--blue);font-size:24px;line-height:0;vertical-align:-6px;margin-right:2px}
+  .vd .ed-pullquote q::after{content:close-quote;color:var(--blue);font-size:24px;line-height:0;vertical-align:-6px;margin-left:2px}
+  .vd .ed-pullquote cite{display:block;margin-top:10px;font-size:10.5px;font-style:normal;color:var(--t3);font-weight:700;letter-spacing:1.5px;text-transform:uppercase}
+  .vd .ed-tomorrow{margin:6px 0 0;padding:18px 4px 4px;border-top:1px solid rgba(0,0,0,.08)}
+  .vd .ed-tomorrow .lbl{font-size:10.5px;font-weight:800;letter-spacing:2px;color:var(--blue);text-transform:uppercase;margin-bottom:10px}
+  .vd .ed-tomorrow .row{display:flex;gap:10px;padding:10px 0;border-bottom:1px dashed rgba(0,0,0,.07);font-size:13px;line-height:1.5;color:var(--t1);font-weight:500;letter-spacing:-.1px}
+  .vd .ed-tomorrow .row:last-child{border-bottom:0}
+  .vd .ed-tomorrow .row time{font-family:Georgia,serif;font-weight:700;color:var(--blue);min-width:48px;font-variant-numeric:tabular-nums}
+
+  /* ═════════════════════════════════════════════
+     변종 E — 야간 다크 (Night Score)
+     레퍼런스: Oura / The Outsiders / Ultrahuman
+     보호자 핵심: 큰 점수 한 개 + 기여 요소
+  ═════════════════════════════════════════════ */
+  .ve{margin:0 -16px;padding:0}
+  .ve .nx{background:linear-gradient(180deg,#0B1426 0%,#101A2E 60%,#0F1A2F 100%);color:#fff;border-radius:22px 22px 0 0;margin:14px -16px 0;padding:24px 18px 30px;position:relative;overflow:hidden}
+  .ve .nx::before{content:'';position:absolute;top:-80px;right:-80px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(91,193,179,.5),rgba(91,193,179,0) 70%);pointer-events:none}
+  .ve .nx::after{content:'';position:absolute;top:-40px;left:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(124,58,237,.35),rgba(124,58,237,0) 70%);pointer-events:none}
+  .ve .nx-head{display:flex;align-items:center;justify-content:space-between;position:relative;margin-bottom:18px}
+  .ve .nx-head .date{font-size:11px;font-weight:700;color:rgba(255,255,255,.55);letter-spacing:.4px;text-transform:uppercase}
+  .ve .nx-head .live{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:800;color:#5BFFB3;letter-spacing:.4px}
+  .ve .nx-head .live::before{content:'';width:6px;height:6px;border-radius:50%;background:#34D399;box-shadow:0 0 0 4px rgba(52,211,153,.18)}
+  .ve .nx-score{position:relative;display:flex;flex-direction:column;align-items:center;margin-bottom:8px}
+  .ve .nx-score svg{width:220px;height:120px}
+  .ve .nx-score .v{position:absolute;top:34px;left:0;right:0;text-align:center}
+  .ve .nx-score .v b{font-size:60px;font-weight:300;letter-spacing:-2px;line-height:1;font-variant-numeric:tabular-nums;background:linear-gradient(180deg,#fff,#A4D6FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .ve .nx-score .v small{display:block;font-size:10.5px;font-weight:700;color:rgba(255,255,255,.55);margin-top:2px;letter-spacing:1.5px;text-transform:uppercase}
+  .ve .nx-label{text-align:center;font-size:20px;font-weight:700;letter-spacing:-.5px;position:relative;margin-bottom:6px}
+  .ve .nx-delta{text-align:center;font-size:12px;color:rgba(255,255,255,.6);font-weight:500;position:relative;margin-bottom:18px}
+  .ve .nx-delta b{color:#5BFFB3;font-weight:700}
+  .ve .nx-narr{background:rgba(255,255,255,.06);border-radius:14px;padding:14px;font-size:13px;line-height:1.6;color:rgba(255,255,255,.88);letter-spacing:-.1px;backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.06);position:relative}
+  .ve .nx-narr b{color:#fff;font-weight:700}
+  .ve .contribs{margin-top:14px;padding:18px 0 4px}
+  .ve .contribs .h{font-size:11px;font-weight:800;color:var(--blue);letter-spacing:.4px;text-transform:uppercase;margin-bottom:10px;padding:0 4px}
+  .ve .contribs .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .ve .contrib{background:#fff;border:1px solid rgba(0,0,0,.04);border-radius:16px;padding:12px 13px;box-shadow:0 1px 4px rgba(0,0,0,.03)}
+  .ve .contrib .top{display:flex;align-items:center;gap:6px;margin-bottom:6px;font-size:11px;font-weight:700;color:var(--t2);letter-spacing:-.1px}
+  .ve .contrib .top iconify-icon{font-size:14px}
+  .ve .contrib .top.ok iconify-icon{color:var(--green-d)}
+  .ve .contrib .top.warn iconify-icon{color:var(--amber)}
+  .ve .contrib .top.miss iconify-icon{color:var(--red)}
+  .ve .contrib b{display:block;font-size:18px;font-weight:800;letter-spacing:-.4px;line-height:1;font-variant-numeric:tabular-nums}
+  .ve .contrib .bar{margin-top:8px;height:4px;border-radius:2px;background:rgba(0,0,0,.05);overflow:hidden;position:relative}
+  .ve .contrib .bar i{display:block;height:100%;border-radius:2px}
+  .ve .contrib .tag{margin-top:6px;font-size:10px;font-weight:700;color:var(--t3);letter-spacing:.2px;text-transform:uppercase}
+  .ve .contrib .tag.ok{color:var(--green-d)}
+  .ve .contrib .tag.warn{color:#B45309}
+  .ve .nx-night{margin-top:14px;background:linear-gradient(135deg,#1B2438,#0F1A2F);color:#fff;border-radius:16px;padding:14px;border:1px solid rgba(255,255,255,.06)}
+  .ve .nx-night h4{font-size:11px;color:#A4D6FF;font-weight:800;letter-spacing:.4px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:5px}
+  .ve .nx-night h4 iconify-icon{font-size:13px}
+  .ve .nx-night .ev{display:flex;align-items:center;gap:10px;padding:6px 0;font-size:12.5px;line-height:1.4;color:rgba(255,255,255,.85);letter-spacing:-.1px}
+  .ve .nx-night .ev time{font-size:11px;font-weight:700;color:#A4D6FF;min-width:50px;font-variant-numeric:tabular-nums}
+  .ve .nx-night .ev b{color:#fff;font-weight:700}
+
+  /* ═════════════════════════════════════════════
+     변종 F — 매거진 (Magazine)
+     레퍼런스: Hyundai Card '월별 리포트'
+     보호자 핵심: 표지/섹션이 있는 잡지 풍 보고서
+  ═════════════════════════════════════════════ */
+  .vf .mag-cover{margin:0 -16px;height:340px;background:url("mockup.png") center/cover no-repeat,linear-gradient(135deg,#FEF3C7,#F59E0B);position:relative;color:#fff;border-radius:18px 18px 0 0;overflow:hidden}
+  .vf .mag-cover::after{content:'';position:absolute;inset:auto 0 0 0;height:75%;background:linear-gradient(180deg,transparent,rgba(11,20,38,.85))}
+  .vf .mag-cover .issue{position:absolute;top:18px;left:18px;font-size:10.5px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;background:rgba(255,255,255,.18);backdrop-filter:blur(10px);padding:6px 12px;border-radius:999px}
+  .vf .mag-cover .nob{position:absolute;top:18px;right:18px;font-size:10.5px;font-weight:800;letter-spacing:.3px;color:#fff}
+  .vf .mag-cover .title{position:absolute;bottom:80px;left:18px;right:18px;z-index:2}
+  .vf .mag-cover .title h2{font-family:Georgia,'Times New Roman',serif;font-size:36px;font-weight:700;line-height:1.05;letter-spacing:-1px}
+  .vf .mag-cover .title h2 em{font-style:italic;font-weight:400}
+  .vf .mag-cover .title p{font-size:12px;margin-top:8px;color:rgba(255,255,255,.78);letter-spacing:.5px}
+  .vf .mag-cover .meta{position:absolute;bottom:18px;left:18px;right:18px;display:flex;justify-content:space-between;align-items:center;z-index:2}
+  .vf .mag-cover .meta .a{font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase}
+  .vf .mag-cover .meta .p{font-size:11px;font-weight:600;letter-spacing:.3px;opacity:.7}
+  .vf .mag-toc{margin:14px -2px 0;padding:14px 4px;border-bottom:2px solid var(--t1)}
+  .vf .mag-toc .lbl{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:8px}
+  .vf .mag-toc .item{display:flex;gap:12px;padding:5px 0;font-size:13px;color:var(--t1);letter-spacing:-.1px}
+  .vf .mag-toc .item .n{font-family:Georgia,serif;font-weight:700;color:var(--blue);font-variant-numeric:tabular-nums;min-width:24px}
+  .vf .mag-toc .item .t{flex:1;font-weight:600}
+  .vf .mag-toc .item .p{font-family:Georgia,serif;font-weight:600;color:var(--t3);font-variant-numeric:tabular-nums}
+  .vf .mag-sec{padding:22px 4px 4px;border-top:1px solid rgba(0,0,0,.08)}
+  .vf .mag-sec:first-of-type{border-top:0;padding-top:22px}
+  .vf .mag-sec .num{font-family:Georgia,serif;font-size:54px;font-weight:700;letter-spacing:-2px;line-height:.9;color:rgba(44,122,252,.15);float:right;margin-left:8px}
+  .vf .mag-sec .cat{font-size:10px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:var(--blue);margin-bottom:6px}
+  .vf .mag-sec h3{font-family:Georgia,serif;font-size:22px;font-weight:700;letter-spacing:-.5px;line-height:1.25;color:var(--t1);margin-bottom:10px}
+  .vf .mag-sec h3 em{font-style:italic;color:var(--blue)}
+  .vf .mag-sec p{font-size:13px;line-height:1.65;color:var(--t2);letter-spacing:-.1px;margin-bottom:10px}
+  .vf .mag-sec p b{color:var(--t1)}
+  .vf .mag-sec .info{margin-top:10px;padding:14px;border-radius:12px;background:linear-gradient(135deg,#fff,#f0f6ff);border:1px solid rgba(44,122,252,.08);display:flex;gap:14px}
+  .vf .mag-sec .info .big{font-family:Georgia,serif;font-size:36px;font-weight:700;color:var(--blue);letter-spacing:-1px;line-height:.95;font-variant-numeric:tabular-nums}
+  .vf .mag-sec .info .big small{font-size:14px;font-weight:600;margin-left:2px}
+  .vf .mag-sec .info .lbl{font-size:11px;font-weight:700;color:var(--t2);letter-spacing:-.1px;line-height:1.4}
+  .vf .mag-sec .info .lbl b{color:var(--t1);display:block;font-size:12.5px;margin-bottom:2px}
+
+  /* ═════════════════════════════════════════════
+     변종 G — AI 챗 리포트 (Chat-style)
+     레퍼런스: Beside transcript / monday.com Sidekick
+     보호자 핵심: AI 비서가 보고하듯, 친근하게
+  ═════════════════════════════════════════════ */
+  .vg .gc-head{display:flex;align-items:center;gap:10px;padding:6px 4px 14px}
+  .vg .gc-head .av{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#A4D6FF 0%,#2C7AFC 60%,#7C3AED 100%);position:relative;flex-shrink:0;box-shadow:0 4px 10px rgba(44,122,252,.25)}
+  .vg .gc-head .av::after{content:'';position:absolute;right:-2px;bottom:-2px;width:12px;height:12px;border-radius:50%;background:#34D399;border:2.5px solid var(--sheet)}
+  .vg .gc-head .name{font-size:14px;font-weight:800;letter-spacing:-.2px}
+  .vg .gc-head .role{font-size:11px;color:var(--t3);font-weight:600;margin-top:1px;display:flex;align-items:center;gap:4px}
+  .vg .gc-head .role iconify-icon{font-size:11px;color:var(--blue)}
+  .vg .chat{display:flex;flex-direction:column;gap:8px}
+  .vg .bubble{max-width:88%;font-size:13.5px;line-height:1.55;letter-spacing:-.1px}
+  .vg .bubble.ai{align-self:flex-start;background:#fff;border:1px solid rgba(0,0,0,.04);border-radius:18px 18px 18px 4px;padding:12px 14px;box-shadow:0 1px 3px rgba(0,0,0,.03);color:var(--t1)}
+  .vg .bubble.ai b{color:var(--blue);font-weight:700}
+  .vg .bubble.ai .ttl{font-size:11px;font-weight:800;color:var(--blue);letter-spacing:.3px;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:5px}
+  .vg .bubble.ai .ttl iconify-icon{font-size:12px}
+  .vg .bubble.card{align-self:flex-start;width:88%;background:#fff;border:1px solid rgba(0,0,0,.04);border-radius:18px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+  .vg .bubble.card .ttl{font-size:11px;font-weight:800;letter-spacing:.3px;text-transform:uppercase;color:var(--blue);margin-bottom:6px;display:flex;align-items:center;gap:5px}
+  .vg .bubble.card .ttl iconify-icon{font-size:12px}
+  .vg .bubble.card.warn .ttl{color:#B45309}
+  .vg .bubble.card .h{font-size:15px;font-weight:800;letter-spacing:-.3px;line-height:1.35;margin-bottom:4px}
+  .vg .bubble.card .d{font-size:12.5px;color:var(--t2);line-height:1.5;letter-spacing:-.1px}
+  .vg .bubble.card .d b{color:var(--t1);font-weight:700}
+  .vg .bubble.card .stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px;padding-top:10px;border-top:1px dashed rgba(0,0,0,.07)}
+  .vg .bubble.card .stats .s b{display:block;font-size:14px;font-weight:800;letter-spacing:-.3px;line-height:1;font-variant-numeric:tabular-nums}
+  .vg .bubble.card .stats .s span{display:block;font-size:10.5px;color:var(--t3);font-weight:600;margin-top:3px}
+  .vg .bubble.photo{align-self:flex-start;width:80%;border-radius:18px 18px 18px 4px;overflow:hidden;background:#fff;border:1px solid rgba(0,0,0,.04);box-shadow:0 1px 4px rgba(0,0,0,.04)}
+  .vg .bubble.photo .img{height:180px;background:url("mockup.png") center/cover no-repeat,#F4E0C8;position:relative}
+  .vg .bubble.photo .cap{padding:10px 14px;font-size:12px;color:var(--t2);font-weight:500;letter-spacing:-.1px}
+  .vg .bubble.photo .cap b{color:var(--t1);font-weight:700}
+  .vg .bubble.user{align-self:flex-end;background:linear-gradient(135deg,var(--blue),var(--blue-d));color:#fff;border-radius:18px 18px 4px 18px;padding:10px 14px;font-size:13px;font-weight:600;letter-spacing:-.1px;box-shadow:0 2px 8px rgba(44,122,252,.2)}
+  .vg .typing{align-self:flex-start;background:#fff;border:1px solid rgba(0,0,0,.04);border-radius:18px 18px 18px 4px;padding:12px 14px;display:inline-flex;gap:4px}
+  .vg .typing i{width:6px;height:6px;border-radius:50%;background:rgba(44,122,252,.35);animation:tp 1.2s infinite}
+  .vg .typing i:nth-child(2){animation-delay:.2s}
+  .vg .typing i:nth-child(3){animation-delay:.4s}
+  @keyframes tp{0%,80%,100%{transform:translateY(0);opacity:.35}40%{transform:translateY(-3px);opacity:1}}
+  .vg .quick-chips{display:flex;gap:6px;margin-top:14px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:2px 0}
+  .vg .quick-chips::-webkit-scrollbar{display:none}
+  .vg .quick-chips button{flex:0 0 auto;background:#fff;border:1px solid rgba(44,122,252,.18);color:var(--blue);font-size:12px;font-weight:700;padding:8px 14px;border-radius:999px;letter-spacing:-.1px;font-family:inherit;display:inline-flex;align-items:center;gap:5px}
+  .vg .quick-chips button iconify-icon{font-size:13px}
+  .vg .input{margin-top:12px;background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:999px;padding:10px 14px;display:flex;align-items:center;gap:8px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  .vg .input span{flex:1;font-size:13px;color:var(--t3);font-weight:500}
+  .vg .input button{width:32px;height:32px;border-radius:50%;border:0;background:var(--blue);color:#fff;display:inline-flex;align-items:center;justify-content:center}
+  .vg .input button iconify-icon{font-size:16px}
+
+  /* ═════════════════════════════════════════════
+     변종 H — 컬러 위젯 (iOS 18 Widgets)
+     레퍼런스: Apple Fitness rings / iOS 18 widget grid
+     보호자 핵심: 그리드 위젯으로 한눈 파악
+  ═════════════════════════════════════════════ */
+  .vh .wg-greet{padding:0 4px 12px;display:flex;align-items:flex-end;justify-content:space-between}
+  .vh .wg-greet h2{font-size:22px;font-weight:800;letter-spacing:-.6px;line-height:1.2}
+  .vh .wg-greet h2 b{color:var(--blue)}
+  .vh .wg-greet .sub{font-size:12px;color:var(--t3);font-weight:600;margin-top:4px}
+  .vh .wg-greet .edit{font-size:11px;font-weight:700;color:var(--blue);padding:6px 10px;background:rgba(44,122,252,.08);border-radius:999px}
+  .vh .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .vh .w{border-radius:22px;padding:14px;background:#fff;border:1px solid rgba(0,0,0,.04);box-shadow:0 2px 8px rgba(0,0,0,.04);position:relative;overflow:hidden;min-height:142px;display:flex;flex-direction:column}
+  .vh .w.wide{grid-column:span 2}
+  .vh .w .top{display:flex;align-items:center;justify-content:space-between;font-size:11px;font-weight:800;letter-spacing:.3px;text-transform:uppercase}
+  .vh .w .top iconify-icon{font-size:16px}
+  .vh .w .v{font-size:32px;font-weight:800;letter-spacing:-1px;line-height:1;font-variant-numeric:tabular-nums;margin-top:auto}
+  .vh .w .v small{font-size:14px;font-weight:700;margin-left:2px}
+  .vh .w .lbl{font-size:11px;font-weight:600;color:var(--t3);margin-top:4px;letter-spacing:-.1px}
+  .vh .w .lbl b{font-weight:700}
+  /* 위젯 컬러 변형 */
+  .vh .w.ring-med{background:linear-gradient(135deg,#FFEDED 0%,#FFE4E4 100%);border-color:rgba(227, 43, 37,.1)}
+  .vh .w.ring-med .top{color:#B91C1C}
+  .vh .w.ring-med .v{color:#7F1D1D}
+  .vh .w.ring-meal{background:linear-gradient(135deg,#ECFDF5 0%,#D1FAE5 100%);border-color:rgba(52,211,153,.15)}
+  .vh .w.ring-meal .top{color:var(--green-d)}
+  .vh .w.ring-meal .v{color:#065F46}
+  .vh .w.ring-sleep{background:linear-gradient(135deg,#EEF2FF 0%,#E0E7FF 100%);border-color:rgba(99,102,241,.15)}
+  .vh .w.ring-sleep .top{color:#4338CA}
+  .vh .w.ring-sleep .v{color:#3730A3}
+  .vh .w.ring-water{background:linear-gradient(135deg,#EFF6FF 0%,#DBEAFE 100%);border-color:rgba(44,122,252,.15)}
+  .vh .w.ring-water .top{color:var(--blue-d)}
+  .vh .w.ring-water .v{color:#1E3A8A}
+  .vh .w.dark{background:linear-gradient(135deg,#1B2438,#0F1A2F);color:#fff;border-color:rgba(255,255,255,.06)}
+  .vh .w.dark .top{color:#A4D6FF}
+  .vh .w.dark .v{color:#fff}
+  .vh .w.dark .lbl{color:rgba(255,255,255,.55)}
+  /* Activity rings */
+  .vh .rings{position:relative;width:78px;height:78px;align-self:flex-end;margin-top:auto}
+  .vh .rings .ring{position:absolute;border-radius:50%;border-style:solid;border-color:rgba(255,255,255,.06)}
+  .vh .rings .ring.r1{width:78px;height:78px;border-width:9px;border-top-color:#E32B25;border-right-color:#E32B25;transform:rotate(-45deg)}
+  .vh .rings .ring.r2{width:58px;height:58px;top:10px;left:10px;border-width:8px;border-top-color:#34D399;border-right-color:#34D399;border-bottom-color:#34D399;transform:rotate(20deg)}
+  .vh .rings .ring.r3{width:38px;height:38px;top:20px;left:20px;border-width:7px;border-top-color:#7C3AED;transform:rotate(-30deg)}
+  .vh .w.alert{background:linear-gradient(135deg,#FEF3C7 0%,#FDE68A 100%);border-color:rgba(245,158,11,.2)}
+  .vh .w.alert .top{color:#B45309}
+  .vh .w.alert .v{font-size:16px;letter-spacing:-.3px;line-height:1.3;font-weight:800;color:#78350F}
+  /* Progress ring SVG */
+  .vh .pring{position:absolute;top:14px;right:14px;width:48px;height:48px}
+  .vh .pring svg{transform:rotate(-90deg)}
+  .vh .pring .pct{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;letter-spacing:-.3px}
+
+  /* ═════════════════════════════════════════════
+     변종 I — 사진 갤러리 (Photo-first)
+     레퍼런스: Bevel timeline / Apple Photos memory
+     보호자 핵심: 사진 중심으로 어머님의 하루를 보기
+  ═════════════════════════════════════════════ */
+  .vi .ph-cover{margin:0 -16px 14px;height:280px;background:url("mockup.png") center/cover no-repeat,linear-gradient(135deg,#F4E0C8,#D6B994);position:relative;border-radius:18px 18px 0 0;overflow:hidden}
+  .vi .ph-cover::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,20,38,.25) 0%,transparent 30%,transparent 60%,rgba(11,20,38,.75) 100%)}
+  .vi .ph-cover .top{position:absolute;top:18px;left:18px;right:18px;display:flex;align-items:flex-start;justify-content:space-between;z-index:2;color:#fff}
+  .vi .ph-cover .top .d{font-size:10.5px;font-weight:800;letter-spacing:2px;text-transform:uppercase;background:rgba(255,255,255,.18);backdrop-filter:blur(10px);padding:6px 12px;border-radius:999px}
+  .vi .ph-cover .top .cnt{font-size:10.5px;font-weight:700;letter-spacing:.3px;padding:6px 12px;border-radius:999px;background:rgba(0,0,0,.35);backdrop-filter:blur(10px)}
+  .vi .ph-cover .btm{position:absolute;bottom:20px;left:20px;right:20px;z-index:2;color:#fff}
+  .vi .ph-cover .btm h2{font-size:24px;font-weight:800;letter-spacing:-.5px;line-height:1.2;text-shadow:0 1px 4px rgba(0,0,0,.3)}
+  .vi .ph-cover .btm h2 b{color:#A4D6FF}
+  .vi .ph-cover .btm p{font-size:12px;margin-top:4px;color:rgba(255,255,255,.85);font-weight:500;letter-spacing:.2px}
+  .vi .ph-strip{display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:0 4px 14px;margin:0 -4px}
+  .vi .ph-strip::-webkit-scrollbar{display:none}
+  .vi .ph-strip .th{flex:0 0 64px;height:64px;border-radius:14px;background:url("mockup.png") center/cover no-repeat,linear-gradient(135deg,#F4E0C8,#D6B994);position:relative;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.08);overflow:hidden}
+  .vi .ph-strip .th.active{box-shadow:0 0 0 2.5px var(--blue),0 1px 4px rgba(0,0,0,.08)}
+  .vi .ph-strip .th time{position:absolute;left:0;right:0;bottom:0;font-size:9px;font-weight:800;color:#fff;background:rgba(0,0,0,.5);padding:2px 0;text-align:center;letter-spacing:.2px;font-variant-numeric:tabular-nums}
+  .vi .ph-card{background:#fff;border-radius:22px;overflow:hidden;border:1px solid rgba(0,0,0,.04);box-shadow:0 4px 14px rgba(0,0,0,.06);margin-bottom:12px}
+  .vi .ph-card .img{height:220px;background:url("mockup.png") center/cover no-repeat,linear-gradient(135deg,#F4E0C8,#D6B994);position:relative}
+  .vi .ph-card .img .tag{position:absolute;top:12px;left:12px;display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.85);backdrop-filter:blur(10px);font-size:10.5px;font-weight:800;color:var(--t1);letter-spacing:.2px}
+  .vi .ph-card .img .tag iconify-icon{font-size:12px;color:var(--blue)}
+  .vi .ph-card .img time{position:absolute;top:12px;right:12px;font-size:10.5px;font-weight:800;color:#fff;background:rgba(0,0,0,.45);backdrop-filter:blur(10px);padding:5px 10px;border-radius:999px;letter-spacing:.2px;font-variant-numeric:tabular-nums}
+  .vi .ph-card .body{padding:14px 16px}
+  .vi .ph-card .body h3{font-size:15px;font-weight:800;letter-spacing:-.3px;line-height:1.3}
+  .vi .ph-card .body p{font-size:12.5px;color:var(--t2);font-weight:500;line-height:1.55;letter-spacing:-.1px;margin-top:4px}
+  .vi .ph-card .body p b{color:var(--t1);font-weight:700}
+  .vi .ph-card .body .chips{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+  .vi .ph-card .body .chip{font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:999px;background:rgba(0,0,0,.05);color:var(--t2);display:inline-flex;align-items:center;gap:4px}
+  .vi .ph-card .body .chip iconify-icon{font-size:11px}
+  .vi .ph-card .body .chip.ok{background:rgba(52,211,153,.14);color:var(--green-d)}
+  .vi .ph-card .body .chip.warn{background:rgba(245,158,11,.14);color:#B45309}
+  .vi .ph-side{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+  .vi .ph-side .mini{position:relative;border-radius:18px;overflow:hidden;height:140px;background:url("mockup.png") center/cover no-repeat,#F4E0C8}
+  .vi .ph-side .mini::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.6) 100%)}
+  .vi .ph-side .mini .lbl{position:absolute;left:10px;bottom:10px;right:10px;color:#fff;z-index:1}
+  .vi .ph-side .mini .lbl b{display:block;font-size:13px;font-weight:800;letter-spacing:-.2px;line-height:1.2}
+  .vi .ph-side .mini .lbl span{font-size:10.5px;font-weight:600;color:rgba(255,255,255,.85);letter-spacing:.2px}
+  .vi .ph-foot{padding:14px;background:linear-gradient(135deg,#fff,#f0f6ff);border-radius:18px;border:1px solid rgba(44,122,252,.08);display:flex;align-items:center;gap:12px}
+  .vi .ph-foot iconify-icon{font-size:24px;color:var(--blue);flex-shrink:0}
+  .vi .ph-foot .body{flex:1}
+  .vi .ph-foot .body h4{font-size:13px;font-weight:800;letter-spacing:-.2px;line-height:1.3}
+  .vi .ph-foot .body p{font-size:11.5px;color:var(--t3);font-weight:500;margin-top:2px}
+
+  /* 변종 전환 */
+  .variant{display:none}
+  .variant.active{display:block}
+</style>
+</head>
+<body>
+
+<div class="switcher">
+  <h1><iconify-icon icon="fluent:sparkle-24-filled"></iconify-icon>일일 리포트 시안 비교<small>9개 변종 · 같은 데이터, 다른 구성</small></h1>
+  <div class="tab-row">
+    <button class="active" onclick="sw('A')">A. 안심 카드<small>Reassurance</small></button>
+    <button onclick="sw('B')">B. 지표 대시<small>Data-led</small></button>
+    <button onclick="sw('C')">C. 스토리 피드<small>Narrative</small></button>
+    <button onclick="sw('D')">D. 미니멀 텍스트<small>Editorial</small></button>
+    <button onclick="sw('E')">E. 야간 다크<small>Night/Dark</small></button>
+    <button onclick="sw('F')">F. 매거진<small>Magazine</small></button>
+    <button onclick="sw('G')">G. AI 챗 리포트<small>Chat-style</small></button>
+    <button onclick="sw('H')">H. 컬러 위젯<small>iOS 18 widgets</small></button>
+    <button onclick="sw('I')">I. 사진 갤러리<small>Photo-first</small></button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     변종 A — 안심 카드
+═════════════════════════════════════════════════════════ -->
+<div class="variant active va" id="vA">
+  <div class="phone">
+    <div class="phone-peek">
+      <div>
+        <div class="greet-main">오늘도 수고하셨어요,<br>영자님 잘 있어요</div>
+        <div class="greet-sub">저녁 일과도 잘 되고 있어요.</div>
+      </div>
+      <span class="badge">홈</span>
+    </div>
+    <div class="sheet">
+      <div class="sheet-head">
+        <div class="ttl">일일 리포트</div>
+        <div class="date">5월 15일 (목)</div>
+      </div>
+
+      <!-- HERO: 종합 상태 -->
+      <div class="hero">
+        <div class="status-row">
+          <div class="status-orb"></div>
+          <div class="status-text">안정<small>전반적으로 평소와 비슷해요</small></div>
+          <div class="status-time">방금 업데이트</div>
+        </div>
+        <h2>오늘은 전반적으로 <b>안정적이셨어요</b>.<br>다만 <span class="warn">수분 섭취</span>가 평소보다 적었어요.</h2>
+        <p>산책 25분 · 식사 3끼 · 아침·점심 투약 완료. 저녁 투약 확인과 내일 오전 수분 섭취를 한 번 챙겨봐 주세요.</p>
+        <div class="actions">
+          <button><iconify-icon icon="fluent:chat-sparkle-24-filled"></iconify-icon>AI에게 물어보기</button>
+          <button class="primary"><iconify-icon icon="fluent:document-text-24-filled"></iconify-icon>전체 리포트</button>
+        </div>
+      </div>
+
+      <!-- 어제와 다른 점 -->
+      <div class="section-gap"><h3>어제와 다른 점</h3><a>3건 ▸</a></div>
+      <div class="diff">
+        <div class="diff-list">
+          <div class="diff-item">
+            <div class="ico"><iconify-icon icon="fluent:drink-water-24-filled"></iconify-icon></div>
+            <div class="body"><strong>수분 섭취 부족</strong><span>4잔 · 평소 6~7잔</span></div>
+            <div class="delta">−35%</div>
+          </div>
+          <div class="diff-item">
+            <div class="ico"><iconify-icon icon="fluent:food-24-filled"></iconify-icon></div>
+            <div class="body"><strong>점심 섭취량 감소</strong><span>3일 연속 65%대 유지</span></div>
+            <div class="delta">−15%</div>
+          </div>
+          <div class="diff-item ok">
+            <div class="ico"><iconify-icon icon="fluent:weather-moon-24-filled"></iconify-icon></div>
+            <div class="body"><strong>수면 안정</strong><span>지난 주 대비 +0.8시간</span></div>
+            <div class="delta">+12%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 오늘의 순간 -->
+      <div class="section-gap"><h3>오늘의 순간</h3><a>전체 ▸</a></div>
+      <a href="javascript:void(0)" class="moment">
+        <div class="moment-photo">
+          <span class="tag"><iconify-icon icon="fluent:weather-sunny-24-filled"></iconify-icon>오전 산책</span>
+        </div>
+        <div class="moment-body">
+          <div class="q">"오전 산책 때 햇빛이 좋아서 한참 머무르셨어요.<br>기분이 정말 좋아 보이셨어요."</div>
+          <div class="meta"><span class="avatar">김</span><span>김서연 간호사 · 10:24</span></div>
+        </div>
+      </a>
+
+      <!-- 6칸 핵심 지표 -->
+      <div class="section-gap"><h3>건강 지표</h3><a>자세히 ▸</a></div>
+      <div class="grid6">
+        <div class="mini">
+          <div class="ico-row"><iconify-icon icon="fluent:pill-24-filled" style="color:var(--green-d)"></iconify-icon><span class="dot"></span></div>
+          <div class="v">2<small>/3</small></div>
+          <div class="l">복약 <b>정상</b></div>
+        </div>
+        <div class="mini">
+          <div class="ico-row"><iconify-icon icon="fluent:pulse-24-filled" style="color:var(--red)"></iconify-icon><span class="dot"></span></div>
+          <div class="v">72<small>bpm</small></div>
+          <div class="l">맥박 <b>정상</b></div>
+        </div>
+        <div class="mini">
+          <div class="ico-row"><iconify-icon icon="fluent:food-24-filled" style="color:var(--amber)"></iconify-icon><span class="dot"></span></div>
+          <div class="v">90<small>%</small></div>
+          <div class="l">저녁 잘 드심</div>
+        </div>
+        <div class="mini warn">
+          <div class="ico-row"><iconify-icon icon="fluent:drink-water-24-filled" style="color:var(--blue)"></iconify-icon><span class="dot warn"></span></div>
+          <div class="v">4<small>잔</small></div>
+          <div class="l">수분 <b>부족</b></div>
+        </div>
+        <div class="mini">
+          <div class="ico-row"><iconify-icon icon="fluent:emoji-smile-24-filled" style="color:var(--blue)"></iconify-icon><span class="dot"></span></div>
+          <div class="v">87<small>점</small></div>
+          <div class="l">기분 좋음</div>
+        </div>
+        <div class="mini">
+          <div class="ico-row"><iconify-icon icon="fluent:weather-moon-24-filled" style="color:#7C3AED"></iconify-icon><span class="dot"></span></div>
+          <div class="v">7<small>h 32m</small></div>
+          <div class="l">수면 충분</div>
+        </div>
+      </div>
+
+      <!-- 활동·위생 -->
+      <div class="grid2">
+        <div class="activity-c">
+          <div class="h"><span class="t"><iconify-icon icon="fluent:walk-24-filled"></iconify-icon>활동</span><span class="pill ok">+12%</span></div>
+          <div class="v">58<small>%</small></div>
+          <div class="bars"><span style="height:30%"></span><span style="height:45%"></span><span style="height:62%"></span><span style="height:80%"></span><span style="height:50%"></span><span style="height:72%"></span><span style="height:58%"></span></div>
+          <div class="desc">산책 15분 · 체조 10분</div>
+        </div>
+        <div class="hygiene">
+          <div class="h"><iconify-icon icon="fluent:drop-24-filled"></iconify-icon><span class="t">위생</span></div>
+          <div class="item"><iconify-icon class="chk" icon="fluent:checkmark-24-filled"></iconify-icon>세면<time>07:30</time></div>
+          <div class="item"><iconify-icon class="chk" icon="fluent:checkmark-24-filled"></iconify-icon>구강<time>07:40</time></div>
+          <div class="item"><iconify-icon class="chk" icon="fluent:checkmark-24-filled"></iconify-icon>옷 갈아입기<time>08:00</time></div>
+          <div class="item todo"><span class="chk"></span>목욕<time>19시 예정</time></div>
+        </div>
+      </div>
+
+      <!-- 케어 일지 -->
+      <div class="section-gap"><h3>오늘의 케어</h3><a>대화 ▸</a></div>
+      <div class="care-log">
+        <div class="head">
+          <div class="avatar">김</div>
+          <div>
+            <div class="name">김서연</div>
+            <div class="role">담당 간호사 · 09:00~18:00</div>
+          </div>
+          <span class="pill ok"><iconify-icon icon="fluent:checkmark-circle-24-filled"></iconify-icon>방문 완료</span>
+        </div>
+        <div class="quote">"오늘 영자님은 평소와 같이 안정적인 컨디션이셨어요. 산책 후 조금 피곤해하셨지만, 점심 잘 드시고 오후엔 인지훈련에도 잘 참여하셨어요."</div>
+        <div class="care-tasks">
+          <div class="care-task"><iconify-icon icon="fluent:checkmark-circle-24-filled"></iconify-icon>식사 도움 (3끼)</div>
+          <div class="care-task"><iconify-icon icon="fluent:checkmark-circle-24-filled"></iconify-icon>약 챙겨드리기</div>
+          <div class="care-task"><iconify-icon icon="fluent:checkmark-circle-24-filled"></iconify-icon>산책 동행</div>
+          <div class="care-task"><iconify-icon icon="fluent:checkmark-circle-24-filled"></iconify-icon>인지훈련</div>
+        </div>
+      </div>
+
+      <!-- 보호자 할 일 -->
+      <div class="section-gap"><h3>민지님이 하실 일</h3><a>설정 ▸</a></div>
+      <div class="todo-card">
+        <div class="head"><div class="t"><iconify-icon icon="fluent:hand-wave-24-filled"></iconify-icon>이번 주 챙겨주세요</div><div class="count">3건</div></div>
+        <div class="todo-item">
+          <div class="ck"></div>
+          <div class="body"><strong>혈압약 리필</strong><span>3일치 남음 · 약국 또는 처방 요청</span></div>
+          <div class="due">~5/18</div>
+        </div>
+        <div class="todo-item">
+          <div class="ck"></div>
+          <div class="body"><strong>내과 정기 검진 확인</strong><span>다음 주 화요일 14시 · 영자님 동행 필요</span></div>
+          <div class="due">5/20</div>
+        </div>
+        <div class="todo-item">
+          <div class="ck"></div>
+          <div class="body"><strong>수분 섭취 함께 확인</strong><span>내일 오전 전화로 한 번 더 챙겨주세요</span></div>
+          <div class="due">내일</div>
+        </div>
+      </div>
+
+      <!-- 일정 -->
+      <div class="section-gap"><h3>다음 일정</h3><a>4건 ▸</a></div>
+      <div class="sched">
+        <div class="head"><div class="t">오후 일정</div><a class="more">전체 보기 ▸</a></div>
+        <div class="next">
+          <div class="time">15:30</div>
+          <div class="body"><strong>인지 훈련</strong><span>2층 훈련실 · 김서연 동행</span></div>
+          <span class="badge">다음</span>
+        </div>
+        <div class="row"><span class="pip"></span><time>17:00</time><div class="name">물리치료</div></div>
+        <div class="row"><span class="pip"></span><time>18:30</time><div class="name">저녁 식사</div></div>
+        <div class="row"><span class="pip"></span><time>19:00</time><div class="name">저녁 투약</div></div>
+        <div class="row"><span class="pip"></span><time>21:00</time><div class="name">취침 준비</div></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     변종 B — 지표 대시 (Data-led)
+═════════════════════════════════════════════════════════ -->
+<div class="variant vb" id="vB">
+  <div class="phone">
+    <div class="phone-peek">
+      <div>
+        <div class="greet-main">오늘도 수고하셨어요,<br>영자님 잘 있어요</div>
+        <div class="greet-sub">저녁 일과도 잘 되고 있어요.</div>
+      </div>
+      <span class="badge">홈</span>
+    </div>
+    <div class="sheet">
+      <div class="sheet-head">
+        <div class="ttl">일일 리포트</div>
+        <div class="date">5월 15일 (목)</div>
+      </div>
+
+      <!-- 3 Ring Hero -->
+      <div class="ring-hero">
+        <div class="top"><div class="t">오늘 종합 상태</div><time>18:42 기준</time></div>
+        <h2>영자님 오늘 <b>안정 (87점)</b></h2>
+        <div class="rings">
+          <div class="ring">
+            <div class="donut">
+              <svg viewBox="0 0 80 80">
+                <circle class="track" cx="40" cy="40" r="34"/>
+                <circle class="prog" cx="40" cy="40" r="34" stroke="url(#gB1)" stroke-dasharray="186 214"/>
+                <defs><linearGradient id="gB1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7CC4FF"/><stop offset="1" stop-color="#2C7AFC"/></linearGradient></defs>
+              </svg>
+              <div class="num"><b>87</b><small>건강</small></div>
+            </div>
+            <div class="lbl">컨디션</div>
+            <div class="sub">+3 vs 어제</div>
+          </div>
+          <div class="ring">
+            <div class="donut">
+              <svg viewBox="0 0 80 80">
+                <circle class="track" cx="40" cy="40" r="34"/>
+                <circle class="prog" cx="40" cy="40" r="34" stroke="url(#gB2)" stroke-dasharray="160 214"/>
+                <defs><linearGradient id="gB2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A78BFA"/><stop offset="1" stop-color="#7C3AED"/></linearGradient></defs>
+              </svg>
+              <div class="num"><b>75</b><small>수면</small></div>
+            </div>
+            <div class="lbl">수면</div>
+            <div class="sub">7h 32m</div>
+          </div>
+          <div class="ring">
+            <div class="donut">
+              <svg viewBox="0 0 80 80">
+                <circle class="track" cx="40" cy="40" r="34"/>
+                <circle class="prog" cx="40" cy="40" r="34" stroke="url(#gB3)" stroke-dasharray="124 214"/>
+                <defs><linearGradient id="gB3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FED7AA"/><stop offset="1" stop-color="#F59E0B"/></linearGradient></defs>
+              </svg>
+              <div class="num"><b>58</b><small>활동</small></div>
+            </div>
+            <div class="lbl">활동</div>
+            <div class="sub">+12% 7일</div>
+          </div>
+        </div>
+        <div class="prose">
+          <div class="ai"><iconify-icon icon="fluent:sparkle-24-filled"></iconify-icon></div>
+          <div>영자님 오늘 <b>안정적이셨어요</b>. 산책 25분, 식사 3끼, 아침·점심 투약 완료. 다만 <span class="warn">수분 섭취가 4잔</span>으로 평소보다 적었어요.</div>
+        </div>
+      </div>
+
+      <!-- 바이탈 row -->
+      <div class="vital-row">
+        <div class="head"><div class="t">오늘 바이탈</div><span class="pill ok"><iconify-icon icon="fluent:checkmark-circle-24-filled"></iconify-icon>모두 정상</span></div>
+        <div class="vitals">
+          <div class="vital ok"><div class="gauge"><div class="arc"></div><div class="ind" style="transform:translateX(-50%) rotate(20deg)"></div></div><b>120<small>/80</small></b><div class="l">혈압</div></div>
+          <div class="vital ok"><div class="gauge"><div class="arc"></div><div class="ind" style="transform:translateX(-50%) rotate(0deg)"></div></div><b>72<small>bpm</small></b><div class="l">맥박</div></div>
+          <div class="vital ok"><div class="gauge"><div class="arc"></div><div class="ind" style="transform:translateX(-50%) rotate(15deg)"></div></div><b>97<small>%</small></b><div class="l">SpO₂</div></div>
+          <div class="vital ok"><div class="gauge"><div class="arc"></div><div class="ind" style="transform:translateX(-50%) rotate(-10deg)"></div></div><b>36.5<small>°</small></b><div class="l">체온</div></div>
+          <div class="vital warn"><div class="gauge"><div class="arc"></div><div class="ind" style="transform:translateX(-50%) rotate(40deg)"></div></div><b>112<small>mg</small></b><div class="l">혈당</div></div>
+        </div>
+      </div>
+
+      <!-- 복약 -->
+      <div class="med">
+        <div class="top">
+          <div class="t"><iconify-icon icon="fluent:pill-24-filled"></iconify-icon>오늘 복약</div>
+          <div class="v">2<small>/3 완료</small></div>
+        </div>
+        <div class="progress">
+          <div class="done" style="width:66%"></div>
+          <div class="pending"></div>
+        </div>
+        <div class="timeline">
+          <div class="pill-time done">
+            <time>아침 08:00</time>
+            <div class="stat"><iconify-icon icon="fluent:checkmark-circle-24-filled"></iconify-icon>완료</div>
+          </div>
+          <div class="pill-time done">
+            <time>점심 12:30</time>
+            <div class="stat"><iconify-icon icon="fluent:checkmark-circle-24-filled"></iconify-icon>완료</div>
+          </div>
+          <div class="pill-time">
+            <time>저녁 19:00</time>
+            <div class="stat" style="color:var(--t2)"><iconify-icon icon="fluent:clock-24-regular"></iconify-icon>예정</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 식사 stacked compare -->
+      <div class="meal">
+        <div class="head"><div class="t"><iconify-icon icon="fluent:food-24-filled"></iconify-icon>식사 (어제 vs 오늘)</div><div class="ratio">82<small>% 평균</small></div></div>
+        <div class="cmp">
+          <div class="bar-grp"><div class="bar y" data-v="90" style="height:90%"></div><div class="bar t" data-v="95" style="height:95%"></div><div class="l">아침</div></div>
+          <div class="bar-grp"><div class="bar y" data-v="80" style="height:80%"></div><div class="bar t warn" data-v="65" style="height:65%"></div><div class="l">점심</div></div>
+          <div class="bar-grp"><div class="bar y" data-v="85" style="height:85%"></div><div class="bar t" data-v="90" style="height:90%"></div><div class="l">저녁</div></div>
+          <div class="bar-grp"><div class="bar y" data-v="70" style="height:70%"></div><div class="bar t" data-v="80" style="height:80%"></div><div class="l">간식</div></div>
+        </div>
+        <div class="legend"><span><i></i>어제</span><span class="today"><i></i>오늘</span><span style="margin-left:auto;color:#B45309">▸ 점심 −15%</span></div>
+      </div>
+
+      <!-- 수분 glasses -->
+      <div class="water">
+        <div class="head"><div class="t"><iconify-icon icon="fluent:drink-water-24-filled"></iconify-icon>수분 섭취</div><div class="v">4<small>/8 잔 (1L)</small></div></div>
+        <div class="glasses">
+          <div class="glass full"></div>
+          <div class="glass full"></div>
+          <div class="glass full"></div>
+          <div class="glass half"></div>
+          <div class="glass"></div>
+          <div class="glass"></div>
+          <div class="glass"></div>
+          <div class="glass"></div>
+        </div>
+        <div class="sub"><iconify-icon icon="fluent:warning-24-filled"></iconify-icon>평소보다 35% 적어요 · 내일 오전 보충 권장</div>
+      </div>
+
+      <!-- 수면 stages -->
+      <div class="sleep">
+        <div class="head"><div class="t"><iconify-icon icon="fluent:weather-moon-24-filled"></iconify-icon>수면</div><div class="v">7<small>h</small>32<small>m</small></div></div>
+        <div class="sleep-stages">
+          <span class="seg core" style="width:8%"></span>
+          <span class="seg deep" style="width:18%"></span>
+          <span class="seg rem" style="width:14%"></span>
+          <span class="seg core" style="width:22%"></span>
+          <span class="seg awake" style="width:3%"></span>
+          <span class="seg deep" style="width:12%"></span>
+          <span class="seg rem" style="width:10%"></span>
+          <span class="seg core" style="width:13%"></span>
+        </div>
+        <div class="sleep-x"><span>22:00</span><span>00:00</span><span>02:00</span><span>04:00</span><span>06:00</span><span>08:00</span></div>
+        <div class="sleep-legend">
+          <div class="l"><i style="background:#5B21B6"></i>깊은<b>1h12m</b></div>
+          <div class="l"><i style="background:#7C3AED"></i>일반<b>3h25m</b></div>
+          <div class="l"><i style="background:#A78BFA"></i>렘<b>1h48m</b></div>
+          <div class="l"><i style="background:#FCA5A5"></i>깸<b>1회</b></div>
+        </div>
+      </div>
+
+      <!-- 활동 + 기분 -->
+      <div class="duo">
+        <div class="c act">
+          <div class="t"><iconify-icon icon="fluent:walk-24-filled" style="color:var(--amber)"></iconify-icon>활동</div>
+          <div class="v">58<small>%</small></div>
+          <div class="bar-week"><i style="height:30%"></i><i style="height:45%"></i><i style="height:62%"></i><i style="height:80%"></i><i style="height:50%"></i><i style="height:72%"></i><i class="t" style="height:58%"></i></div>
+          <div class="desc">산책 25분 · 7일 평균 +12%</div>
+        </div>
+        <div class="c mood">
+          <div class="t"><iconify-icon icon="fluent:emoji-smile-24-filled" style="color:var(--blue)"></iconify-icon>기분</div>
+          <div class="v">87<small>점</small></div>
+          <div class="bar-week"><i style="height:62%"></i><i style="height:55%"></i><i style="height:70%"></i><i style="height:85%"></i><i style="height:80%"></i><i style="height:75%"></i><i class="t" style="height:87%"></i></div>
+          <div class="desc">최근 28일 평균 +6점</div>
+        </div>
+      </div>
+
+      <!-- AI 인사이트 -->
+      <div class="insight">
+        <div class="h">
+          <div class="ai"><iconify-icon icon="fluent:sparkle-24-filled"></iconify-icon></div>
+          <div class="t">AI 인사이트<small>지난 3일 식사 추세</small></div>
+        </div>
+        <div class="body">점심 섭취율이 최근 3일간 평균 <b>65%</b>로 감소했어요. 활동량과 수면은 정상 범위라 큰 걱정은 아니지만, 내일 점심 메뉴를 한 번 다양화해보면 좋겠어요.</div>
+        <div class="cards">
+          <div class="ph meal"></div>
+          <div class="ph"></div>
+          <div class="ph"></div>
+        </div>
+        <div class="cta"><span>대화로 자세히 알아보기</span><iconify-icon icon="fluent:arrow-right-24-filled"></iconify-icon></div>
+      </div>
+
+      <!-- 보호자 할 일 (공통) -->
+      <div class="section-gap"><h3>민지님이 하실 일</h3><a>설정 ▸</a></div>
+      <div class="todo-card" style="margin-top:6px">
+        <div class="head"><div class="t"><iconify-icon icon="fluent:hand-wave-24-filled"></iconify-icon>이번 주 챙겨주세요</div><div class="count">3건</div></div>
+        <div class="todo-item">
+          <div class="ck"></div>
+          <div class="body"><strong>혈압약 리필</strong><span>3일치 남음 · 약국 또는 처방 요청</span></div>
+          <div class="due">~5/18</div>
+        </div>
+        <div class="todo-item">
+          <div class="ck"></div>
+          <div class="body"><strong>내과 정기 검진 확인</strong><span>다음 주 화요일 14시</span></div>
+          <div class="due">5/20</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     변종 C — 스토리 피드 (Narrative)
+═════════════════════════════════════════════════════════ -->
+<div class="variant vc" id="vC">
+  <div class="phone">
+    <div class="phone-peek">
+      <div>
+        <div class="greet-main">오늘도 수고하셨어요,<br>영자님 잘 있어요</div>
+        <div class="greet-sub">저녁 일과도 잘 되고 있어요.</div>
+      </div>
+      <span class="badge">홈</span>
+    </div>
+    <div class="sheet">
+      <div class="sheet-head">
+        <div class="ttl">영자님의 하루</div>
+        <div class="date">5월 15일 (목)</div>
+      </div>
+
+      <!-- Story Hero -->
+      <div class="story-hero">
+        <div class="av">영</div>
+        <div class="body">
+          <h2>영자님은 오늘 잘 지내셨어요</h2>
+          <p>산책 후 점심 잘 드시고 인지훈련까지. <b>전반적으로 안정적인 하루</b>예요.</p>
+        </div>
+      </div>
+
+      <!-- Feed photo -->
+      <div class="feed-photo">
+        <div class="img">
+          <span class="tag"><iconify-icon icon="fluent:weather-sunny-24-filled"></iconify-icon>오전 산책</span>
+          <div class="caption">"햇빛 좋은 날, 한참 머무르셨어요"</div>
+        </div>
+        <div class="meta"><span class="av">김</span><div><div class="name">김서연</div><div class="role">담당 간호사</div></div><time>10:24</time></div>
+      </div>
+
+      <!-- Timeline -->
+      <div class="section-gap" style="margin-top:22px"><h3>시간순 일과</h3><a>전체 ▸</a></div>
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="time">07:30 · 기상</div>
+          <div class="tl-card">
+            <div class="ttl"><iconify-icon icon="fluent:weather-sunny-24-filled" style="color:var(--amber)"></iconify-icon>편안하게 일어나셨어요</div>
+            <div class="desc">밤사이 한 번 깨셨지만 금세 다시 주무셨어요. 컨디션 <b>좋음</b>.</div>
+            <div class="stat-row"><span class="chip ok">수면 7h 32m</span><span class="chip">깸 1회</span></div>
+          </div>
+        </div>
+
+        <div class="tl-item">
+          <div class="time">08:00 · 아침 식사 + 복약</div>
+          <div class="tl-card">
+            <div class="ttl"><iconify-icon icon="fluent:food-24-filled" style="color:var(--amber)"></iconify-icon>흰 죽 · 김 · 두부조림</div>
+            <div class="desc">아침 거의 다 드셨어요. 혈압약 1정도 잘 챙겨드셨어요.</div>
+            <div class="stat-row"><span class="chip ok">식사 95%</span><span class="chip ok">아침약 완료</span></div>
+          </div>
+        </div>
+
+        <div class="tl-item">
+          <div class="time">10:00 · 산책</div>
+          <div class="tl-card">
+            <div class="ttl"><iconify-icon icon="fluent:walk-24-filled" style="color:var(--green-d)"></iconify-icon>마당 산책 25분</div>
+            <div class="desc">햇빛이 좋아서 한참 앉아 계셨어요. 기분 정말 좋아 보이셨어요.</div>
+            <div class="photo"></div>
+            <div class="stat-row"><span class="chip ok">활동 +12%</span><span class="chip">기분 좋음</span></div>
+          </div>
+        </div>
+
+        <div class="tl-item warn">
+          <div class="time">12:30 · 점심 + 복약</div>
+          <div class="tl-card">
+            <div class="ttl"><iconify-icon icon="fluent:food-24-filled" style="color:#B45309"></iconify-icon>잡곡밥 · 미역국 · 나물</div>
+            <div class="desc">평소보다 조금 덜 드셨어요. <b>3일 연속 점심 섭취량 65% 정도</b> 유지 중이에요.</div>
+            <div class="stat-row"><span class="chip warn">식사 65%</span><span class="chip ok">점심약 완료</span></div>
+          </div>
+        </div>
+
+        <div class="tl-item">
+          <div class="time">15:30 · 인지훈련</div>
+          <div class="tl-card">
+            <div class="ttl"><iconify-icon icon="fluent:brain-circuit-24-filled" style="color:var(--blue)"></iconify-icon>2층 훈련실 · 30분</div>
+            <div class="desc">단어 회상 8/10, 시간·장소 인식 정상. 잘 참여하셨어요.</div>
+            <div class="stat-row"><span class="chip ok">인지 정상</span></div>
+          </div>
+        </div>
+
+        <div class="tl-item miss">
+          <div class="time">19:00 · 저녁 복약 (예정)</div>
+          <div class="tl-card miss">
+            <div class="ttl"><iconify-icon icon="fluent:clock-24-filled" style="color:#B91C1C"></iconify-icon>아직 안 드셨어요</div>
+            <div class="desc">간호사님이 챙겨드릴 예정이지만, <b>9시까지 알림</b>이 안 오면 한 번 연락해보세요.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 종합 미니 -->
+      <div class="sum">
+        <div class="t">오늘 요약</div>
+        <div class="row">
+          <div class="c"><iconify-icon icon="fluent:pill-24-filled"></iconify-icon><b>2/3</b><span>복약</span></div>
+          <div class="c"><iconify-icon icon="fluent:food-24-filled"></iconify-icon><b>82%</b><span>식사</span></div>
+          <div class="c"><iconify-icon icon="fluent:walk-24-filled"></iconify-icon><b>25분</b><span>산책</span></div>
+          <div class="c"><iconify-icon icon="fluent:weather-moon-24-filled"></iconify-icon><b>7h32m</b><span>수면</span></div>
+        </div>
+      </div>
+
+      <!-- 간호사 메시지 -->
+      <div class="msg">
+        <div class="from">
+          <div class="av">김</div>
+          <div><div class="name">김서연 간호사</div><div class="role">민지님께 한마디 · 18:00</div></div>
+        </div>
+        <div class="body">"민지님, 영자님 오늘 정말 편안하게 보내셨어요. 다만 <b>수분 섭취가 평소보다 적어서</b> 내일 오전에 한 번 전화로 물 챙겨드시라고 말씀드리면 좋을 것 같아요."</div>
+        <div class="actions">
+          <button><iconify-icon icon="fluent:chat-24-filled"></iconify-icon>답장하기</button>
+          <button><iconify-icon icon="fluent:call-24-filled"></iconify-icon>통화 요청</button>
+        </div>
+      </div>
+
+      <!-- 내일은요 -->
+      <div class="tomorrow">
+        <div class="t">내일은요 · 5월 16일 (금)</div>
+        <h3>아침 일찍 검진 외출이 있어요</h3>
+        <div class="item"><iconify-icon icon="fluent:calendar-24-filled"></iconify-icon><div><b>09:00 내과 정기 검진</b><br><span style="font-size:11px;opacity:.7">차량 픽업 · 보호자 동행 가능 시 알려주세요</span></div></div>
+        <div class="item"><iconify-icon icon="fluent:drink-water-24-filled"></iconify-icon><div>오전 <b>수분 보충 확인</b> · 어제 4잔에 그쳐 내일은 6잔 목표</div></div>
+        <div class="item"><iconify-icon icon="fluent:pill-24-filled"></iconify-icon><div>혈압약 <b>3일치 남음</b> · 약국 들러주시면 좋아요</div></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     변종 D — 미니멀 텍스트 (Editorial)
+     레퍼런스: stoic / Asana 'Project summary' / Bevel
+═════════════════════════════════════════════════════════ -->
+<div class="variant vd" id="vD">
+  <div class="phone">
+    <div class="phone-peek">
+      <div>
+        <div class="greet-main">오늘도 수고하셨어요,<br>영자님 잘 있어요</div>
+        <div class="greet-sub">저녁 일과도 잘 되고 있어요.</div>
+      </div>
+      <span class="badge">홈</span>
+    </div>
+    <div class="sheet">
+      <div class="sheet-head">
+        <div class="ttl">일일 리포트</div>
+        <div class="date">5월 15일 (목)</div>
+      </div>
+
+      <div class="ed-hero">
+        <div class="kicker">오늘의 한 줄</div>
+        <h1>오늘은 평소처럼 <em>안정적</em>이셨어요.<br>다만 수분이 조금 적었어요.</h1>
+        <p class="sub">최근 7일 평균과 비교했을 때 큰 변동 없이 일과가 지나갔습니다. 식사와 약 복용 모두 시간에 맞추셨고, 오후에는 잠시 산책도 다녀오셨어요.</p>
+      </div>
+
+      <div class="ed-stats">
+        <div class="c"><b>3<small>/3</small></b><span>식사</span></div>
+        <div class="c"><b>3<small>/4</small></b><span>약</span></div>
+        <div class="c"><b>4<small>잔</small></b><span>수분</span></div>
+        <div class="c"><b>6<small>시간</small></b><span>수면</span></div>
+      </div>
+
+      <div class="ed-block">
+        <div class="lbl"><iconify-icon icon="fluent:pill-24-regular"></iconify-icon>약 복용</div>
+        <h3>아침·점심 약은 제 시간에, 저녁약 한 번 놓치셨어요</h3>
+        <p>혈압약과 당뇨약은 <b>아침 8시·점심 12시</b>에 모두 복용하셨습니다. 저녁 6시 분비섹스약은 <b>30분 늦게</b> 드셨고, 잠자기 전 한 알은 아직 미복용 상태예요. 보호자님께 알림 보내드릴까요?</p>
+      </div>
+
+      <div class="ed-block">
+        <div class="lbl"><iconify-icon icon="fluent:food-24-regular"></iconify-icon>식사와 수분</div>
+        <h3>식사는 평소만큼, 수분은 평균보다 적어요</h3>
+        <p>아침에는 <b>흰죽과 김치</b>를 절반 정도, 점심에는 <b>두부조림과 시금치</b>를 80% 드셨어요. 저녁은 잡곡밥에 생선구이로 잘 드셨습니다. 다만 <b>물은 4잔(평균 6잔)</b>에 그쳤어요.</p>
+        <div class="ed-photo"><div class="cap">오후 12시 32분, 점심 후</div></div>
+      </div>
+
+      <div class="ed-block">
+        <div class="lbl warn"><iconify-icon icon="fluent:warning-24-regular"></iconify-icon>오늘의 변화</div>
+        <h3>오후 2시 무렵 평소보다 활동량이 적었어요</h3>
+        <p>평소엔 점심 후 거실을 오가시는 편인데, 오늘은 <b>30분 정도 누워 계셨어요</b>. 컨디션을 한 번 여쭤보시면 좋을 것 같아요. 저녁에는 다시 평소처럼 움직이셨습니다.</p>
+      </div>
+
+      <div class="ed-pullquote">
+        <q>오늘은 손주가 보고 싶다고 하셨어요. 통화 한 통이면 충분하실 거예요.</q>
+        <cite>요양보호사 김순례</cite>
+      </div>
+
+      <div class="ed-tomorrow">
+        <div class="lbl">내일 · 5월 16일 (금)</div>
+        <div class="row"><time>09:00</time><div><b>내과 정기 검진</b> — 차량 픽업, 동행 가능 여부 알려주세요</div></div>
+        <div class="row"><time>오전</time><div>수분 보충 확인 — 어제 4잔, <b>6잔 목표</b></div></div>
+        <div class="row"><time>들러</time><div>혈압약 <b>3일치 남음</b> — 약국 방문 부탁드려요</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     변종 E — 야간 다크 (Night Score)
+     레퍼런스: Oura / The Outsiders 'High Readiness' / Ultrahuman
+═════════════════════════════════════════════════════════ -->
+<div class="variant ve" id="vE">
+  <div class="phone">
+    <div class="phone-peek">
+      <div>
+        <div class="greet-main">오늘도 수고하셨어요,<br>영자님 잘 있어요</div>
+        <div class="greet-sub">저녁 일과도 잘 되고 있어요.</div>
+      </div>
+      <span class="badge">홈</span>
+    </div>
+    <div class="sheet">
+      <div class="sheet-head">
+        <div class="ttl">일일 리포트</div>
+        <div class="date">5월 15일 (목)</div>
+      </div>
+
+      <div class="nx">
+        <div class="nx-head">
+          <span class="date">Thu · 5월 15</span>
+          <span class="live">실시간 업데이트</span>
+        </div>
+        <div class="nx-score">
+          <svg viewBox="0 0 220 120">
+            <path d="M20 110 A 90 90 0 0 1 200 110" stroke="rgba(255,255,255,.08)" stroke-width="10" fill="none" stroke-linecap="round"/>
+            <path d="M20 110 A 90 90 0 0 1 178 38" stroke="url(#g1)" stroke-width="10" fill="none" stroke-linecap="round"/>
+            <defs>
+              <linearGradient id="g1" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#5BFFB3"/>
+                <stop offset="100%" stop-color="#A4D6FF"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="v"><b>82</b><small>오늘 컨디션</small></div>
+        </div>
+        <div class="nx-label">안정적인 하루</div>
+        <div class="nx-delta">어제 <b>+4점</b> · 평균 79점</div>
+        <div class="nx-narr">
+          영자님은 <b>평소처럼</b> 하루를 보내셨어요. 약 복용과 식사는 모두 정상이고, 수분 섭취만 <b>평소 65%</b>로 조금 부족했습니다. 큰 변화는 없으니 안심하셔도 좋아요.
+        </div>
+      </div>
+
+      <div class="contribs">
+        <div class="h">오늘 점수에 영향을 준 것</div>
+        <div class="grid">
+          <div class="contrib">
+            <div class="top ok"><iconify-icon icon="fluent:bed-24-filled"></iconify-icon>수면</div>
+            <b>6h 38m</b>
+            <div class="bar"><i style="width:82%;background:linear-gradient(90deg,#34D399,#5BFFB3)"></i></div>
+            <div class="tag ok">양호 · 깊은잠 2시간</div>
+          </div>
+          <div class="contrib">
+            <div class="top ok"><iconify-icon icon="fluent:pill-24-filled"></iconify-icon>약 복용</div>
+            <b>3<span style="font-size:13px;color:var(--t3);font-weight:600">/4</span></b>
+            <div class="bar"><i style="width:75%;background:linear-gradient(90deg,#5B9BFF,#A4D6FF)"></i></div>
+            <div class="tag warn">저녁약 1회 미복용</div>
+          </div>
+          <div class="contrib">
+            <div class="top ok"><iconify-icon icon="fluent:food-24-filled"></iconify-icon>식사</div>
+            <b>3<span style="font-size:13px;color:var(--t3);font-weight:600">/3</span></b>
+            <div class="bar"><i style="width:88%;background:linear-gradient(90deg,#34D399,#5BFFB3)"></i></div>
+            <div class="tag ok">평소 90% 섭취</div>
+          </div>
+          <div class="contrib">
+            <div class="top warn"><iconify-icon icon="fluent:drink-water-24-filled"></iconify-icon>수분</div>
+            <b>4<span style="font-size:13px;color:var(--t3);font-weight:600">잔</span></b>
+            <div class="bar"><i style="width:50%;background:linear-gradient(90deg,#F59E0B,#FCD34D)"></i></div>
+            <div class="tag warn">평균보다 −2잔</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="nx-night">
+        <h4><iconify-icon icon="fluent:weather-moon-24-filled"></iconify-icon>야간 활동 (00:00 – 06:00)</h4>
+        <div class="ev"><time>02:14</time><div>화장실 다녀오심 · <b>3분</b>, 정상</div></div>
+        <div class="ev"><time>04:48</time><div>잠시 뒤척이심 · 곧 다시 잠드심</div></div>
+        <div class="ev"><time>06:12</time><div><b>기상</b> · 평소 기상 시간과 동일</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     변종 F — 매거진 (Magazine)
+     레퍼런스: Hyundai Card '월별 리포트'
+═════════════════════════════════════════════════════════ -->
+<div class="variant vf" id="vF">
+  <div class="phone">
+    <div class="phone-peek">
+      <div>
+        <div class="greet-main">오늘도 수고하셨어요,<br>영자님 잘 있어요</div>
+        <div class="greet-sub">저녁 일과도 잘 되고 있어요.</div>
+      </div>
+      <span class="badge">홈</span>
+    </div>
+    <div class="sheet" style="padding-top:0">
+      <div class="mag-cover">
+        <span class="issue">VOL.247 · 영자님의 하루</span>
+        <span class="nob">05·15</span>
+        <div class="title">
+          <h2>안부, <em>오늘도</em><br>전합니다</h2>
+          <p>2026년 5월 · 목요일 발행</p>
+        </div>
+        <div class="meta">
+          <span class="a">요양보호사 김순례</span>
+          <span class="p">8 PAGES</span>
+        </div>
+      </div>
+
+      <div class="mag-toc">
+        <div class="lbl">CONTENTS</div>
+        <div class="item"><span class="n">01</span><span class="t">오늘의 한 마디</span><span class="p">02</span></div>
+        <div class="item"><span class="n">02</span><span class="t">식사와 수분</span><span class="p">03</span></div>
+        <div class="item"><span class="n">03</span><span class="t">약 복용 기록</span><span class="p">05</span></div>
+        <div class="item"><span class="n">04</span><span class="t">컨디션과 활동</span><span class="p">06</span></div>
+        <div class="item"><span class="n">05</span><span class="t">내일의 일정</span><span class="p">08</span></div>
+      </div>
+
+      <div class="mag-sec">
+        <span class="num">01</span>
+        <div class="cat">Opening · 오늘의 한 마디</div>
+        <h3>평소처럼 <em>안정적</em>인 하루였어요</h3>
+        <p>오늘 어머님은 큰 변화 없이 평소 하루를 보내셨습니다. 식사도 잘 드셨고, 산책도 짧게 다녀오셨어요. <b>다만 물 섭취가 평소의 65%</b>에 그쳤으니 내일 한 번 더 챙겨봐 주세요.</p>
+      </div>
+
+      <div class="mag-sec">
+        <span class="num">02</span>
+        <div class="cat">Health · 식사와 수분</div>
+        <h3><em>아침·점심·저녁</em> 모두 거르지 않으셨어요</h3>
+        <p>흰죽으로 시작하신 아침, 두부조림이 맛있다고 하시며 점심 80%를 드셨습니다. 저녁은 잡곡밥에 생선구이로 가장 잘 드셨어요.</p>
+        <div class="info">
+          <div class="big">4<small>/6잔</small></div>
+          <div class="lbl"><b>수분 섭취</b>평소 6잔보다 2잔 적게 드셨어요. 저녁 시간에 보온병에 따뜻한 물을 챙겨드렸어요.</div>
+        </div>
+      </div>
+
+      <div class="mag-sec">
+        <span class="num">03</span>
+        <div class="cat">Medication · 약 복용</div>
+        <h3>저녁약 한 번 <em>30분 늦으셨어요</em></h3>
+        <p>아침 8시 혈압약, 점심 12시 당뇨약은 정확하게 드셨고, <b>저녁 6시 약은 30분 늦게</b> 드셨습니다. 잠자기 전 한 알이 아직 남아있어요. 보호자님께 알려드릴까요?</p>
+        <div class="info">
+          <div class="big">3<small>/4회</small></div>
+          <div class="lbl"><b>오늘 복용</b>혈압약 3일치 남아있습니다. 약국 들러주시면 좋아요.</div>
+        </div>
+      </div>
+
+      <div class="mag-sec">
+        <span class="num">04</span>
+        <div class="cat">Wellbeing · 컨디션과 활동</div>
+        <h3>오후 잠시 누워 계셨지만 <em>저녁엔 다시 활기</em>를 찾으셨어요</h3>
+        <p>오전엔 평소처럼 거실에서 라디오를 들으셨고, 점심 후 잠시 누워 쉬셨습니다. 5시쯤 일어나 화초에 물을 주시고 저녁 식사 전까지 거실을 오가셨어요. <b>손주를 보고 싶다</b>고 말씀하셨어요.</p>
+      </div>
+
+      <div class="mag-sec">
+        <span class="num">05</span>
+        <div class="cat">Tomorrow · 내일의 일정</div>
+        <h3><em>09:00</em> 내과 정기 검진</h3>
+        <p>차량 픽업이 예약돼 있어요. <b>동행 가능 여부</b>를 알려주시면 일정을 맞춰두겠습니다. 검진 후엔 약국에 들러 혈압약 처방도 부탁드려요.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     변종 G — AI 챗 리포트 (Chat-style)
+     레퍼런스: Beside transcript / monday.com Sidekick
+═════════════════════════════════════════════════════════ -->
+<div class="variant vg" id="vG">
+  <div class="phone">
+    <div class="phone-peek">
+      <div>
+        <div class="greet-main">오늘도 수고하셨어요,<br>영자님 잘 있어요</div>
+        <div class="greet-sub">저녁 일과도 잘 되고 있어요.</div>
+      </div>
+      <span class="badge">홈</span>
+    </div>
+    <div class="sheet">
+      <div class="sheet-head" style="padding-bottom:6px">
+        <div class="ttl">일일 리포트</div>
+        <div class="date">5월 15일 (목)</div>
+      </div>
+
+      <div class="gc-head">
+        <div class="av"></div>
+        <div style="flex:1">
+          <div class="name">하루 안부 AI</div>
+          <div class="role"><iconify-icon icon="fluent:sparkle-24-filled"></iconify-icon>요양보호사 기록을 정리해드려요</div>
+        </div>
+      </div>
+
+      <div class="chat">
+        <div class="bubble ai">
+          <div class="ttl"><iconify-icon icon="fluent:sparkle-24-filled"></iconify-icon>오늘 한줄 요약</div>
+          영자님 오늘 <b>평소처럼 안정적</b>이셨어요. 약·식사·수면 모두 정상이고, <b>수분 섭취만 평소 65%</b>로 조금 부족했어요. 큰 걱정 없으셔도 돼요.
+        </div>
+
+        <div class="bubble card">
+          <div class="ttl"><iconify-icon icon="fluent:checkmark-circle-24-filled"></iconify-icon>잘 챙기신 것</div>
+          <div class="h">아침·점심 약 정시 복용</div>
+          <div class="d">혈압약은 <b>오전 8시</b>, 당뇨약은 <b>오후 12시</b>에 정확히 드셨어요. 식사도 80–100% 모두 잘 드셨습니다.</div>
+          <div class="stats">
+            <div class="s"><b>3/3</b><span>식사</span></div>
+            <div class="s"><b>2/2</b><span>아침·점심 약</span></div>
+            <div class="s"><b>6h 38m</b><span>수면</span></div>
+          </div>
+        </div>
+
+        <div class="bubble card warn">
+          <div class="ttl"><iconify-icon icon="fluent:warning-24-filled"></iconify-icon>조금 신경 써주세요</div>
+          <div class="h">저녁약 30분 늦으셨어요</div>
+          <div class="d">저녁 6시 약을 <b>6시 30분</b>에 드셨고, 자기 전 한 알은 아직 미복용이에요. 혈압약은 <b>3일치</b>만 남아있어요.</div>
+        </div>
+
+        <div class="bubble photo">
+          <div class="img"></div>
+          <div class="cap"><b>12:32 점심</b> · 두부조림이 맛있다고 하셨어요</div>
+        </div>
+
+        <div class="bubble ai">
+          <b>손주가 보고 싶다</b>고 하셨어요. 짧은 영상통화면 충분하실 것 같아요.
+        </div>
+
+        <div class="bubble user">알겠어요. 저녁에 통화할게요</div>
+
+        <div class="typing"><i></i><i></i><i></i></div>
+      </div>
+
+      <div class="quick-chips">
+        <button><iconify-icon icon="fluent:question-circle-24-regular"></iconify-icon>오늘 식사 자세히</button>
+        <button><iconify-icon icon="fluent:chart-multiple-24-regular"></iconify-icon>주간 변화</button>
+        <button><iconify-icon icon="fluent:call-24-regular"></iconify-icon>요양보호사와 통화</button>
+      </div>
+      <div class="input">
+        <iconify-icon icon="fluent:emoji-24-regular" style="font-size:18px;color:var(--t3)"></iconify-icon>
+        <span>무엇이든 물어보세요…</span>
+        <button><iconify-icon icon="fluent:mic-24-filled"></iconify-icon></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     변종 H — 컬러 위젯 (iOS 18 Widgets)
+     레퍼런스: Apple Fitness rings / iOS widget grid
+═════════════════════════════════════════════════════════ -->
+<div class="variant vh" id="vH">
+  <div class="phone">
+    <div class="phone-peek">
+      <div>
+        <div class="greet-main">오늘도 수고하셨어요,<br>영자님 잘 있어요</div>
+        <div class="greet-sub">저녁 일과도 잘 되고 있어요.</div>
+      </div>
+      <span class="badge">홈</span>
+    </div>
+    <div class="sheet">
+      <div class="wg-greet">
+        <div>
+          <h2>오늘은 <b>평소처럼</b></h2>
+          <div class="sub">5월 15일 (목) · 9개의 위젯</div>
+        </div>
+        <span class="edit">편집</span>
+      </div>
+
+      <div class="grid">
+        <!-- 1) 식사 위젯 -->
+        <div class="w ring-meal">
+          <div class="top"><span>식사</span><iconify-icon icon="fluent:food-24-filled"></iconify-icon></div>
+          <div class="v">3<small>/3</small></div>
+          <div class="lbl"><b>모두 챙기심</b> · 평균 85%</div>
+        </div>
+        <!-- 2) 약 위젯 -->
+        <div class="w ring-med">
+          <div class="top"><span>약 복용</span><iconify-icon icon="fluent:pill-24-filled"></iconify-icon></div>
+          <div class="v">3<small>/4</small></div>
+          <div class="lbl"><b>저녁 1회</b> 늦음</div>
+        </div>
+        <!-- 3) 수면 위젯 -->
+        <div class="w ring-sleep">
+          <div class="top"><span>수면</span><iconify-icon icon="fluent:bed-24-filled"></iconify-icon></div>
+          <div class="v">6<small>h 38m</small></div>
+          <div class="lbl">깊은잠 2h · <b>양호</b></div>
+        </div>
+        <!-- 4) 수분 위젯 -->
+        <div class="w ring-water">
+          <div class="top"><span>수분</span><iconify-icon icon="fluent:drink-water-24-filled"></iconify-icon></div>
+          <div class="v">4<small>잔</small></div>
+          <div class="lbl"><b>−2잔</b> · 평소보다 적음</div>
+        </div>
+
+        <!-- 5) 컨디션 다크 와이드 -->
+        <div class="w wide dark">
+          <div class="top"><span>오늘 컨디션</span><iconify-icon icon="fluent:heart-pulse-24-filled"></iconify-icon></div>
+          <div style="display:flex;align-items:flex-end;gap:14px;margin-top:auto">
+            <div style="flex:1">
+              <div class="v">82<small>점</small></div>
+              <div class="lbl">어제 <b style="color:#5BFFB3">+4</b> · 평균 79</div>
+            </div>
+            <div class="rings">
+              <div class="ring r1"></div>
+              <div class="ring r2"></div>
+              <div class="ring r3"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6) 알림 위젯 (와이드) -->
+        <div class="w wide alert">
+          <div class="top"><span>오늘 알려드릴 일</span><iconify-icon icon="fluent:alert-24-filled"></iconify-icon></div>
+          <div class="v">손주 영상통화 한번 어떠세요?</div>
+          <div class="lbl" style="color:#92400E;margin-top:6px">오후에 손주가 보고 싶다고 하셨어요</div>
+        </div>
+
+        <!-- 7) 활동 -->
+        <div class="w">
+          <div class="top" style="color:var(--blue-d)"><span>활동</span><iconify-icon icon="fluent:walking-24-filled" style="color:var(--blue)"></iconify-icon></div>
+          <div class="v" style="color:var(--blue-d)">1.2<small>km</small></div>
+          <div class="lbl">실내 산책 <b>22분</b></div>
+        </div>
+        <!-- 8) 다음 일정 -->
+        <div class="w">
+          <div class="top" style="color:#7C3AED"><span>내일 09:00</span><iconify-icon icon="fluent:calendar-24-filled" style="color:#7C3AED"></iconify-icon></div>
+          <div class="v" style="color:#5B21B6;font-size:18px;line-height:1.2">내과<br>정기검진</div>
+          <div class="lbl">차량 픽업 · 동행 미정</div>
+        </div>
+
+        <!-- 9) 사진 와이드 -->
+        <div class="w wide" style="padding:0;height:152px;border-radius:22px;overflow:hidden;background:url('mockup.png') center/cover no-repeat,linear-gradient(135deg,#F4E0C8,#D6B994);position:relative">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,.65) 100%)"></div>
+          <div style="position:relative;z-index:1;display:flex;flex-direction:column;height:100%;padding:14px;color:#fff">
+            <div style="font-size:10.5px;font-weight:800;letter-spacing:.3px;text-transform:uppercase;background:rgba(255,255,255,.2);backdrop-filter:blur(10px);padding:4px 10px;border-radius:999px;align-self:flex-start">방금</div>
+            <div style="margin-top:auto">
+              <div style="font-size:15px;font-weight:800;letter-spacing:-.3px;line-height:1.3">저녁 식사 마치셨어요</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.85);font-weight:500;margin-top:2px">6:42 PM · 잡곡밥에 생선구이</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     변종 I — 사진 갤러리 (Photo-first)
+     레퍼런스: Bevel timeline / Apple Photos memory / Pillow
+═════════════════════════════════════════════════════════ -->
+<div class="variant vi" id="vI">
+  <div class="phone">
+    <div class="phone-peek">
+      <div>
+        <div class="greet-main">오늘도 수고하셨어요,<br>영자님 잘 있어요</div>
+        <div class="greet-sub">저녁 일과도 잘 되고 있어요.</div>
+      </div>
+      <span class="badge">홈</span>
+    </div>
+    <div class="sheet" style="padding-top:0">
+      <div class="ph-cover">
+        <div class="top">
+          <span class="d">5월 15일 · 목요일</span>
+          <span class="cnt">사진 8장</span>
+        </div>
+        <div class="btm">
+          <h2>영자님의 <b>오늘 하루</b></h2>
+          <p>요양보호사가 보낸 8개의 순간</p>
+        </div>
+      </div>
+
+      <div class="ph-strip">
+        <div class="th active" style="background-image:linear-gradient(135deg,#FDE68A,#F59E0B)"><time>07:42</time></div>
+        <div class="th" style="background-image:linear-gradient(135deg,#A7F3D0,#34D399)"><time>09:18</time></div>
+        <div class="th" style="background-image:linear-gradient(135deg,#FCA5A5,#E32B25)"><time>12:32</time></div>
+        <div class="th" style="background-image:linear-gradient(135deg,#DDD6FE,#7C3AED)"><time>14:05</time></div>
+        <div class="th" style="background-image:linear-gradient(135deg,#FED7AA,#F97316)"><time>16:22</time></div>
+        <div class="th" style="background-image:linear-gradient(135deg,#BFDBFE,#3B82F6)"><time>18:42</time></div>
+        <div class="th" style="background-image:linear-gradient(135deg,#FBCFE8,#EC4899)"><time>20:10</time></div>
+        <div class="th" style="background-image:linear-gradient(135deg,#C7D2FE,#6366F1)"><time>21:30</time></div>
+      </div>
+
+      <!-- 메인 카드 1: 점심 -->
+      <div class="ph-card">
+        <div class="img">
+          <span class="tag"><iconify-icon icon="fluent:food-24-filled"></iconify-icon>점심 식사</span>
+          <time>12:32 PM</time>
+        </div>
+        <div class="body">
+          <h3>두부조림이 맛있다고 하셨어요</h3>
+          <p>점심은 <b>잡곡밥, 두부조림, 시금치, 미역국</b>으로 차렸어요. 평소보다 천천히, 하지만 80%까지 드셨습니다.</p>
+          <div class="chips">
+            <span class="chip ok"><iconify-icon icon="fluent:checkmark-24-filled"></iconify-icon>80% 섭취</span>
+            <span class="chip"><iconify-icon icon="fluent:timer-24-regular"></iconify-icon>32분</span>
+            <span class="chip ok"><iconify-icon icon="fluent:heart-24-filled"></iconify-icon>"맛있다"</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2개 작은 카드: 아침 산책 + 약 -->
+      <div class="ph-side">
+        <div class="mini" style="background-image:linear-gradient(135deg,#FEF3C7,#F59E0B)">
+          <div class="lbl"><b>아침 산책</b><span>07:42 · 거실 22분</span></div>
+        </div>
+        <div class="mini" style="background-image:linear-gradient(135deg,#FCA5A5,#E32B25)">
+          <div class="lbl"><b>저녁약 완료</b><span>18:30 · 30분 늦음</span></div>
+        </div>
+      </div>
+
+      <!-- 메인 카드 2: 오후 휴식 -->
+      <div class="ph-card">
+        <div class="img" style="background-image:linear-gradient(135deg,#DDD6FE,#7C3AED)">
+          <span class="tag"><iconify-icon icon="fluent:weather-moon-24-filled"></iconify-icon>오후 휴식</span>
+          <time>2:05 PM</time>
+        </div>
+        <div class="body">
+          <h3>잠시 누워 쉬셨어요</h3>
+          <p>점심 후 <b>30분쯤 누워 계셨어요</b>. 평소엔 거실에서 라디오를 들으시는 시간인데 오늘은 조금 피곤하셨던 것 같아요.</p>
+          <div class="chips">
+            <span class="chip warn"><iconify-icon icon="fluent:warning-24-regular"></iconify-icon>평소와 다름</span>
+            <span class="chip"><iconify-icon icon="fluent:bed-24-regular"></iconify-icon>30분</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 메인 카드 3: 저녁 -->
+      <div class="ph-card">
+        <div class="img" style="background-image:linear-gradient(135deg,#BFDBFE,#3B82F6)">
+          <span class="tag"><iconify-icon icon="fluent:food-fish-24-filled"></iconify-icon>저녁 식사</span>
+          <time>6:42 PM</time>
+        </div>
+        <div class="body">
+          <h3>잡곡밥에 생선구이로 잘 드셨어요</h3>
+          <p>오늘 식사 중 가장 잘 드신 한 끼였어요. <b>"손주가 보고 싶다"</b>고 하셨으니 짧은 영상통화 한번 어떠세요?</p>
+          <div class="chips">
+            <span class="chip ok"><iconify-icon icon="fluent:checkmark-24-filled"></iconify-icon>100% 섭취</span>
+            <span class="chip"><iconify-icon icon="fluent:call-24-regular"></iconify-icon>영상통화 제안</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ph-foot">
+        <iconify-icon icon="fluent:calendar-24-filled"></iconify-icon>
+        <div class="body">
+          <h4>내일 09:00 내과 정기 검진</h4>
+          <p>차량 픽업 예약 · 동행 가능 여부 알려주세요</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function sw(v){
+    document.querySelectorAll('.variant').forEach(function(el){el.classList.remove('active')});
+    document.getElementById('v'+v).classList.add('active');
+    document.querySelectorAll('.tab-row button').forEach(function(b,i){
+      b.classList.toggle('active', ['A','B','C','D','E','F','G','H','I'][i]===v);
+    });
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+</script>
+</body>
+</html>

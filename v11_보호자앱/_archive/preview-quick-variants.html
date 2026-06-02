@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ko" data-role="guardian" data-platform="mobile">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>빠른 액션 옵션 비교</title>
+
+  <link rel="stylesheet" href="../07_디자인/tokens/tokens.css">
+  <link rel="stylesheet" href="../07_디자인/system/app.css">
+  <link rel="stylesheet" href="../07_디자인/system/components.css">
+  <script src="../07_디자인/_iconify-icon.min.js"></script>
+
+  <style>
+    body { background: var(--color-bg-canvas); }
+    .app-shell { max-width: 430px; margin: 0 auto; padding: 16px; }
+    .opt-head {
+      font-size: 13px; font-weight: 800; color: var(--color-text-tertiary);
+      letter-spacing: 0.4px; text-transform: uppercase;
+      margin: 32px 0 4px; padding-left: 4px;
+    }
+    .opt-head:first-of-type { margin-top: 0; }
+    .opt-note { font-size: 12px; color: var(--color-text-secondary); margin: 0 4px 12px; line-height: 1.4; }
+
+    /* ============================================================
+       옵션 0 — 현재 (4-column 보더 카드)
+    ============================================================ */
+    .v0 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .v0 .btn {
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      padding: 16px 8px;
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: 14px;
+      text-decoration: none; color: inherit;
+      box-shadow: var(--shadow-1);
+    }
+    .v0 .ic {
+      width: 40px; height: 40px; border-radius: 999px;
+      background: var(--color-accent-soft);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .v0 .ic iconify-icon { font-size: 20px; color: var(--color-accent); }
+    .v0 .lbl { font-size: 11px; font-weight: 700; }
+
+    /* ============================================================
+       옵션 A — Compact icon-only circles (Outlook 듯)
+       원형 컬러 아이콘만 가로 정렬, 라벨은 아래 작게
+    ============================================================ */
+    .vA { display: flex; justify-content: space-around; padding: 8px 4px; }
+    .vA .item { display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none; color: inherit; }
+    .vA .ic {
+      width: 52px; height: 52px; border-radius: 999px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .vA .ic iconify-icon { font-size: 22px; }
+    .vA .ic--accent  { background: var(--color-accent-soft); }
+    .vA .ic--accent iconify-icon { color: var(--color-accent); }
+    .vA .ic--success { background: var(--color-success-soft); }
+    .vA .ic--success iconify-icon { color: var(--color-success); }
+    .vA .ic--warning { background: var(--color-warning-soft); }
+    .vA .ic--warning iconify-icon { color: var(--palette-amber-700, #B45309); }
+    .vA .ic--neutral { background: var(--color-bg-canvas); }
+    .vA .ic--neutral iconify-icon { color: var(--color-text-secondary); }
+    .vA .lbl { font-size: 12px; font-weight: 600; }
+
+    /* ============================================================
+       옵션 B — Pill row (가로 스크롤 chip)
+       탭바와 완전히 다른 시각 언어
+    ============================================================ */
+    .vB { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 4px 0; margin: 0 -16px; padding-left: 16px; padding-right: 16px; }
+    .vB::-webkit-scrollbar { display: none; }
+    .vB .chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px;
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: 999px;
+      font-size: 13px; font-weight: 700;
+      text-decoration: none; color: inherit;
+      flex-shrink: 0;
+    }
+    .vB .chip iconify-icon { font-size: 16px; color: var(--color-accent); }
+
+    /* ============================================================
+       옵션 C — List row (icon left + label + chevron)
+       자세히 보기 옵션 3과 같은 톤. 메뉴와 시각 통일
+    ============================================================ */
+    .vC { padding: 0; overflow: hidden; }
+    .vC .row {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 16px;
+      text-decoration: none; color: inherit;
+    }
+    .vC .row + .row { border-top: 1px solid var(--color-border-subtle); }
+    .vC .ic {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .vC .ic iconify-icon { font-size: 18px; }
+    .vC .ic--accent  { background: var(--color-accent-soft); }
+    .vC .ic--accent iconify-icon { color: var(--color-accent); }
+    .vC .ic--success { background: var(--color-success-soft); }
+    .vC .ic--success iconify-icon { color: var(--color-success); }
+    .vC .ic--warning { background: var(--color-warning-soft); }
+    .vC .ic--warning iconify-icon { color: var(--palette-amber-700, #B45309); }
+    .vC .ic--neutral { background: var(--color-bg-canvas); }
+    .vC .ic--neutral iconify-icon { color: var(--color-text-secondary); }
+    .vC .lbl { flex: 1; font-size: 15px; font-weight: 700; }
+    .vC .meta { font-size: 12px; color: var(--color-text-secondary); }
+    .vC .chev { color: var(--color-text-tertiary); font-size: 16px; }
+
+    /* ============================================================
+       옵션 D — 큰 4분할 카드 (Taco Bell)
+       2x2 그리드, 큰 아이콘 + 라벨, 카드 자체가 진입
+    ============================================================ */
+    .vD { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0; }
+    .vD .cell {
+      padding: 20px 16px;
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: 14px;
+      display: flex; flex-direction: column; gap: 10px;
+      text-decoration: none; color: inherit;
+    }
+    .vD .ic {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .vD .ic iconify-icon { font-size: 20px; }
+    .vD .ic--accent  { background: var(--color-accent-soft); }
+    .vD .ic--accent iconify-icon { color: var(--color-accent); }
+    .vD .ic--success { background: var(--color-success-soft); }
+    .vD .ic--success iconify-icon { color: var(--color-success); }
+    .vD .ic--warning { background: var(--color-warning-soft); }
+    .vD .ic--warning iconify-icon { color: var(--palette-amber-700, #B45309); }
+    .vD .ic--neutral { background: var(--color-bg-canvas); }
+    .vD .ic--neutral iconify-icon { color: var(--color-text-secondary); }
+    .vD .lbl { font-size: 14px; font-weight: 800; }
+    .vD .sub { font-size: 11px; color: var(--color-text-secondary); }
+
+    /* ============================================================
+       옵션 E — Floating action row (배경 없는 4개 inline 버튼)
+       카드 안에 4개, 둥근 컬러 아이콘만 + 라벨, 보더/표면 없음
+    ============================================================ */
+    .vE { display: flex; justify-content: space-between; padding: 8px 0; }
+    .vE .item { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; text-decoration: none; color: inherit; }
+    .vE .ic {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .vE .ic iconify-icon { font-size: 22px; }
+    .vE .ic--accent  { background: var(--color-accent-soft); }
+    .vE .ic--accent iconify-icon { color: var(--color-accent); }
+    .vE .ic--success { background: var(--color-success-soft); }
+    .vE .ic--success iconify-icon { color: var(--color-success); }
+    .vE .ic--warning { background: var(--color-warning-soft); }
+    .vE .ic--warning iconify-icon { color: var(--palette-amber-700, #B45309); }
+    .vE .ic--neutral { background: var(--color-bg-canvas); }
+    .vE .ic--neutral iconify-icon { color: var(--color-text-secondary); }
+    .vE .lbl { font-size: 12px; font-weight: 700; }
+  </style>
+</head>
+<body>
+
+<div class="app-shell">
+  <h1 style="font-size:22px;font-weight:800;margin:8px 0 4px;">빠른 액션 옵션</h1>
+  <p style="font-size:13px;color:var(--color-text-secondary);margin:0 0 24px;">
+    같은 4항목(가족 / 결제 / 알림 / 설정) 5가지 변형. 번호 알려주세요.
+  </p>
+
+  <!-- 옵션 0 -->
+  <div class="opt-head">옵션 0 — 현재 (참고)</div>
+  <div class="opt-note">4-column 보더 카드. 각 항목이 카드처럼 떠 있음</div>
+  <div class="v0">
+    <a class="btn"><div class="ic"><iconify-icon icon="fluent:people-24-filled"></iconify-icon></div><span class="lbl">가족</span></a>
+    <a class="btn"><div class="ic"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon></div><span class="lbl">결제</span></a>
+    <a class="btn"><div class="ic"><iconify-icon icon="fluent:alert-24-filled"></iconify-icon></div><span class="lbl">알림</span></a>
+    <a class="btn"><div class="ic"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon></div><span class="lbl">설정</span></a>
+  </div>
+
+  <!-- 옵션 A -->
+  <div class="opt-head">옵션 A — 컬러 원형 아이콘 + 작은 라벨</div>
+  <div class="opt-note">각 액션 컬러로 구분(가족/결제/알림/설정). 카드 보더 제거. Outlook 패턴</div>
+  <section class="card vA">
+    <a class="item"><div class="ic ic--accent"><iconify-icon icon="fluent:people-24-filled"></iconify-icon></div><span class="lbl">가족</span></a>
+    <a class="item"><div class="ic ic--warning"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon></div><span class="lbl">결제</span></a>
+    <a class="item"><div class="ic ic--success"><iconify-icon icon="fluent:alert-24-filled"></iconify-icon></div><span class="lbl">알림</span></a>
+    <a class="item"><div class="ic ic--neutral"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon></div><span class="lbl">설정</span></a>
+  </section>
+
+  <!-- 옵션 B -->
+  <div class="opt-head">옵션 B — Pill row (가로 스크롤 chip)</div>
+  <div class="opt-note">탭바와 완전히 다른 시각 언어. 인스타·트위터 액션 row 패턴</div>
+  <div class="vB">
+    <a class="chip"><iconify-icon icon="fluent:people-24-filled"></iconify-icon>가족</a>
+    <a class="chip"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon>결제</a>
+    <a class="chip"><iconify-icon icon="fluent:alert-24-filled"></iconify-icon>알림</a>
+    <a class="chip"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon>설정</a>
+  </div>
+
+  <!-- 옵션 C -->
+  <div class="opt-head">옵션 C — List row (icon + label + chevron)</div>
+  <div class="opt-note">자세히 보기와 같은 톤. 페이지 전체 일관성 ↑</div>
+  <section class="card vC">
+    <a class="row"><span class="ic ic--accent"><iconify-icon icon="fluent:people-24-filled"></iconify-icon></span><span class="lbl">가족</span><span class="meta">3명</span><iconify-icon icon="fluent:chevron-right-24-filled" class="chev"></iconify-icon></a>
+    <a class="row"><span class="ic ic--warning"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon></span><span class="lbl">결제</span><span class="meta">미납 0</span><iconify-icon icon="fluent:chevron-right-24-filled" class="chev"></iconify-icon></a>
+    <a class="row"><span class="ic ic--success"><iconify-icon icon="fluent:alert-24-filled"></iconify-icon></span><span class="lbl">알림</span><span class="meta">3건</span><iconify-icon icon="fluent:chevron-right-24-filled" class="chev"></iconify-icon></a>
+    <a class="row"><span class="ic ic--neutral"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon></span><span class="lbl">설정</span><iconify-icon icon="fluent:chevron-right-24-filled" class="chev"></iconify-icon></a>
+  </section>
+
+  <!-- 옵션 D -->
+  <div class="opt-head">옵션 D — 큰 4분할 카드 (2x2)</div>
+  <div class="opt-note">각 셀에 아이콘 + 라벨 + 1줄 sub. 탭 영역 큼. Taco Bell 패턴</div>
+  <div class="vD">
+    <a class="cell"><div class="ic ic--accent"><iconify-icon icon="fluent:people-24-filled"></iconify-icon></div><div class="lbl">가족</div><div class="sub">초대·권한 관리</div></a>
+    <a class="cell"><div class="ic ic--warning"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon></div><div class="lbl">결제</div><div class="sub">월 ₩125,000</div></a>
+    <a class="cell"><div class="ic ic--success"><iconify-icon icon="fluent:alert-24-filled"></iconify-icon></div><div class="lbl">알림</div><div class="sub">3건 미확인</div></a>
+    <a class="cell"><div class="ic ic--neutral"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon></div><div class="lbl">설정</div><div class="sub">앱 환경</div></a>
+  </div>
+
+  <!-- 옵션 E -->
+  <div class="opt-head">옵션 E — Floating row (보더 없이 4개 인라인)</div>
+  <div class="opt-note">카드 안 4개, 둥근 컬러 아이콘 타일 + 라벨. 보더/카드 없음. Apple Health 패턴</div>
+  <section class="card vE">
+    <a class="item"><div class="ic ic--accent"><iconify-icon icon="fluent:people-24-filled"></iconify-icon></div><span class="lbl">가족</span></a>
+    <a class="item"><div class="ic ic--warning"><iconify-icon icon="fluent:wallet-24-filled"></iconify-icon></div><span class="lbl">결제</span></a>
+    <a class="item"><div class="ic ic--success"><iconify-icon icon="fluent:alert-24-filled"></iconify-icon></div><span class="lbl">알림</span></a>
+    <a class="item"><div class="ic ic--neutral"><iconify-icon icon="fluent:settings-24-filled"></iconify-icon></div><span class="lbl">설정</span></a>
+  </section>
+
+  <div style="height:80px;"></div>
+</div>
+
+</body>
+</html>
