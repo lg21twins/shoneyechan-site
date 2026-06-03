@@ -1,0 +1,88 @@
+/* =====================================================================
+   NASA Renewal · Subpage Chrome
+   Loaded ONLY by library detail pages (library-all-photos, library-collections).
+   These pages use back-button topbars and SVG icons (not Material Symbols
+   font), so they intentionally do NOT load styles/components.css to avoid
+   .msi / .icon-btn / .page-topbar collisions.
+
+   Class names overlap with components.css by design — the two are mutually
+   exclusive per page. If a future subpage also needs the main tabbar, rename
+   here first and migrate markup.
+   ===================================================================== */
+
+/* ---------- SVG icon baseline (subpage uses inline SVG, not the font) ---------- */
+.msi { display: inline-block; flex-shrink: 0; }
+
+/* ---------- Subpage topbar (sticky, with back button) ---------- */
+.page-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 56px 20px 18px;
+  background: linear-gradient(180deg, var(--bg-primary) 75%, rgba(14, 16, 20, 0));
+}
+
+/* ---------- Back button (glassy circle) ---------- */
+.back-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex; align-items: center; justify-content: center;
+  text-decoration: none;
+  color: white;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background var(--motion-fast);
+}
+.back-btn:active { background: rgba(255, 255, 255, 0.16); }
+.back-btn .msi { width: 18px; height: 18px; color: white; }
+
+/* ---------- Brand block in topbar (eyebrow + title stack) ---------- */
+.page-topbar-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+.page-topbar-eyebrow {
+  font-family: 'Space Mono', monospace;
+  font-size: var(--fs-10);
+  letter-spacing: 2.2px;
+  color: var(--accent);
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.page-topbar-title {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  line-height: 1;
+  color: white;
+  margin: 0;
+}
+
+/* ---------- Topbar actions (search etc.) ---------- */
+.page-topbar-actions { display: flex; gap: 8px; }
+.icon-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.icon-btn .msi { width: 16px; height: 16px; color: white; }
+
+/* ---------- Reduced-motion safety (mirrors components.css) ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

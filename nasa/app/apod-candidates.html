@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>APOD Hero · 후보 5종</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/tokens.css?v=20260521">
+  <link rel="stylesheet" href="../styles/components.css?v=20260521">
+  <style>
+    body {
+      background: var(--bg-frame);
+      color: var(--text-primary);
+      padding: 48px 24px 80px;
+      min-height: 100vh;
+    }
+    .page-eyebrow {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2.2px;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .page-title {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
+    .page-sub {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.55;
+      margin-bottom: 40px;
+      max-width: 560px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(343px, 1fr));
+      gap: 32px 24px;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .candidate { display: flex; flex-direction: column; gap: 12px; }
+    .candidate-label {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 2.2px;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .candidate-label .num {
+      font-size: 14px;
+      color: var(--text-primary);
+      letter-spacing: 0;
+    }
+    .candidate-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-top: -4px;
+    }
+
+    /* ============ HERO CARD (mirrors today.html) ============ */
+    .hero-card {
+      position: relative;
+      width: 343px;
+      max-width: 100%;
+      height: 460px;
+      border-radius: var(--radius-card);
+      overflow: hidden;
+      background-color: var(--bg-section);
+      background-size: cover;
+      background-position: center;
+      box-shadow: 0 14px 40px rgba(0,0,0,0.45);
+    }
+    .hero-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        linear-gradient(180deg,
+          rgba(0,0,0,0.30) 0%,
+          rgba(0,0,0,0) 25%,
+          rgba(0,0,0,0) 50%,
+          rgba(0,0,0,0.40) 80%,
+          rgba(0,0,0,0.55) 100%);
+    }
+    .hero-card-pill {
+      position: absolute;
+      top: 16px; left: 16px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      background: rgba(0,0,0,0.45);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: var(--radius-pill);
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2.2px;
+      color: var(--text-95);
+      font-weight: 700;
+      text-transform: uppercase;
+      z-index: 2;
+    }
+    .hero-card-pill::before {
+      content: '';
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+    .hero-card-body {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      padding: 0 22px 22px;
+      z-index: 2;
+    }
+    .hero-card-meta {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2.2px;
+      color: var(--text-85);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      text-shadow: 0 1px 10px rgba(0,0,0,0.7);
+    }
+    .hero-card-title {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      line-height: 1.15;
+      color: var(--text-primary);
+      margin: 0;
+      text-shadow: 0 2px 14px rgba(0,0,0,0.7);
+    }
+
+    /* ============ HERO CARD VARIANTS ============ */
+    .v1 { background-image: url('../images/jwst_carina.jpg'); }
+    .v2 { background-image: url('../images/hubble_pillars_hd.jpg'); }
+    .v3 { background-image: url('../images/blackhole.jpg'); }
+    .v4 { background-image: url('../images/saturn_cassini.jpg'); }
+    .v5 { background-image: url('../images/jupiter_juno.jpg'); }
+    .v6 { background-image: url('../images/artemis_earthrise.jpg'); }
+    .v7 { background-image: url('../images/sdo_sun.jpg'); }
+    .v8 { background-image: url('../images/andromeda_galaxy.jpg'); }
+    .v9 { background-image: url('../images/tarantula_nebula.jpg'); }
+    .v10 { background-image: url('../images/voyager_heliosphere.jpg'); }
+    .v11 { background-image: url('../images/spacewalk.jpg'); }
+    .v12 { background-image: url('../images/helix_nebula.jpg'); }
+    .v13 { background-image: url('../images/earth_aurora.jpg'); }
+    .v14 { background-image: url('../images/mars_perseverance.jpg'); }
+    .v15 { background-image: url('../images/sombrero_galaxy.jpg'); }
+  </style>
+</head>
+<body>
+
+  <div class="page-eyebrow">DAILY UNIVERSE · APOD HERO</div>
+  <h1 class="page-title">오늘의 우주 — 후보 15종</h1>
+  <p class="page-sub">같은 hero-card 컴포넌트에 다른 이미지 + 한 줄 시적 카피. 우주 덕후의 시선 + NASA 자산의 폭을 보여주는 다양한 톤. 발표일을 가정한 2026.05.28 메타.</p>
+
+  <div class="grid">
+
+    <!-- 1 -->
+    <div class="candidate">
+      <div class="candidate-label"><span class="num">01</span> JWST · CARINA</div>
+      <div class="candidate-desc">웅장한 별 형성 — 가장 시네마틱, 컬러풀</div>
+      <div class="hero-card v1">
+        <span class="hero-card-pill">APOD · 2026.05.28</span>
+        <div class="hero-card-body">
+          <div class="hero-card-meta">2026.05.28 · NASA / ESA / CSA · JWST</div>
+          <h2 class="hero-card-title">별이 태어나는<br>우주의 절벽</h2>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2 -->
+    <div class="candidate">
+      <div class="candidate-label"><span class="num">02</span> HUBBLE · PILLARS</div>
+      <div class="candidate-desc">상징적인 이미지 — Hubble 35주년 톤</div>
+      <div class="hero-card v2">
+        <span class="hero-card-pill">APOD · 2026.05.28</span>
+        <div class="hero-card-body">
+          <div class="hero-card-meta">2026.05.28 · NASA · HUBBLE</div>
+          <h2 class="hero-card-title">7,000광년 전,<br>창조의 기둥</h2>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 -->
+    <div class="candidate">
+      <div class="candidate-label"><span class="num">03</span> EVENT HORIZON</div>
+      <div class="candidate-desc">미니멀 · 카피로 임팩트 — 가장 시적</div>
+      <div class="hero-card v3">
+        <span class="hero-card-pill">APOD · 2026.05.28</span>
+        <div class="hero-card-body">
+          <div class="hero-card-meta">2026.05.28 · M87* · EHT COLLABORATION</div>
+          <h2 class="hero-card-title">시공간이<br>멈추는 곳</h2>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 -->
+    <div class="candidate">
+      <div class="candidate-label"><span class="num">04</span> CASSINI · SATURN</div>
+      <div class="candidate-desc">행성 · 미션 종료 회고 — 서정적</div>
+      <div class="hero-card v4">
+        <span class="hero-card-pill">APOD · 2026.05.28</span>
+        <div class="hero-card-body">
+          <div class="hero-card-meta">2026.05.28 · NASA / JPL · CASSINI</div>
+          <h2 class="hero-card-title">고리 위의 그림자,<br>Cassini의 마지막 시선</h2>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5 -->
+    <div class="candidate">
+      <div class="candidate-label"><span class="num">05</span> JUNO · JUPITER</div>
+      <div class="candidate-desc">데이터 톤 — 숫자가 한 줄 추가, "지금" 감각</div>
+      <div class="hero-card v5">
+        <span class="hero-card-pill">APOD · 2026.05.28</span>
+        <div class="hero-card-body">
+          <div class="hero-card-meta">2026.05.28 · NASA / SwRI · JUNO PJ47</div>
+          <h2 class="hero-card-title">71,000 km/h로<br>도는 구름</h2>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6 -->
+    <div class="candidate">
+      <div class="candidate-label"><span class="num">06</span> ARTEMIS · EARTHRISE</div>
+      <div class="candidate-desc">역사적 · 멀리서 본 우리 별 — 가장 정서적</div>
+      <div class="hero-card v6">
+        <span class="hero-card-pill">APOD · 2026.05.28</span>
+        <div class="hero-card-body">
+          <div class="hero-card-meta">2026.05.28 · NASA · ARTEMIS I</div>
+          <h2 class="hero-card-title">달 너머에서<br>지구를 본다는 것</h2>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7 -->
+    <div class="candidate">
+      <div class="candidate-label"><span class="num">07</span> SDO · SUN</div>
+      <div class="candidate-desc">가장 따뜻한 색 · 우리 별의 표면 — 친근한 톤</div>
+      <div class="hero-card v7">
+        <span class="hero-card-pill">APOD · 2026.05.28</span>
+        <div class="hero-card-body">
+          <div class="hero-card-meta">2026.05.28 · NASA / SDO · AIA 304Å</div>
+          <h2 class="hero-card-title">5,778K,<br>우리가 매일 보는 별</h2>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8 -->
+    <div class="candidate">
+      <div class="candidate-label"><span class="num">08</span> ANDROMEDA · M31</div>
+      <div class="candidate-desc">스케일 · 시간감 — 가장 큰 서사</div>
+      <div class="hero-card v8">
+        <span class="hero-card-pill">APOD · 2026.05.28</span>
+        <div class="hero-card-body">
+          <div class="hero-card-meta">2026.05.28 · M31 · GALAXY EVOLUTION EXPLORER</div>
+          <h2 class="hero-card-title">45억 년 후<br>우리와 만날 은하</h2>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9 -->
+    <div class="candidate">
+      <div class="candidate-label"><span class="num">09</span> TARANTULA · 30 DOR</div>
+      <div class="candidate-desc">추상적 컬러 + 묵직한 카피 — 미술관 톤</div>
+      <div class="hero-card v9">
+        <span class="hero-card-pill">APOD · 2026.05.28</span>
+        <div class="hero-card-body">
+          <div class="hero-card-meta">2026.05.28 · NGC 2070 · LARGE MAGELLANIC CLOUD</div>
+          <h2 class="hero-card-title">우주에서 가장<br>거대한 별의 자리</h2>
+        </div>
+      </div>
+    </div>
+
+    <!-- 10 -->
+    <div class="candidate">
+      <div class="candidate-label"><span class="num">10</span> VOYAGER · HELIOSPHERE</div>
+      <div class="candidate-desc">인간 도달의 한계 — 시간감, 서사 가장 강함</div>
+      <div class="hero-card v10">
+        <span class="hero-card-pill">APOD · 2026.05.28</span>
+        <div class="hero-card-body">
+          <div class="hero-card-meta">2026.05.28 · NASA / JPL · VOYAGER 1 — 24.5 BLN KM</div>
+          <h2 class="hero-card-title">인류가 가장 멀리<br>보낸 것</h2>
+        </div>
+      </div>
+    </div>
+
+    <!-- 11 -->
+    <div class="candidate">
+      <div class="candidate-label"><span class="num">11</span> EVA · SPACEWALK</div>
+      <div class="candidate-desc">사람이 등장 — 가장 인간적, 친근</div>
+      <div class="hero-card v11">
+        <span class="hero-card-pill">APOD · 2026.05.28</span>
+        <div class="hero-card-body">
+          <div class="hero-card-meta">2026.05.28 · ISS EXPEDITION 75 · EVA-92</div>
+          <h2 class="hero-card-title">우주복 한 겹 너머<br>진짜 우주</h2>
+        </div>
+      </div>
+    </div>
+
+    <!-- 12 -->
+    <div class="candidate">
+      <div class="candidate-label"><span class="num">12</span> HELIX NEBULA</div>
+      <div class="candidate-desc">"신의 눈" — 미스터리, 종교적 톤</div>
+      <div class="hero-card v12">
+        <span class="hero-card-pill">APOD · 2026.05.28</span>
+        <div class="hero-card-body">
+          <div class="hero-card-meta">2026.05.28 · NGC 7293 · ESO / VISTA</div>
+          <h2 class="hero-card-title">700광년 전<br>우리를 보고 있는 눈</h2>
+        </div>
+      </div>
+    </div>
+
+    <!-- 13 -->
+    <div class="candidate">
+      <div class="candidate-label"><span class="num">13</span> AURORA · FROM ISS</div>
+      <div class="candidate-desc">위에서 본 지구의 빛 — 시각적 절경, 친근</div>
+      <div class="hero-card v13">
+        <span class="hero-card-pill">APOD · 2026.05.28</span>
+        <div class="hero-card-body">
+          <div class="hero-card-meta">2026.05.28 · ISS · EXPEDITION 71 / AURORA AUSTRALIS</div>
+          <h2 class="hero-card-title">408km 위에서<br>본 오로라</h2>
+        </div>
+      </div>
+    </div>
+
+    <!-- 14 -->
+    <div class="candidate">
+      <div class="candidate-label"><span class="num">14</span> PERSEVERANCE · MARS</div>
+      <div class="candidate-desc">"지금 화성에서" — 가장 현재형, sol 카운트</div>
+      <div class="hero-card v14">
+        <span class="hero-card-pill">MARS · SOL 1,837</span>
+        <div class="hero-card-body">
+          <div class="hero-card-meta">2026.05.28 · NASA / JPL · MARS 2020 · JEZERO</div>
+          <h2 class="hero-card-title">오늘, 화성에서<br>찍은 한 장</h2>
+        </div>
+      </div>
+    </div>
+
+    <!-- 15 -->
+    <div class="candidate">
+      <div class="candidate-label"><span class="num">15</span> SOMBRERO · M104</div>
+      <div class="candidate-desc">단정한 실루엣 — 정적, 우아한 톤</div>
+      <div class="hero-card v15">
+        <span class="hero-card-pill">APOD · 2026.05.28</span>
+        <div class="hero-card-body">
+          <div class="hero-card-meta">2026.05.28 · M104 · HUBBLE LEGACY ARCHIVE</div>
+          <h2 class="hero-card-title">2,800만 광년의<br>한 모자</h2>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>
