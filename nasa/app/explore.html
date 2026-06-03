@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Pocket MC">
+  <meta name="theme-color" content="#08090c">
+  <title>Daily Universe · Explore</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0..1,0">
+  <link rel="stylesheet" href="../styles/tokens.css?v=20260521">
+  <link rel="stylesheet" href="../styles/components.css?v=20260521">
+  <style>
+    /* Hide page scrollbar (looks cleaner in iframe mockup) */
+    html { scrollbar-width: none; -ms-overflow-style: none; }
+    html::-webkit-scrollbar { display: none; }
+
+    /* .device: full viewport, no scroll on container (inner .scroll handles vertical scroll). Same shape as today. */
+    .device { width: 100vw; height: 100vh; background: var(--bg-primary); overflow: hidden; position: relative; }
+
+    @media (max-width: 900px) {
+      body { padding: 0; background: var(--bg-primary); }
+      .device {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+        box-shadow: none;
+      }
+    }
+
+    /* .scroll → styles/components.css */
+
+    /* ============ MISSION CONTROL — V06 (Cockpit + Timeline + Upcoming) ============ */
+    .overview {
+      margin: 4px 20px 0;
+    }
+    .overview-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+      min-width: 0;
+    }
+    .overview-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1.4px;
+      color: var(--text-faint);
+      font-weight: 700;
+      text-transform: uppercase;
+      white-space: nowrap;
+      min-width: 0;
+    }
+    .overview-livedot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: overviewPulse 1.6s ease-in-out infinite;
+    }
+    @keyframes overviewPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.45; transform: scale(0.82); }
+    }
+    .overview-time {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1.2px;
+      color: var(--text-faint);
+      font-weight: 700;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* Hero Cockpit card */
+    .overview .mc-card {
+      background: var(--bg-section);
+      border-radius: var(--radius-panel);
+      padding: 18px;
+      margin-bottom: 14px;
+      overflow: hidden;
+    }
+    .overview .mc-hero {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 16px;
+      align-items: end;
+      padding-bottom: 16px;
+    }
+    .overview .mc-hero-num {
+      font-family: 'Space Mono', monospace;
+      font-size: 64px;
+      font-weight: 700;
+      letter-spacing: -2px;
+      line-height: 0.9;
+      color: var(--text-primary);
+    }
+    .overview .mc-hero-trend {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 4px;
+      color: var(--success);
+      font-size: 10px;
+      letter-spacing: 0.5px;
+    }
+    .overview .mc-hero-meta {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1.6px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+    .overview .mc-sparkline {
+      width: 100%;
+      height: 28px;
+      margin-top: 12px;
+    }
+    .overview .mc-kpi-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      padding-top: 14px;
+    }
+    .overview .mc-kpi {
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .overview .mc-kpi:first-child { padding-left: 0; }
+    .overview .mc-kpi:last-child { padding-right: 0; }
+    .overview .mc-kpi + .mc-kpi {
+      margin-left: 8px;
+    }
+    .overview .mc-kpi-num {
+      font-family: 'Space Mono', monospace;
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.4px;
+      flex-shrink: 0;
+    }
+    .overview .mc-kpi-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1.4px;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+
+    /* 24h Timeline */
+    .overview .mc-timeline {
+      background: var(--bg-section);
+      border-radius: var(--radius-panel);
+      padding: 18px 0 22px;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .overview .mc-tl-head {
+      padding: 0 18px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .overview .mc-tl-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2.2px;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .overview .mc-tl-now-tag {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2.2px;
+      color: var(--accent);
+      font-weight: 700;
+    }
+    .overview .mc-tl-axis {
+      position: relative;
+      padding: 0 18px;
+      margin-bottom: 14px;
+    }
+    .overview .mc-tl-bar {
+      height: 2px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 1px;
+      position: relative;
+    }
+    .overview .mc-tl-now {
+      position: absolute;
+      left: 52%;
+      top: -7px;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      transform: translateX(-50%);
+      animation: pulse 1.6s ease-in-out infinite;
+    }
+    .overview .mc-tl-events {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0;
+      padding: 8px 18px 0;
+    }
+    .overview .mc-tl-event {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .overview .mc-tl-event .t {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1px;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .overview .mc-tl-event .d {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-align: center;
+      line-height: 1.2;
+      max-width: 56px;
+    }
+    .overview .mc-tl-event.now .d { color: var(--text-primary); }
+    .overview .mc-tl-event.now .t { color: var(--accent); }
+
+    /* Next launches block */
+    .overview .mc-upcoming {
+      background: var(--bg-section);
+      border-radius: var(--radius-panel);
+      padding: 18px 18px 12px;
+    }
+    .overview .mc-up-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .overview .mc-up-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .overview .mc-up-count {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1.3px;
+      color: var(--text-faint);
+      font-weight: 700;
+    }
+    .overview .mc-up-row {
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      gap: 12px;
+      padding: 12px 0;
+      align-items: start;
+    }
+    .overview .mc-up-row + .mc-up-row {
+      margin-top: 4px;
+    }
+    .overview .mc-up-date {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2.2px;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      font-weight: 700;
+      padding-top: 2px;
+      line-height: 1.3;
+    }
+    .overview .mc-up-date.future { color: var(--text-faint); }
+    .overview .mc-up-name {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      line-height: 1.2;
+    }
+    .overview .mc-up-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.6px;
+      color: var(--text-subtle);
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+    .overview .mc-up-row.more { display: none; }
+    .overview .mc-upcoming.expanded .mc-up-row.more { display: grid; }
+    .overview .mc-up-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      padding: 14px 0 6px;
+      margin-top: 4px;
+      background: transparent;
+      border: 0;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1.4px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 700;
+      cursor: pointer;
+      transition: color 0.15s ease;
+    }
+    .overview .mc-up-toggle:hover { color: var(--text-primary); }
+    .overview .mc-up-toggle .chev {
+      display: inline-block;
+      transition: transform 0.25s ease;
+      font-size: 12px;
+      line-height: 1;
+    }
+    .overview .mc-upcoming.expanded .mc-up-toggle .chev {
+      transform: rotate(180deg);
+    }
+
+    /* ============ HERO MISSION — Cover + Chapter List (Spotify Audiobook style) ============ */
+    .hero {
+      position: relative;
+      margin: 16px 20px 0;
+      height: 380px;
+      border-radius: var(--radius-card);
+      cursor: pointer;
+      background: var(--bg-section);
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: url('../images/tarantula.jpg');
+      background-size: cover;
+      background-position: center;
+    }
+    .hero::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg,
+        rgba(0,0,0,0.20) 0%,
+        rgba(0,0,0,0) 25%,
+        rgba(14,16,22,0.55) 50%,
+        rgba(14,16,22,0.92) 75%,
+        rgba(14,16,22,1) 100%);
+    }
+    .hero-content {
+      position: absolute;
+      inset: 0;
+      padding: 18px 20px 22px;
+      display: flex;
+      flex-direction: column;
+      z-index: 2;
+    }
+    .hero-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      width: 100%;
+    }
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 10px;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 4px;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1.8px;
+      color: var(--text-primary);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .hero-bookmark {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      cursor: pointer;
+    }
+    .hero-bookmark .msi {
+      font-size: 18px;
+      color: var(--text-primary);
+    }
+    .hero-spacer { flex: 1; }
+    .hero-eyebrow {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 2.5px;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+    .hero-title {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.9px;
+      line-height: 1.05;
+      margin-bottom: 10px;
+    }
+    .hero-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      word-break: keep-all;
+    }
+
+    /* ============ CHAPTERS LIST (under hero) ============ */
+    .chapters {
+      padding: 64px 20px 12px;
+    }
+    .chapter {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      padding: 14px 4px;
+      cursor: pointer;
+    }
+    .chapter-num {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--text-faint);
+      width: 24px;
+      flex-shrink: 0;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    .chapter-body {
+      flex: 1;
+      min-width: 0;
+    }
+    .chapter-title {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      margin-bottom: 2px;
+    }
+    .chapter-meta {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1.2px;
+      color: var(--text-subtle);
+      text-transform: uppercase;
+    }
+    .chapter-play {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: var(--bg-ui);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.15s ease;
+    }
+    .chapter:hover .chapter-play,
+    .chapter:active .chapter-play { background: var(--bg-ui-active); }
+    .chapter-play .msi {
+      font-size: 22px;
+      color: var(--text-primary);
+      font-variation-settings: 'FILL' 1;
+      margin-left: 1px;
+    }
+
+    /* ============ SECTION ============ */
+    .section {
+      padding: 64px 20px 12px; /* horizontal 20px applies to all children */
+    }
+    /* .section-head / .section-title / .section-link / .section-meta → styles/components.css */
+
+    /* Horizontal scroller — uses parent section's 20px padding for left edge,
+       and negative margin-right + padding-right to extend rightward beyond
+       section padding so the next card can peek past the screen edge. */
+    .h-scroll {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      margin-right: -20px;
+      padding-right: 20px;
+    }
+    .h-scroll::-webkit-scrollbar { display: none; }
+
+    /* Mission cards */
+    .mission-card {
+      flex-shrink: 0;
+      width: 240px;
+      height: 320px;
+      border-radius: var(--radius-card);
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      background: var(--bg-card);
+    }
+    .mission-card-img {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+    }
+    .mission-card-img::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.55) 80%, rgba(0,0,0,0.88) 100%);
+    }
+    .mission-card-content {
+      position: absolute;
+      inset: 0;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      z-index: 2;
+    }
+    .mission-card-tag {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--text-primary);
+      text-transform: uppercase;
+      padding: 3px 7px;
+      background: var(--surface-3);
+      border-radius: 4px;
+      width: fit-content;
+    }
+    .mission-card-tag.archive { background: var(--surface-2); }
+    .mission-card-tags {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .mission-card-readnext {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      padding: 3px 7px;
+      border-radius: 4px;
+      font-weight: 700;
+      background: rgba(0,0,0,0.35);
+      backdrop-filter: blur(8px);
+    }
+    .mission-card-spacer { flex: 1; }
+    .mission-card-mission {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 1.8px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .mission-card-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+    .mission-card-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.45;
+      max-width: 95%;
+    }
+
+    /* Universe Map card (large, hero-like) — inside .section which already has 20px padding */
+    .map-card {
+      height: 300px;
+      border-radius: var(--radius-card);
+      overflow: hidden;
+      position: relative;
+      background: var(--bg-frame) url('../images/jwst_deepfield.jpg') center/cover;
+      cursor: pointer;
+    }
+    .map-card::after {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0) 35%, rgba(8,9,12,0.94) 100%);
+    }
+    /* faint orbit overlay */
+    .map-card::before {
+      content: '';
+      position: absolute;
+      top: 30%; left: 70%;
+      width: 220px; height: 220px;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1;
+      box-shadow:
+        0 0 0 28px rgba(255,255,255,0.05) inset,
+        0 0 0 1px rgba(255,255,255,0.08);
+    }
+    .map-card-content {
+      position: absolute;
+      inset: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      z-index: 2;
+    }
+    .map-card-toptags {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .map-card-brand {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 10px;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-radius: 4px;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+    .map-card-tag {
+      display: inline-flex;
+      width: fit-content;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      background: var(--accent);
+      border-radius: 4px;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+    /* Entry chips (Solar System / Earth / Exoplanets) */
+    .map-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .map-chip {
+      padding: 8px 14px;
+      background: var(--text-95);
+      border-radius: 999px;
+      border: none;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--bg-primary);
+      cursor: pointer;
+      letter-spacing: -0.1px;
+      transition: transform 0.12s ease, opacity 0.12s ease;
+    }
+    .map-chip:active { transform: scale(0.95); opacity: 0.85; }
+    .map-card-tag .dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--text-primary);
+    }
+    .map-card-spacer { flex: 1; }
+    .map-card-title {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.7px;
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+    .map-card-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      max-width: 250px;
+      margin-bottom: 10px;
+    }
+    .map-card-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      width: fit-content;
+      height: 32px;
+      padding: 0 12px;
+      border-radius: 8px;
+      background: var(--text-primary);
+      color: var(--bg-primary);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .map-card-cta .msi {
+      font-size: 12px;
+      color: var(--bg-primary);
+    }
+
+    /* AR Models row */
+    .ar-card {
+      flex-shrink: 0;
+      width: 140px;
+      cursor: pointer;
+    }
+    .ar-card-img {
+      width: 140px;
+      height: 140px;
+      border-radius: var(--radius-card);
+      background-size: cover;
+      background-position: center;
+      margin-bottom: 8px;
+      position: relative;
+    }
+    .ar-card-img::after {
+      content: 'AR';
+      position: absolute;
+      top: 8px; right: 8px;
+      padding: 3px 7px;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(12px);
+      border-radius: 4px;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+    .ar-card-name {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      margin-bottom: 2px;
+    }
+    .ar-card-meta {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 1px;
+      color: var(--text-subtle);
+      text-transform: uppercase;
+    }
+
+    /* Story cards — Netflix-style 2:3 portrait posters */
+    .story-card {
+      flex-shrink: 0;
+      width: 152px;
+      cursor: pointer;
+      transition: transform 0.12s ease, opacity 0.12s ease;
+    }
+    .story-card:active { transform: scale(0.985); opacity: 0.94; }
+    .story-thumb {
+      width: 152px;
+      height: 228px; /* 2:3 portrait poster */
+      border-radius: var(--radius-card);
+      background-size: cover;
+      background-position: center;
+      margin-bottom: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+    .story-thumb::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.55) 80%, rgba(0,0,0,0.88) 100%);
+      pointer-events: none;
+    }
+    .story-play {
+      position: absolute;
+      bottom: 10px; left: 10px;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+    .story-play .msi {
+      font-size: 12px;
+      color: var(--text-primary);
+      margin-left: 1px;
+    }
+    .story-runtime {
+      position: absolute;
+      bottom: 10px; right: 10px;
+      padding: 3px 7px;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(8px);
+      border-radius: 4px;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1.2px;
+      color: var(--text-primary);
+      font-weight: 700;
+      z-index: 3;
+    }
+    .story-badge {
+      position: absolute;
+      top: 8px; left: 8px;
+      padding: 3px 7px;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-radius: 4px;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2.2px;
+      color: var(--text-primary);
+      font-weight: 700;
+      z-index: 3;
+    }
+    .story-badge.archive {
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+    }
+    .story-meta {
+      padding: 0 2px;
+    }
+    .story-tag {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      color: var(--text-subtle);
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .story-title {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      line-height: 1.25;
+    }
+
+    /* Bottom space for tabbar */
+    .bottom-spacer { height: 110px; }
+
+    /* Press feedback for explore-specific surfaces (icon-btn handled by components.css) */
+    .hero-cta, .map-card-cta, .mission-card, .ar-card, .orig-card, .hero, .map-card {
+      transition: transform 0.12s ease, opacity 0.12s ease;
+    }
+    .hero-cta:active, .map-card-cta:active { transform: scale(0.97); opacity: 0.9; }
+    .mission-card:active, .ar-card:active, .orig-card:active, .hero:active, .map-card:active {
+      transform: scale(0.985);
+      opacity: 0.94;
+    }
+
+    /* Extra focus targets specific to explore (a/button/icon-btn/tab-item handled by shared) */
+    .mission-card:focus-visible, .ar-card:focus-visible, .story-card:focus-visible,
+    .map-chip:focus-visible {
+      outline: 2px solid var(--focus-ring);
+      outline-offset: 2px;
+      border-radius: var(--radius-xs);
+    }
+
+
+    /* ----- Explore page-specific overrides ----- */
+    /* Topbar — status-bar safe-area padding + opaque bg over .scroll */
+    .page-topbar {
+      padding: 56px 20px 18px;
+      background: var(--bg-primary);
+    }
+    /* Tabbar — explore's .device hides overflow; .scroll handles scroll */
+    .tabbar { position: absolute; }
+  </style>
+  <script src="../pwa-nav.js" defer></script>
+</head>
+<body>
+
+  <div class="device">
+
+    <div class="scroll">
+
+      <!-- UNIFIED PAGE TOPBAR -->
+      <header class="page-topbar">
+        <div class="page-topbar-brand">
+          <div class="page-topbar-brand-row">
+            <img class="nasa-worm" src="../icons/nasa_worm.svg" alt="NASA">
+            <span class="page-topbar-divider"></span>
+            <h1 class="page-topbar-title">Explore</h1>
+          </div>
+        </div>
+        <div class="page-topbar-actions">
+          <div class="icon-btn" role="button" tabindex="0" aria-label="검색">
+            <span class="msi" aria-hidden="true">search</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- MISSION CONTROL — V06 (Cockpit hero + 24h timeline + Next launches) -->
+      <section class="overview">
+
+        <!-- Block 1 — Cockpit hero card (real NASA data) -->
+        <div class="mc-card">
+          <div class="overview-head">
+            <span class="overview-eyebrow">
+              <span class="overview-livedot"></span>MISSION CONTROL · LIVE
+            </span>
+            <span class="overview-time">2026.05.21 · 14:32 UTC</span>
+          </div>
+          <div class="mc-hero">
+            <div>
+              <div class="mc-hero-num">80</div>
+              <div class="mc-hero-trend">★ Artemis II returned · APR 2026</div>
+            </div>
+            <div class="mc-hero-meta">ACTIVE<br>MISSIONS</div>
+          </div>
+          <svg class="mc-sparkline" viewBox="0 0 320 32" preserveAspectRatio="none">
+            <polyline fill="none" stroke="#4ADE80" stroke-width="1.5"
+              points="0,22 26,18 52,20 78,14 104,16 130,10 156,12 182,8 208,11 234,6 260,9 286,4 320,7"/>
+          </svg>
+          <div class="mc-kpi-row">
+            <div class="mc-kpi">
+              <div class="mc-kpi-num">10</div>
+              <div class="mc-kpi-label">Deep<br>Space</div>
+            </div>
+            <div class="mc-kpi">
+              <div class="mc-kpi-num">2</div>
+              <div class="mc-kpi-label">Mars<br>Rovers</div>
+            </div>
+            <div class="mc-kpi">
+              <div class="mc-kpi-num">8</div>
+              <div class="mc-kpi-label">Planets<br>Visited</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Block 2 — 24h timeline -->
+        <div class="mc-timeline">
+          <div class="mc-tl-head">
+            <span class="mc-tl-title">24H TIMELINE</span>
+            <span class="mc-tl-now-tag">● NOW · 14:32</span>
+          </div>
+          <div class="mc-tl-axis">
+            <div class="mc-tl-bar"></div>
+            <div class="mc-tl-now"></div>
+          </div>
+          <div class="mc-tl-events">
+            <div class="mc-tl-event">
+              <span class="t">04:12</span>
+              <span class="d">JWST obs</span>
+            </div>
+            <div class="mc-tl-event">
+              <span class="t">09:48</span>
+              <span class="d">Voyager 1 link</span>
+            </div>
+            <div class="mc-tl-event now">
+              <span class="t">NOW</span>
+              <span class="d">ISS overhead</span>
+            </div>
+            <div class="mc-tl-event">
+              <span class="t">18:30</span>
+              <span class="d">Mars sol 1867</span>
+            </div>
+            <div class="mc-tl-event">
+              <span class="t">23:55</span>
+              <span class="d">ISS reboost</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Block 3 — Next launches (2 default + expand for 3 more) -->
+        <div class="mc-upcoming" id="mcUpcoming">
+          <div class="mc-up-head">
+            <span class="mc-up-title">NEXT LAUNCHES</span>
+            <span class="mc-up-count">5 QUEUED</span>
+          </div>
+          <div class="mc-up-row">
+            <span class="mc-up-date">SEP<br>2026</span>
+            <div>
+              <div class="mc-up-name">Dragonfly</div>
+              <div class="mc-up-sub">TITAN ROTORCRAFT · FALCON HEAVY · APL/JHU</div>
+            </div>
+          </div>
+          <div class="mc-up-row">
+            <span class="mc-up-date">DEC 3<br>2026</span>
+            <div>
+              <div class="mc-up-name">Europa Clipper · Earth flyby</div>
+              <div class="mc-up-sub">GRAVITY ASSIST EN ROUTE TO JUPITER · ARRIVE 2030</div>
+            </div>
+          </div>
+          <div class="mc-up-row more">
+            <span class="mc-up-date future">MAY<br>2027</span>
+            <div>
+              <div class="mc-up-name">Roman Space Telescope</div>
+              <div class="mc-up-sub">WIDE-FIELD INFRARED · SUN-EARTH L2</div>
+            </div>
+          </div>
+          <div class="mc-up-row more">
+            <span class="mc-up-date future">2027</span>
+            <div>
+              <div class="mc-up-name">Artemis III</div>
+              <div class="mc-up-sub">FIRST CREWED LUNAR LANDING SINCE APOLLO 17</div>
+            </div>
+          </div>
+          <div class="mc-up-row more">
+            <span class="mc-up-date future">2030+</span>
+            <div>
+              <div class="mc-up-name">Mars Sample Return</div>
+              <div class="mc-up-sub">RETRIEVE PERSEVERANCE CACHE · MISSION TBD</div>
+            </div>
+          </div>
+          <button class="mc-up-toggle" type="button" data-target="mcUpcoming"
+                  data-collapsed="+ 3개 더보기" data-expanded="접기">
+            <span class="label">+ 3개 더보기</span>
+            <span class="chev">▾</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- HERO MISSION — cover + chapter list (Spotify Audiobook style) -->
+      <div class="hero" role="button" tabindex="0">
+        <div class="hero-content">
+          <div class="hero-top">
+            <span class="hero-tag">MISSION OVERVIEW</span>
+            <button class="hero-bookmark" aria-label="저장">
+              <span class="msi" aria-hidden="true">bookmark</span>
+            </button>
+          </div>
+          <div class="hero-spacer"></div>
+          <div class="hero-eyebrow">JAMES WEBB · 2022 — NOW</div>
+          <h2 class="hero-title">우주의 시작을<br>본 망원경</h2>
+          <p class="hero-sub">130억 년 전, 첫 번째 빛이 만들어진 그 시점까지.<br>30년간 만들어진 인류 역사상 가장 큰 우주 망원경.</p>
+        </div>
+      </div>
+
+      <!-- CHAPTERS — episode list under hero -->
+      <section class="chapters">
+        <div class="section-head">
+          <h2 class="section-title">Chapters</h2>
+        </div>
+        <div class="chapter" role="button" tabindex="0">
+          <span class="chapter-num">01</span>
+          <div class="chapter-body">
+            <div class="chapter-title">L2 라그랑주 포인트</div>
+            <div class="chapter-meta">2 MIN · 위치와 궤도</div>
+          </div>
+          <div class="chapter-play">
+            <span class="msi" aria-hidden="true">play_arrow</span>
+          </div>
+        </div>
+        <div class="chapter" role="button" tabindex="0">
+          <span class="chapter-num">02</span>
+          <div class="chapter-body">
+            <div class="chapter-title">금박 거울의 비밀</div>
+            <div class="chapter-meta">3 MIN · 18장의 베릴륨</div>
+          </div>
+          <div class="chapter-play">
+            <span class="msi" aria-hidden="true">play_arrow</span>
+          </div>
+        </div>
+        <div class="chapter" role="button" tabindex="0">
+          <span class="chapter-num">03</span>
+          <div class="chapter-body">
+            <div class="chapter-title">최초의 빛을 보다</div>
+            <div class="chapter-meta">3 MIN · 적외선 관측의 의미</div>
+          </div>
+          <div class="chapter-play">
+            <span class="msi" aria-hidden="true">play_arrow</span>
+          </div>
+        </div>
+        <div class="chapter" role="button" tabindex="0">
+          <span class="chapter-num">04</span>
+          <div class="chapter-body">
+            <div class="chapter-title">Deep Field 2.0</div>
+            <div class="chapter-meta">2 MIN · Hubble 다음의 우주</div>
+          </div>
+          <div class="chapter-play">
+            <span class="msi" aria-hidden="true">play_arrow</span>
+          </div>
+        </div>
+        <div class="chapter" role="button" tabindex="0">
+          <span class="chapter-num">05</span>
+          <div class="chapter-body">
+            <div class="chapter-title">앞으로의 20년</div>
+            <div class="chapter-meta">2 MIN · 연료와 다음 임무</div>
+          </div>
+          <div class="chapter-play">
+            <span class="msi" aria-hidden="true">play_arrow</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONTINUE EXPLORING — other active and archive missions -->
+      <section class="section">
+        <div class="section-head">
+          <h3 class="section-title">Related Missions</h3>
+          <span class="section-link">전체보기 <span class="msi" aria-hidden="true">chevron_right</span></span>
+        </div>
+
+        <div class="h-scroll">
+
+          <div class="mission-card" role="button" tabindex="0">
+            <div class="mission-card-img" data-bg="../images/hubble_pillars.jpg"></div>
+            <div class="mission-card-content">
+              <div class="mission-card-tags">
+                <span class="mission-card-tag">ACTIVE · 35Y</span>
+                <span class="mission-card-readnext">READ NEXT</span>
+              </div>
+              <div class="mission-card-spacer"></div>
+              <div class="mission-card-mission">HUBBLE · 1990</div>
+              <div class="mission-card-title">우주를 처음<br>보여준 눈</div>
+              <div class="mission-card-desc">35년간 150만 장의 사진. 인류 천문학을 다시 쓴 망원경.</div>
+            </div>
+          </div>
+
+          <div class="mission-card" role="button" tabindex="0">
+            <div class="mission-card-img" data-bg="../images/artemis_orion.jpg"></div>
+            <div class="mission-card-content">
+              <span class="mission-card-tag">UPCOMING</span>
+              <div class="mission-card-spacer"></div>
+              <div class="mission-card-mission">ARTEMIS II · 2026</div>
+              <div class="mission-card-title">달로 다시<br>가는 길</div>
+              <div class="mission-card-desc">50년 만에 달 궤도로 향하는 첫 유인 임무.</div>
+            </div>
+          </div>
+
+          <div class="mission-card" role="button" tabindex="0">
+            <div class="mission-card-img" data-bg="../images/voyager.jpg"></div>
+            <div class="mission-card-content">
+              <span class="mission-card-tag archive">ACTIVE · 48Y</span>
+              <div class="mission-card-spacer"></div>
+              <div class="mission-card-mission">VOYAGER · 1977</div>
+              <div class="mission-card-title">가장 멀리<br>간 인류의 흔적</div>
+              <div class="mission-card-desc">성간 공간을 처음 통과한 우주선. 지금도 송신 중.</div>
+            </div>
+          </div>
+
+          <div class="mission-card" role="button" tabindex="0">
+            <div class="mission-card-img" data-bg="../images/mars_perseverance.jpg"></div>
+            <div class="mission-card-content">
+              <span class="mission-card-tag">ACTIVE</span>
+              <div class="mission-card-spacer"></div>
+              <div class="mission-card-mission">PERSEVERANCE · 2021</div>
+              <div class="mission-card-title">화성에서<br>생명을 찾는다</div>
+              <div class="mission-card-desc">Jezero 분화구에서 매일 도착하는 새로운 사진.</div>
+            </div>
+          </div>
+
+          <div class="mission-card" role="button" tabindex="0">
+            <div class="mission-card-img" data-bg="../images/saturn.jpg"></div>
+            <div class="mission-card-content">
+              <span class="mission-card-tag archive">ARCHIVE</span>
+              <div class="mission-card-spacer"></div>
+              <div class="mission-card-mission">CASSINI · 1997 — 2017</div>
+              <div class="mission-card-title">토성의<br>마지막 산책</div>
+              <div class="mission-card-desc">20년간 토성을 관측한 우주선의 마지막 다이브.</div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- UNIVERSE MAP -->
+      <section class="section">
+        <div class="section-head">
+          <h3 class="section-title">Mission Position</h3>
+        </div>
+
+        <div class="map-card">
+          <div class="map-card-content">
+            <div class="map-card-toptags">
+              <span class="map-card-tag"><span class="dot"></span>LIVE DATA · 5,732 EXOPLANETS</span>
+            </div>
+            <div class="map-card-spacer"></div>
+            <h2 class="map-card-title">JWST가 관측한<br>하늘의 위치</h2>
+            <p class="map-card-desc">NASA's Eyes에서 관련 천체, 우주선 위치, 관측 범위를 확인합니다.</p>
+            <div class="map-chips">
+              <button class="map-chip">☉ Solar System</button>
+              <button class="map-chip">⊕ Earth</button>
+              <button class="map-chip">✦ Exoplanets</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- AR MODELS -->
+      <section class="section">
+        <div class="section-head">
+          <h3 class="section-title">Mission Models</h3>
+        </div>
+
+        <div class="h-scroll">
+          <div class="ar-card" role="button" tabindex="0">
+            <div class="ar-card-img" data-bg="../images/launch.jpg"></div>
+            <div class="ar-card-name">Orion 우주선</div>
+            <div class="ar-card-meta">3D · 1.2M</div>
+          </div>
+          <div class="ar-card" role="button" tabindex="0">
+            <div class="ar-card-img" data-bg="../images/mars_perseverance_tribulation.jpg"></div>
+            <div class="ar-card-name">Perseverance</div>
+            <div class="ar-card-meta">3D · 2.4M</div>
+          </div>
+          <div class="ar-card" role="button" tabindex="0">
+            <div class="ar-card-img" data-bg="../images/iss_live.jpg"></div>
+            <div class="ar-card-name">ISS</div>
+            <div class="ar-card-meta">3D · 4.1M</div>
+          </div>
+          <div class="ar-card" role="button" tabindex="0">
+            <div class="ar-card-img" data-bg="../images/voyager_heliosphere.jpg"></div>
+            <div class="ar-card-name">Voyager 1</div>
+            <div class="ar-card-meta">3D · 800K</div>
+          </div>
+          <div class="ar-card" role="button" tabindex="0">
+            <div class="ar-card-img" data-bg="../images/jupiter.jpg"></div>
+            <div class="ar-card-name">Juno</div>
+            <div class="ar-card-meta">3D · 1.5M</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- NASA+ ORIGINALS -->
+      <section class="section">
+        <div class="section-head">
+          <h3 class="section-title">Related Videos</h3>
+          <span class="section-link">전체보기 <span class="msi" aria-hidden="true">chevron_right</span></span>
+        </div>
+
+        <!-- Horizontal video thumbnails (Netflix-row style) -->
+        <div class="h-scroll">
+          <div class="story-card" role="button" tabindex="0">
+            <div class="story-thumb" data-bg="../images/hubble_deep_field.jpg">
+              <span class="story-badge">NEW</span>
+              <div class="story-play">
+                <span class="msi" aria-hidden="true">play_arrow</span>
+              </div>
+              <span class="story-runtime">90 MIN</span>
+            </div>
+            <div class="story-meta">
+              <span class="story-tag">DOCUMENTARY · JWST</span>
+              <div class="story-title">Cosmic Dawn</div>
+            </div>
+          </div>
+
+          <div class="story-card" role="button" tabindex="0">
+            <div class="story-thumb" data-bg="../images/blackhole.jpg">
+              <span class="story-badge">S1</span>
+              <div class="story-play">
+                <span class="msi" aria-hidden="true">play_arrow</span>
+              </div>
+              <span class="story-runtime">8 EP</span>
+            </div>
+            <div class="story-meta">
+              <span class="story-tag">SERIES · OSIRIS-REx</span>
+              <div class="story-title">NASA Explorers</div>
+            </div>
+          </div>
+
+          <div class="story-card" role="button" tabindex="0">
+            <div class="story-thumb" data-bg="../images/andromeda.jpg">
+              <span class="story-badge archive">FILM</span>
+              <div class="story-play">
+                <span class="msi" aria-hidden="true">play_arrow</span>
+              </div>
+              <span class="story-runtime">62 MIN</span>
+            </div>
+            <div class="story-meta">
+              <span class="story-tag">색의 천문학</span>
+              <div class="story-title">Color of Space</div>
+            </div>
+          </div>
+
+          <div class="story-card" role="button" tabindex="0">
+            <div class="story-thumb" data-bg="../images/rocket_lab_launch.jpg">
+              <span class="story-badge archive">S2</span>
+              <div class="story-play">
+                <span class="msi" aria-hidden="true">play_arrow</span>
+              </div>
+              <span class="story-runtime">6 EP</span>
+            </div>
+            <div class="story-meta">
+              <span class="story-tag">FOR JUNIORS</span>
+              <div class="story-title">The Traveler</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="bottom-spacer"></div>
+
+    </div>
+
+    <!-- Tab bar -->
+    <nav class="tabbar">
+      <a class="tab-item" href="today.html">
+        <span class="msi tab-icon" aria-hidden="true">calendar_today</span>
+        <span>Today</span>
+      </a>
+      <a class="tab-item active" href="explore.html">
+        <span class="msi tab-icon" aria-hidden="true">explore</span>
+        <span>Explore</span>
+      </a>
+      <a class="tab-item" href="live.html">
+        <span class="msi tab-icon" aria-hidden="true">smart_display</span>
+        <span>Live</span>
+      </a>
+      <a class="tab-item" href="library.html">
+        <span class="msi tab-icon" aria-hidden="true">photo_library</span>
+        <span>Library</span>
+      </a>
+    </nav>
+
+  </div>
+
+  <script>
+    // Enter/Space activates role=button elements (a11y)
+    (function () {
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        var t = e.target;
+        if (t.getAttribute('role') === 'button') {
+          e.preventDefault();
+          t.click();
+        }
+      });
+    })();
+
+    // Lazy load — set background-image only when element enters viewport
+    (function () {
+      var targets = document.querySelectorAll('[data-bg]');
+      if (!('IntersectionObserver' in window)) {
+        targets.forEach(function (el) {
+          el.style.backgroundImage = "url('" + el.dataset.bg + "')";
+        });
+        return;
+      }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            var el = entry.target;
+            el.style.backgroundImage = "url('" + el.dataset.bg + "')";
+            io.unobserve(el);
+          }
+        });
+      }, { rootMargin: '200px' });
+      targets.forEach(function (el) { io.observe(el); });
+    })();
+
+    // Mission Control · Next launches expand/collapse
+    (function () {
+      document.querySelectorAll('.mc-up-toggle').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var target = document.getElementById(btn.dataset.target);
+          if (!target) return;
+          var expanded = target.classList.toggle('expanded');
+          var label = btn.querySelector('.label');
+          if (label) {
+            label.textContent = expanded ? btn.dataset.expanded : btn.dataset.collapsed;
+          }
+        });
+      });
+    })();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Pocket MC">
+  <meta name="theme-color" content="#08090c">
+  <title>Daily Universe · Today</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0">
+  <link rel="stylesheet" href="../styles/tokens.css?v=20260521">
+  <link rel="stylesheet" href="../styles/components.css?v=20260521">
+  <style>
+    /* Hide page scrollbar (looks cleaner in iframe mockup) */
+    html { scrollbar-width: none; -ms-overflow-style: none; }
+    html::-webkit-scrollbar { display: none; }
+
+    /* .device: full viewport, no scroll on container (inner .scroll handles vertical scroll). Differs from live (self-scrolls) and library (page-flow scroll). */
+    .device { width: 100vw; height: 100vh; background: var(--bg-primary); overflow: hidden; position: relative; }
+
+    @media (max-width: 900px) {
+      body { padding: 0; background: var(--bg-primary); }
+      .device {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+        box-shadow: none;
+      }
+    }
+
+    /* .scroll → styles/components.css */
+
+    /* Variant C — Apple TV card + feed: hero is a contained card, feed peeks below */
+    .hero {
+      position: relative;
+      width: 100%;
+      background: var(--bg-primary);
+      padding: 0;
+      display: block;
+    }
+    .hero-card {
+      position: relative;
+      margin: 0 16px;
+      height: 460px;
+      border-radius: var(--radius-card);
+      overflow: hidden;
+      background-image: url('../images/helix_nebula.jpg');
+      background-size: cover;
+      background-position: center;
+      box-shadow: 0 14px 40px rgba(0,0,0,0.45);
+    }
+    .hero-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        linear-gradient(180deg,
+          rgba(0,0,0,0.30) 0%,
+          rgba(0,0,0,0) 25%,
+          rgba(0,0,0,0) 50%,
+          rgba(0,0,0,0.40) 80%,
+          rgba(0,0,0,0.55) 100%);
+    }
+    .hero-card-pill {
+      position: absolute;
+      top: 16px; left: 16px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      background: rgba(0,0,0,0.45);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: var(--radius-pill);
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2.2px;
+      color: var(--text-95);
+      font-weight: 700;
+      text-transform: uppercase;
+      z-index: 2;
+    }
+    .hero-card-body {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      padding: 0 22px 22px;
+      z-index: 2;
+    }
+    .hero-card-meta {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2.2px;
+      color: var(--text-85);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      text-shadow: 0 1px 10px rgba(0,0,0,0.7);
+    }
+    .hero-card-body .apod-title {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      line-height: 1.15;
+      color: var(--text-primary);
+      margin: 0;
+      text-shadow: 0 2px 14px rgba(0,0,0,0.7);
+    }
+    .hero-actions-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 18px 20px 8px;
+    }
+    .hero-actions-row .read-btn {
+      flex: 1;
+      height: 46px;
+      border-radius: var(--radius-pill); /* Apple TV pill style */
+    }
+    .hero-actions-row .save-btn {
+      width: 46px; height: 46px;
+      border-radius: var(--radius-pill);
+    }
+    .hero-topbar-wrap {
+      padding: 0 20px;
+    }
+
+    .apod-title {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.8px;
+      line-height: 1.25;
+      margin-bottom: 14px;
+    }
+    .read-btn {
+      flex: 1;
+      height: 46px;
+      border-radius: var(--radius-pill);
+      background: var(--text-primary);
+      color: var(--bg-primary);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .save-btn {
+      width: 46px; height: 46px;
+      border-radius: var(--radius-pill);
+      background: var(--bg-card-strong);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background var(--motion-fast);
+    }
+    .save-btn:active { background: var(--surface-3); }
+    .save-btn .msi {
+      font-size: 18px;
+      color: var(--text-primary);
+    }
+
+    /* ============ STACK — Tidy journal proposal (hero + 4 sections + sight) ============ */
+    .stack {
+      background: var(--bg-primary);
+      padding: 48px 20px 140px;
+    }
+    .day-hero-stats .num {
+      font-size: 40px;
+      font-weight: 800;
+      letter-spacing: -1.2px;
+      line-height: 1;
+      color: var(--text-primary);
+    }
+    .day-hero-stats .label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: -0.2px;
+    }
+
+    /* Section block */
+    .day-section { margin-bottom: 64px; }
+    .day-section:last-child { margin-bottom: 0; }
+
+    .day-card {
+      display: block;
+      background: var(--bg-card);
+      border-radius: var(--radius-card);
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+    }
+    /* is-live: 면+공간으로만 표현 (no-stroke 규칙). 빨간 LIVE pill로 위계 표시 */
+    .day-card-photo {
+      height: 180px;
+      background-color: var(--bg-section);
+      background-size: cover;
+      background-position: center;
+      position: relative;
+    }
+    .day-card-photo::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0.30) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0) 65%, rgba(0,0,0,0.45) 100%);
+    }
+    .day-card-pill {
+      position: absolute;
+      top: 12px; left: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      background: rgba(var(--accent-rgb),0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-radius: var(--radius-pill);
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2.2px;
+      color: var(--text-primary);
+      font-weight: 700;
+      text-transform: uppercase;
+      z-index: 2;
+    }
+    .day-card-pill .live-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--text-primary);
+      animation: pulse 1.6s ease-in-out infinite;
+    }
+    .day-card-pill-meta {
+      position: absolute;
+      top: 16px; right: 14px;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2.2px;
+      color: var(--text-85);
+      text-transform: uppercase;
+      font-weight: 700;
+      text-shadow: 0 1px 6px rgba(0,0,0,0.6);
+      z-index: 2;
+    }
+    .day-card-body { padding: 18px 20px 20px; }
+    .day-card-title {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      line-height: 1.22;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    .day-card-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.55;
+      margin-bottom: 14px;
+    }
+    .day-card-stats {
+      display: flex;
+      gap: 14px;
+      padding-top: 14px;
+      min-width: 0;
+    }
+    .day-card-stat { flex: 1; min-width: 0; }
+    /* Now-ness microsignal — last sync time */
+    .day-card-sync {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2.2px;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      margin-top: 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .day-card-sync::before {
+      content: '';
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--text-faint);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    .day-card-stat-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1.6px;
+      color: var(--text-subtle);
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .day-card-stat-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: 0;
+    }
+    .day-dual .day-card-photo { height: 140px; }
+    .day-dual .day-card-body { padding: 14px 14px 16px; }
+    .day-dual .day-card-title { font-size: 14px; margin-bottom: 4px; }
+    .day-dual .day-card-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2.2px;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      margin-bottom: 0;
+      font-weight: 700;
+    }
+
+    /* .rail-head / .rail-title / .rail-link (+ .poster-* aliases) → styles/components.css */
+
+        /* ============ POSTER — Variant B: 2-col uniform overlay (Me+) ============ */
+    .poster-section { margin-top: 64px; }
+    .poster-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .poster-card {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      border-radius: var(--radius-card);
+      overflow: hidden;
+      background-color: var(--bg-section);
+      background-size: cover;
+      background-position: center;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    .poster-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.55) 80%, rgba(0,0,0,0.88) 100%);
+    }
+    .poster-meta {
+      position: absolute;
+      bottom: 14px; left: 14px; right: 14px;
+      z-index: 2;
+    }
+    .poster-eyebrow {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .poster-title-text {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      line-height: 1.2;
+      color: var(--text-primary);
+      text-shadow: 0 1px 8px rgba(0,0,0,0.5);
+    }
+    /* legacy .ritual-rail / .card-tag / .card-live-pill / .next-card-icon rules removed — markup no longer references them. */
+
+    /* ============ APOD DESCRIPTION SHEET (overlay) ============ */
+    .apod-sheet-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+      z-index: 80;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .apod-sheet-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .apod-sheet {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      max-height: 78%;
+      background: var(--bg-primary);
+      border-radius: 24px 24px 0 0;
+      z-index: 90;
+      transform: translateY(100%);
+      transition: transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .apod-sheet.open {
+      transform: translateY(0);
+    }
+    .apod-sheet-handle {
+      align-self: center;
+      margin: 10px 0 12px;
+      width: 40px;
+      height: 4px;
+      border-radius: var(--radius-xs);
+      background: rgba(255,255,255,0.25);
+      flex-shrink: 0;
+    }
+    .apod-sheet-head {
+      padding: 4px 24px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .apod-sheet-eyebrow {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2.2px;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .apod-sheet-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      line-height: 1.25;
+    }
+    .apod-sheet-close {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--bg-card-strong);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .apod-sheet-close .msi {
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+    .apod-sheet-body {
+      padding: 20px 24px 32px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .apod-sheet-body::-webkit-scrollbar { display: none; }
+    .apod-sheet-author {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      color: var(--text-subtle);
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .apod-sheet-text {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text-85);
+    }
+    .apod-sheet-text p {
+      margin-bottom: 14px;
+    }
+    .apod-sheet-text p:last-child { margin-bottom: 0; }
+    .apod-sheet-stats {
+      margin-top: 24px;
+      padding-top: 20px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    .apod-sheet-stat-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      color: var(--text-subtle);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .apod-sheet-stat-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    /* Press feedback for today-specific surfaces (icon-btn handled by components.css) */
+    .read-btn, .save-btn {
+      transition: transform var(--motion-press), opacity var(--motion-press), background var(--motion-fast);
+    }
+    .read-btn:active { transform: scale(0.98); opacity: 0.9; }
+    .save-btn:active { transform: scale(0.94); }
+
+    /* Save (bookmark) — toggled state */
+    .save-btn.saved { background: var(--text-primary); }
+    .save-btn.saved .msi { color: var(--bg-primary); }
+
+    /* Extra focus targets specific to today (a/button/icon-btn/tab-item handled by shared) */
+    .save-btn:focus-visible {
+      outline: 2px solid var(--focus-ring);
+      outline-offset: 2px;
+      border-radius: var(--radius-xs);
+    }
+
+    /* Page-specific reduced-motion (shared rule covers the catch-all) */
+    @media (prefers-reduced-motion: reduce) {
+      .splash, .splash.show { display: none !important; }
+      .hero { animation: none !important; }
+    }
+
+    /* ===== INTRO SPLASH (first visit only) ===== */
+    .splash {
+      position: absolute;
+      inset: 0;
+      background: var(--bg-frame);
+      z-index: 100;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      pointer-events: none;
+    }
+    .splash.show {
+      display: flex;
+      animation: splashFade 0.9s 1.6s ease-out forwards;
+    }
+    .splash-worm {
+      width: 160px;
+      height: auto;
+      opacity: 0;
+      margin-bottom: 4px;
+    }
+    .splash.show .splash-worm {
+      animation: splashIn 0.7s 0.1s ease-out forwards;
+    }
+    .splash-mark {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 6px;
+      color: var(--text-subtle);
+      font-weight: 700;
+      opacity: 0;
+    }
+    .splash.show .splash-mark {
+      animation: splashIn 0.6s 0.45s ease-out forwards;
+    }
+    .splash-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+      color: var(--text-primary);
+      opacity: 0;
+    }
+    .splash.show .splash-title {
+      animation: splashIn 0.6s 0.5s ease-out forwards;
+    }
+    @keyframes splashFade {
+      to { opacity: 0; visibility: hidden; }
+    }
+    @keyframes splashIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Slow Ken Burns on the APOD card only, so the topbar and controls stay stable. */
+    .hero-card {
+      animation: kenburns 18s ease-out forwards;
+      transform-origin: center;
+    }
+    @keyframes kenburns {
+      from { transform: scale(1.05); }
+      to   { transform: scale(1); }
+    }
+
+    /* ============ TIMELINE C: Image Card Stack (Forest) ============ */
+    .stack-section { margin-top: 64px; }
+    .stack-section .rail-head { padding: 0; margin-bottom: 24px; }
+    .stack-day {
+      position: relative;
+      padding-left: 28px;
+    }
+    .stack-day::before {
+      content: '';
+      position: absolute;
+      left: 6px; top: 8px; bottom: 8px;
+      width: 2px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0.06));
+    }
+    .stack-event {
+      position: relative;
+      margin-bottom: 18px;
+      display: block;
+      text-decoration: none;
+      color: inherit;
+    }
+    .stack-event::before {
+      content: '';
+      position: absolute;
+      left: -28px; top: 10px;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--bg-section);
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,0.35);
+      z-index: 2;
+    }
+    .stack-event.is-now::before {
+      background: var(--accent);
+      animation: pulse 1.6s ease-in-out infinite;
+    }
+    .stack-event-time {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 8px;
+      padding: 0 2px;
+    }
+    .stack-event-time .num {
+      font-family: 'Space Mono', monospace;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0;
+    }
+    .stack-event-time .label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1.4px;
+      color: var(--text-subtle);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .stack-event.is-now .stack-event-time .label {
+      color: var(--accent);
+    }
+    .stack-event.is-now .stack-event-time .label::before {
+      content: '● ';
+      animation: pulse 1.6s ease-in-out infinite;
+    }
+    .stack-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-card);
+      overflow: hidden;
+    }
+    .stack-card-photo {
+      position: relative;
+      height: 140px;
+      background-color: var(--bg-section);
+      background-size: cover;
+      background-position: center;
+    }
+    .stack-card-photo::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.5) 100%);
+    }
+    .stack-card-photo .badge {
+      position: absolute;
+      top: 12px; left: 12px;
+      padding: 4px 9px;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-radius: 999px;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1.6px;
+      color: var(--text-primary);
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .stack-card-body { padding: 14px 16px 16px; }
+    .stack-card-title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      line-height: 1.3;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    .stack-card-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 1px;
+      color: var(--text-subtle);
+      text-transform: uppercase;
+    }
+    .stack-card.simple .stack-card-body {
+      padding: 16px;
+    }
+
+    /* ============ SKY TONIGHT (오늘 밤 하늘) ============ */
+    .sky-section { margin-top: 64px; }
+    .sky-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-panel);
+      padding: 24px 20px 20px;
+    }
+    .sky-card-head { margin-bottom: 20px; }
+    .sky-card-eyebrow {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2.2px;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .sky-card-title {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+      margin-bottom: 6px;
+      color: var(--text-primary);
+    }
+    .sky-card-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .sky-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .sky-tile {
+      background: var(--bg-card-strong);
+      border-radius: 12px;
+      padding: 14px 14px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-height: 86px;
+    }
+    .sky-tile-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1.4px;
+      color: var(--text-subtle);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .sky-tile-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.1;
+      margin-top: 2px;
+    }
+    .sky-tile-value .unit {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-left: 2px;
+    }
+    .sky-tile-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.35;
+      margin-top: auto;
+    }
+    .sky-tile-value.accent { color: var(--accent); }
+    .sky-tile-value.success { color: var(--success); }
+
+    /* ============ ASTEROID WATCH (근접 통과 소행성) ============ */
+    .neo-section { margin-top: 64px; }
+    .neo-list { display: flex; flex-direction: column; gap: 10px; }
+    .neo-row {
+      background: var(--bg-card);
+      border-radius: var(--radius-card);
+      padding: 16px 18px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px 14px;
+      align-items: baseline;
+    }
+    .neo-row-name {
+      font-family: 'Space Mono', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--text-primary);
+      line-height: 1.1;
+    }
+    .neo-row-time {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 1.2px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 700;
+      text-align: right;
+    }
+    .neo-row-stats {
+      grid-column: 1 / -1;
+      display: flex;
+      gap: 22px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+    .neo-stat { display: flex; flex-direction: column; gap: 3px; }
+    .neo-stat-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1.4px;
+      color: var(--text-subtle);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .neo-stat-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: 0;
+    }
+    .neo-row.is-close {
+      background: rgba(var(--accent-rgb), 0.10);
+    }
+    .neo-row.is-close .neo-row-time {
+      color: var(--accent);
+    }
+
+
+    /* ----- Today page-specific overrides ----- */
+    /* Tabbar — today's .device hides overflow; .scroll handles scroll */
+    .tabbar { position: absolute; }
+  </style>
+  <script src="../pwa-nav.js" defer></script>
+</head>
+<body>
+
+  <div class="device">
+
+    <!-- Intro splash — shown once per session, then suppressed on every Home tap -->
+    <div class="splash" id="splash">
+      <img class="splash-worm" src="../icons/nasa_worm.svg" alt="NASA">
+      <div class="splash-mark">POCKET MISSION CONTROL</div>
+      <div class="splash-title">내 손안의 우주 관제센터</div>
+    </div>
+
+
+    <div class="scroll">
+
+      <!-- ============ HERO · APPLE TV CARD + FEED ============ -->
+      <section class="hero">
+
+        <div class="hero-topbar-wrap" style="padding-top: 56px;">
+          <!-- Unified Page Topbar (56px top padding above = iOS status bar safe area) -->
+          <header class="page-topbar">
+            <div class="page-topbar-brand">
+              <div class="page-topbar-brand-row">
+                <img class="nasa-worm" src="../icons/nasa_worm.svg" alt="NASA">
+                <span class="page-topbar-divider"></span>
+                <h1 class="page-topbar-title">Today</h1>
+              </div>
+            </div>
+            <div class="page-topbar-actions">
+              <div class="icon-btn" role="button" tabindex="0" aria-label="Yesterday's APOD">
+                <span class="msi" aria-hidden="true">history</span>
+              </div>
+              <div class="icon-btn" role="button" tabindex="0" aria-label="Profile">
+                <span class="msi" aria-hidden="true">person</span>
+              </div>
+            </div>
+          </header>
+        </div>
+
+        <!-- APOD card (contained) -->
+        <div style="margin-top: 20px;">
+          <div class="hero-card">
+            <span class="hero-card-pill" id="heroPill">● APOD · 2026.05.28</span>
+            <div class="hero-card-body">
+              <div class="hero-card-meta" id="todayDateMeta">2026.05.28 · NGC 7293 · ESO / VISTA</div>
+              <h1 class="apod-title">700광년 전<br>우리를 보고 있는 눈</h1>
+            </div>
+          </div>
+        </div>
+
+        <!-- Apple TV style pill buttons -->
+        <div class="hero-actions-row">
+          <button class="read-btn">▶  천문학자의 설명 읽기</button>
+          <button class="save-btn" aria-label="Save">
+            <span class="msi" aria-hidden="true">bookmark</span>
+          </button>
+        </div>
+
+      </section>
+
+      <!-- ============ DAILY UNIVERSE (Tidy Journal Stack) ============ -->
+      <section class="stack">
+
+        <!-- 지금 라이브 -->
+        <div class="rail-head">
+          <h3 class="rail-title">지금 라이브</h3>
+          <a class="rail-link" href="live.html">전체보기 <span class="msi" aria-hidden="true">chevron_right</span></a>
+        </div>
+        <div class="day-section">
+          <a class="day-card is-live" href="live.html">
+            <div class="day-card-photo" data-bg="../images/iss_night.jpg">
+              <span class="day-card-pill"><span class="live-dot"></span>LIVE NOW</span>
+              <span class="day-card-pill-meta">NASA TV · 24H</span>
+            </div>
+            <div class="day-card-body">
+              <div class="day-card-title">ISS Earth Cam · Expedition 75</div>
+              <div class="day-card-sub">Kud-Sverchkov 사령관과 7명의 우주인이 머무는 우주정거장. 지금 태평양 상공을 지나는 중.</div>
+              <div class="day-card-stats">
+                <div class="day-card-stat">
+                  <div class="day-card-stat-label">고도</div>
+                  <div class="day-card-stat-value">408 KM</div>
+                </div>
+                <div class="day-card-stat">
+                  <div class="day-card-stat-label">속도</div>
+                  <div class="day-card-stat-value">27,500 KM/H</div>
+                </div>
+                <div class="day-card-stat">
+                  <div class="day-card-stat-label">현재</div>
+                  <div class="day-card-stat-value">PACIFIC</div>
+                </div>
+              </div>
+              <div class="day-card-sync">UPDATED 12s AGO</div>
+            </div>
+          </a>
+        </div>
+
+        <!-- 오늘의 일정 — Image Card Stack (Variant C) -->
+        <section class="stack-section">
+          <div class="rail-head">
+            <h3 class="rail-title">오늘의 일정</h3>
+            <a class="rail-link" href="#">전체보기 <span class="msi" aria-hidden="true">chevron_right</span></a>
+          </div>
+
+          <div class="stack-day">
+            <a class="stack-event is-now" href="live.html">
+              <div class="stack-event-time">
+                <span class="num">14:00</span>
+              </div>
+              <div class="stack-card">
+                <div class="stack-card-photo" data-bg="../images/launch.jpg">
+                  <span class="badge">● LIVE NOW</span>
+                </div>
+                <div class="stack-card-body">
+                  <div class="stack-card-title">NASA+ 발사 준비 브리핑</div>
+                  <div class="stack-card-sub">날씨 업데이트 · Anvil cloud delay</div>
+                </div>
+              </div>
+            </a>
+
+            <a class="stack-event" href="live.html">
+              <div class="stack-event-time">
+                <span class="num">21:43</span>
+              </div>
+              <div class="stack-card">
+                <div class="stack-card-photo" data-bg="../images/earth_iss_window.jpg">
+                  <span class="badge">맨눈 관측 가능</span>
+                </div>
+                <div class="stack-card-body">
+                  <div class="stack-card-title">서울 상공 4분 12초</div>
+                  <div class="stack-card-sub">73° 고도 · NW → S</div>
+                </div>
+              </div>
+            </a>
+
+            <a class="stack-event" href="live.html">
+              <div class="stack-event-time">
+                <span class="num">22:30</span>
+              </div>
+              <div class="stack-card simple">
+                <div class="stack-card-body">
+                  <div class="stack-card-title">Voyager 1 데이터 다운링크</div>
+                  <div class="stack-card-sub">Goldstone DSS-14 · 70m · 24.4 LH</div>
+                </div>
+              </div>
+            </a>
+
+            <a class="stack-event" href="live.html">
+              <div class="stack-event-time">
+                <span class="num">23:15</span>
+              </div>
+              <div class="stack-card simple">
+                <div class="stack-card-body">
+                  <div class="stack-card-title">EVA prep · Orlan 점검</div>
+                  <div class="stack-card-sub">Kud-Sverchkov · Mikaev</div>
+                </div>
+              </div>
+            </a>
+
+            <a class="stack-event" href="live.html">
+              <div class="stack-event-time">
+                <span class="num">D-1</span>
+                <span class="label">TOMORROW · 05/17</span>
+              </div>
+              <div class="stack-card">
+                <div class="stack-card-photo" data-bg="../images/rocket_lab_launch.jpg">
+                  <span class="badge">SPACEX CRS-34</span>
+                </div>
+                <div class="stack-card-body">
+                  <div class="stack-card-title">Cargo Dragon → ISS</div>
+                  <div class="stack-card-sub">Cape Canaveral SLC-40 · 07:05 KST</div>
+                </div>
+              </div>
+            </a>
+          </div>
+        </section>
+
+        <!-- 오늘 밤 하늘 -->
+        <section class="sky-section">
+          <div class="rail-head">
+            <h3 class="rail-title">오늘 밤 하늘</h3>
+          </div>
+          <div class="sky-card">
+            <div class="sky-card-head">
+              <div class="sky-card-eyebrow">TONIGHT · 05.21 KST</div>
+              <h4 class="sky-card-title">맨눈으로 보이는 행성 3개</h4>
+              <p class="sky-card-sub">서울 하늘에서 오늘 밤 가장 잘 보이는 천체와 시각.</p>
+            </div>
+            <div class="sky-grid">
+              <div class="sky-tile">
+                <div class="sky-tile-label">달의 위상</div>
+                <div class="sky-tile-value">WAXING · 47<span class="unit">%</span></div>
+                <div class="sky-tile-sub">초저녁부터 자정까지</div>
+              </div>
+              <div class="sky-tile">
+                <div class="sky-tile-label">베스트 행성</div>
+                <div class="sky-tile-value">SATURN</div>
+                <div class="sky-tile-sub">남쪽 하늘 · 23:18 최고도</div>
+              </div>
+              <div class="sky-tile">
+                <div class="sky-tile-label">ISS 통과</div>
+                <div class="sky-tile-value accent">21:43 → 21:47</div>
+                <div class="sky-tile-sub">NW → S · 73° 고도</div>
+              </div>
+              <div class="sky-tile">
+                <div class="sky-tile-label">은하수</div>
+                <div class="sky-tile-value success">VISIBLE</div>
+                <div class="sky-tile-sub">광공해 적은 곳에서만</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- 근접 통과 소행성 -->
+        <section class="neo-section">
+          <div class="rail-head">
+            <h3 class="rail-title">지구를 스치는 것들</h3>
+          </div>
+          <div class="neo-list">
+            <div class="neo-row is-close">
+              <div class="neo-row-name">2026 BX1</div>
+              <div class="neo-row-time">17:42 KST · 4H</div>
+              <div class="neo-row-stats">
+                <div class="neo-stat">
+                  <div class="neo-stat-label">DISTANCE</div>
+                  <div class="neo-stat-value">0.04 LD</div>
+                </div>
+                <div class="neo-stat">
+                  <div class="neo-stat-label">VELOCITY</div>
+                  <div class="neo-stat-value">12.4 KM/S</div>
+                </div>
+                <div class="neo-stat">
+                  <div class="neo-stat-label">DIAMETER</div>
+                  <div class="neo-stat-value">~28 M</div>
+                </div>
+              </div>
+            </div>
+            <div class="neo-row">
+              <div class="neo-row-name">2024 KW3</div>
+              <div class="neo-row-time">23:08 KST · 9H</div>
+              <div class="neo-row-stats">
+                <div class="neo-stat">
+                  <div class="neo-stat-label">DISTANCE</div>
+                  <div class="neo-stat-value">3.2 LD</div>
+                </div>
+                <div class="neo-stat">
+                  <div class="neo-stat-label">VELOCITY</div>
+                  <div class="neo-stat-value">8.1 KM/S</div>
+                </div>
+                <div class="neo-stat">
+                  <div class="neo-stat-label">DIAMETER</div>
+                  <div class="neo-stat-value">~140 M</div>
+                </div>
+              </div>
+            </div>
+            <div class="neo-row">
+              <div class="neo-row-name">2025 LR7</div>
+              <div class="neo-row-time">D+1 · 06:55 KST</div>
+              <div class="neo-row-stats">
+                <div class="neo-stat">
+                  <div class="neo-stat-label">DISTANCE</div>
+                  <div class="neo-stat-value">5.8 LD</div>
+                </div>
+                <div class="neo-stat">
+                  <div class="neo-stat-label">VELOCITY</div>
+                  <div class="neo-stat-value">19.6 KM/S</div>
+                </div>
+                <div class="neo-stat">
+                  <div class="neo-stat-label">DIAMETER</div>
+                  <div class="neo-stat-value">~62 M</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 오늘의 시선 — Variant B: 2-col uniform overlay -->
+        <section class="poster-section">
+          <div class="rail-head">
+            <h3 class="rail-title">오늘의 시선</h3>
+            <a class="rail-link" href="library.html">라이브러리 <span class="msi" aria-hidden="true">chevron_right</span></a>
+          </div>
+          <div class="poster-grid">
+            <a class="poster-card" href="library.html" data-bg="../images/earth_iss.jpg">
+              <div class="poster-meta">
+                <div class="poster-eyebrow">EARTH · IOTD · 05.13</div>
+                <div class="poster-title-text">오늘의 지구</div>
+              </div>
+            </a>
+            <a class="poster-card" href="library.html" data-bg="../images/mars_perseverance.jpg">
+              <div class="poster-meta">
+                <div class="poster-eyebrow">MARS · SOL 1,837</div>
+                <div class="poster-title-text">오늘 화성에서</div>
+              </div>
+            </a>
+            <a class="poster-card" href="library.html" data-bg="../images/saturn.jpg">
+              <div class="poster-meta">
+                <div class="poster-eyebrow">JWST · NIRCAM</div>
+                <div class="poster-title-text">토성의 고리</div>
+              </div>
+            </a>
+            <a class="poster-card" href="library.html" data-bg="../images/earth_aurora.jpg">
+              <div class="poster-meta">
+                <div class="poster-eyebrow">ISS · CUPOLA</div>
+                <div class="poster-title-text">남극 오로라</div>
+              </div>
+            </a>
+            <a class="poster-card" href="library.html" data-bg="../images/tarantula.jpg">
+              <div class="poster-meta">
+                <div class="poster-eyebrow">HUBBLE</div>
+                <div class="poster-title-text">타란튤라 성운</div>
+              </div>
+            </a>
+            <a class="poster-card" href="library.html" data-bg="../images/expedition39_earth.jpg">
+              <div class="poster-meta">
+                <div class="poster-eyebrow">ISS · EARTH CAM</div>
+                <div class="poster-title-text">지구의 밤</div>
+              </div>
+            </a>
+          </div>
+        </section>
+
+        <!-- Empty-state: today complete -->
+        <div class="empty-state" style="margin-top: 16px;">
+          <div class="empty-state-eyebrow">TODAY · ALL CAUGHT UP</div>
+          <div class="empty-state-title">오늘의 우주는 여기까지예요.</div>
+          <div class="empty-state-sub">다음 ISS 통과는 내일 새벽 04:12. 알림을 켜두면 놓치지 않아요.</div>
+          <div class="empty-state-meta">NEXT PASS · 04:12 KST · 06H 48M</div>
+        </div>
+
+      </section>
+
+    </div>
+
+    <!-- APOD Description bottom sheet (opens when "설명 읽기" tapped) -->
+    <div class="apod-sheet-backdrop" id="apodBackdrop"></div>
+    <aside class="apod-sheet" id="apodSheet" aria-hidden="true">
+      <div class="apod-sheet-handle"></div>
+      <div class="apod-sheet-head">
+        <div>
+          <div class="apod-sheet-eyebrow">APOD · 2026.05.28</div>
+          <h2 class="apod-sheet-title">700광년 전<br>우리를 보고 있는 눈</h2>
+        </div>
+        <button class="apod-sheet-close" id="apodClose" aria-label="닫기">
+          <span class="msi" aria-hidden="true">close</span>
+        </button>
+      </div>
+      <div class="apod-sheet-body">
+        <div class="apod-sheet-author">설명 · 천문학자 Robert Nemiroff</div>
+        <div class="apod-sheet-text">
+          <p>물병자리(Aquarius) 방향에 자리한 행성상 성운 NGC 7293, 별명은 '신의 눈(Eye of God)'. 우리 태양과 비슷한 별이 수명을 다하면서 외피를 우주 공간으로 천천히 떨궈 만들어진 거대한 가스 고리다.</p>
+          <p>한가운데에는 별이 남기고 간 백색왜성이 자리하고, 그 주위를 분홍빛 수소와 청록빛 산소 가스가 동심원처럼 감싼다. 약 1만 700년에 걸쳐 만들어진 이 구조는 지금도 초속 30km로 천천히 팽창 중이다. 우리 태양 역시 약 50억 년 뒤 비슷한 모습을 남기게 된다.</p>
+          <p>거리 약 700광년 — 우리 은하 안에서 비교적 가까운 행성상 성운 중 하나. 어두운 밤에 작은 망원경으로도 흐릿하게 볼 수 있다.</p>
+        </div>
+        <div class="apod-sheet-stats">
+          <div>
+            <div class="apod-sheet-stat-label">DISTANCE</div>
+            <div class="apod-sheet-stat-value">700 LY</div>
+          </div>
+          <div>
+            <div class="apod-sheet-stat-label">CONSTELLATION</div>
+            <div class="apod-sheet-stat-value">AQUARIUS</div>
+          </div>
+          <div>
+            <div class="apod-sheet-stat-label">INSTRUMENT</div>
+            <div class="apod-sheet-stat-value">ESO · VISTA</div>
+          </div>
+          <div>
+            <div class="apod-sheet-stat-label">CREDIT</div>
+            <div class="apod-sheet-stat-value">NASA / ESO</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Bottom tab bar (fixed inside device) -->
+    <nav class="tabbar">
+      <a class="tab-item active" href="today.html">
+        <span class="msi tab-icon" aria-hidden="true">calendar_today</span>
+        <span>Today</span>
+      </a>
+      <a class="tab-item" href="explore.html">
+        <span class="msi tab-icon" aria-hidden="true">explore</span>
+        <span>Explore</span>
+      </a>
+      <a class="tab-item" href="live.html">
+        <span class="msi tab-icon" aria-hidden="true">smart_display</span>
+        <span>Live</span>
+      </a>
+      <a class="tab-item" href="library.html">
+        <span class="msi tab-icon" aria-hidden="true">photo_library</span>
+        <span>Library</span>
+      </a>
+    </nav>
+
+  </div>
+
+  <script>
+    // Keep the Today surface anchored to the user's current date.
+    (function () {
+      var now = new Date();
+      var y = now.getFullYear();
+      var m = String(now.getMonth() + 1).padStart(2, '0');
+      var d = String(now.getDate()).padStart(2, '0');
+      var weekdays = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+      var months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+      var meta = document.getElementById('todayDateMeta');
+      var stack = document.getElementById('todayStackDate');
+      var heroPill = document.getElementById('heroPill');
+      if (meta) meta.textContent = y + '.' + m + '.' + d + ' · NGC 7293 · ESO / VISTA';
+      if (stack) stack.textContent = y + ' · ' + months[now.getMonth()] + ' · ' + d + ' · ' + weekdays[now.getDay()];
+      if (heroPill) heroPill.textContent = '● APOD · ' + y + '.' + m + '.' + d;
+    })();
+
+    // Splash + ken-burns only on first visit of the session.
+    (function () {
+      var seen = sessionStorage.getItem('du_splash_seen');
+      var splash = document.getElementById('splash');
+      var heroCard = document.querySelector('.hero-card');
+      if (seen) {
+        if (splash) splash.remove();
+        if (heroCard) heroCard.style.animation = 'none';
+      } else {
+        if (splash) splash.classList.add('show');
+        sessionStorage.setItem('du_splash_seen', '1');
+      }
+    })();
+
+    // Save button (APOD bookmark) — toggle filled state
+    (function () {
+      var saveBtn = document.querySelector('.save-btn');
+      if (!saveBtn) return;
+      saveBtn.addEventListener('click', function () {
+        saveBtn.classList.toggle('saved');
+      });
+    })();
+
+    // Launch CTA — toggle "알림 설정됨" state
+    (function () {
+      var cta = document.querySelector('.launch-cta');
+      if (!cta) return;
+      var original = cta.textContent.trim();
+      cta.addEventListener('click', function () {
+        if (cta.classList.contains('set')) {
+          cta.classList.remove('set');
+          cta.textContent = original;
+        } else {
+          cta.classList.add('set');
+          cta.textContent = '알림 설정됨';
+        }
+      });
+    })();
+
+    // APOD Description bottom sheet — toggle on "설명 읽기" click
+    (function () {
+      var readBtn = document.querySelector('.read-btn');
+      var sheet = document.getElementById('apodSheet');
+      var backdrop = document.getElementById('apodBackdrop');
+      var closeBtn = document.getElementById('apodClose');
+      if (!readBtn || !sheet || !backdrop) return;
+
+      function open() {
+        sheet.classList.add('open');
+        backdrop.classList.add('open');
+        sheet.setAttribute('aria-hidden', 'false');
+      }
+      function close() {
+        sheet.classList.remove('open');
+        backdrop.classList.remove('open');
+        sheet.setAttribute('aria-hidden', 'true');
+      }
+
+      readBtn.addEventListener('click', open);
+      if (closeBtn) closeBtn.addEventListener('click', close);
+      backdrop.addEventListener('click', close);
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && sheet.classList.contains('open')) close();
+      });
+    })();
+
+    // Enter/Space activates role=button elements (a11y)
+    (function () {
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        var t = e.target;
+        if (t.getAttribute('role') === 'button' || t.getAttribute('role') === 'switch') {
+          e.preventDefault();
+          t.click();
+        }
+      });
+    })();
+
+    // Lazy load — set background-image only when element enters viewport
+    (function () {
+      var targets = document.querySelectorAll('[data-bg]');
+      if (!('IntersectionObserver' in window)) {
+        targets.forEach(function (el) {
+          el.style.backgroundImage = "url('" + el.dataset.bg + "')";
+        });
+        return;
+      }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            var el = entry.target;
+            el.style.backgroundImage = "url('" + el.dataset.bg + "')";
+            io.unobserve(el);
+          }
+        });
+      }, { rootMargin: '200px' });
+      targets.forEach(function (el) { io.observe(el); });
+    })();
+  </script>
+
+</body>
+</html>

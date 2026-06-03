@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planet PNG Preview · Pocket Mission Control</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#08090c; --section:#11141a; --border:rgba(255,255,255,0.10);
+    --t95:rgba(255,255,255,0.95); --tmuted:rgba(255,255,255,0.65); --tfaint:rgba(255,255,255,0.40);
+    --accent:#D92906;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--t95);font-family:'Space Mono',monospace;
+       padding:56px 32px 120px;-webkit-font-smoothing:antialiased;}
+  /* 은은한 별 */
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.5;
+    background-image:radial-gradient(1px 1px at 20% 30%,#fff,transparent),
+      radial-gradient(1px 1px at 70% 60%,rgba(255,255,255,.7),transparent),
+      radial-gradient(1px 1px at 40% 80%,rgba(255,255,255,.5),transparent),
+      radial-gradient(1px 1px at 85% 20%,#fff,transparent),
+      radial-gradient(1px 1px at 55% 15%,rgba(255,255,255,.6),transparent),
+      radial-gradient(1px 1px at 10% 70%,rgba(255,255,255,.5),transparent);}
+  .wrap{max-width:1100px;margin:0 auto;position:relative;}
+  .eyebrow{font-size:11px;letter-spacing:.24em;color:var(--accent);text-transform:uppercase;margin-bottom:10px;}
+  h1{font-size:24px;font-weight:700;letter-spacing:-.01em;margin-bottom:6px;}
+  .sub{font-size:12px;color:var(--tmuted);margin-bottom:40px;letter-spacing:.04em;}
+
+  /* 투명 확인용 토글 — 체커보드 배경 */
+  .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:32px;font-size:11px;color:var(--tmuted);letter-spacing:.1em;}
+  .toolbar button{font-family:inherit;font-size:11px;letter-spacing:.12em;color:var(--t95);
+    background:#1a1d23;border:1px solid var(--border);border-radius:6px;padding:8px 14px;cursor:pointer;text-transform:uppercase;}
+  .toolbar button:hover{background:#252830;}
+
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:28px;}
+  @media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr);}}
+  .cell{background:var(--section);border:1px solid var(--border);border-radius:10px;
+    padding:24px;display:flex;flex-direction:column;align-items:center;gap:14px;transition:background .2s;}
+  .disc{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:8px;}
+  body.checker .disc{
+    background-color:#444;
+    background-image:linear-gradient(45deg,#666 25%,transparent 25%),linear-gradient(-45deg,#666 25%,transparent 25%),
+      linear-gradient(45deg,transparent 75%,#666 75%),linear-gradient(-45deg,transparent 75%,#666 75%);
+    background-size:20px 20px;background-position:0 0,0 10px,10px -10px,-10px 0;}
+  .disc img{width:100%;height:100%;object-fit:contain;display:block;
+    filter:drop-shadow(0 8px 30px rgba(0,0,0,.6));}
+  .name{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--t95);}
+  .meta{font-size:10px;letter-spacing:.06em;color:var(--tfaint);text-align:center;line-height:1.5;}
+  .warn{color:var(--accent);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">SOLAR SYSTEM · TRANSPARENT PNG · CUTOUT TEST</div>
+  <h1>행성 PNG 미리보기</h1>
+  <div class="sub">images/planets/ · 배경 투명 원형 컷아웃 8종 · NASA / Wikimedia Commons (Public Domain)</div>
+
+  <div class="toolbar">
+    <span>BACKGROUND</span>
+    <button onclick="document.body.classList.remove('checker')">DARK</button>
+    <button onclick="document.body.classList.add('checker')">CHECKER (투명확인)</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+const planets=[
+  {n:"mercury",ko:"수성",note:"OK · 반조명 디스크"},
+  {n:"venus",ko:"금성",note:"✓ Mariner 10 1000px"},
+  {n:"earth",ko:"지구",note:"OK · 블루마블 (Apollo 17)"},
+  {n:"mars",ko:"화성",note:"OK · 풀디스크 (OSIRIS)"},
+  {n:"jupiter",ko:"목성",note:"✓ Cassini 풀디스크"},
+  {n:"saturn",ko:"토성",note:"✓ 고리 포함 (saturn_rings.png?v=cassini)",file:"saturn_rings"},
+  {n:"uranus",ko:"천왕성",note:"OK"},
+  {n:"neptune",ko:"해왕성",note:"OK"},
+];
+document.getElementById('grid').innerHTML=planets.map(p=>`
+  <div class="cell">
+    <div class="disc"><img src="./${p.file||p.n}.png" alt="${p.n}"></div>
+    <div class="name">${p.n} · ${p.ko}</div>
+    <div class="meta ${p.w?'warn':''}">${p.note}</div>
+  </div>`).join('');
+</script>
+</body>
+</html>

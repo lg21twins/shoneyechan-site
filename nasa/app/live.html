@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Pocket MC">
+  <meta name="theme-color" content="#08090c">
+  <title>Daily Universe · Live</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0">
+  <link rel="stylesheet" href="../styles/tokens.css?v=20260521">
+  <link rel="stylesheet" href="../styles/components.css?v=20260521">
+  <style>
+    /* Hide page/device scrollbar (looks cleaner in iframe mockup) */
+    html, body, .device { scrollbar-width: none; -ms-overflow-style: none; }
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar,
+    .device::-webkit-scrollbar { display: none; }
+
+    /* .device: container itself scrolls (no inner .scroll). tabbar must be position: fixed. Differs from today/explore (overflow hidden + inner .scroll). */
+    .device {
+      width: 100vw;
+      height: 100vh;
+      background: var(--bg-primary);
+      overflow-y: auto;
+      overflow-x: hidden;
+      position: relative;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .device::-webkit-scrollbar { display: none; }
+
+    /* Content section — flows naturally after player */
+    .content-section {
+      position: relative;
+      background: var(--bg-primary);
+      padding: 64px 0 120px;
+      z-index: 5;
+    }
+
+    @media (max-width: 900px) {
+      body { padding: 0; background: var(--bg-primary); }
+      .device {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+        box-shadow: none;
+      }
+    }
+
+    /* ============ LIVE CARD (player + meta + telemetry as one elevated surface) ============ */
+    .live-card {
+      margin: 4px 16px 28px;
+      background: var(--bg-card);
+      border-radius: var(--radius-panel);
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+    }
+    .card-spacer {
+      height: 0;
+    }
+
+    /* ============ 5:4 PLAYER (inside live-card) ============ */
+    .player {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 5 / 4;
+      background: var(--bg-frame);
+      overflow: hidden;
+    }
+    .stage {
+      position: absolute;
+      inset: 0;
+      background-image: url('../images/iss_live_5x4.jpg');
+      background-size: cover;
+      background-position: center;
+      z-index: 0;
+    }
+    .stage::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg,
+        rgba(0,0,0,0.45) 0%,
+        rgba(0,0,0,0) 28%,
+        rgba(0,0,0,0) 68%,
+        rgba(0,0,0,0.5) 100%);
+      pointer-events: none;
+      z-index: 1;
+    }
+    /* Overlay on player — minimal LIVE pill + UTC */
+    .player-overlay {
+      position: absolute;
+      top: 12px; left: 14px; right: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 2;
+    }
+    .player-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      background: var(--accent);
+      border-radius: 999px;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--text-primary);
+    }
+    .player-live .dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--text-primary);
+      animation: pulse 1.6s ease-in-out infinite;
+    }
+    .player-utc {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 10px;
+      background: rgba(0,0,0,0.45);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-radius: 999px;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1.2px;
+      color: rgba(255,255,255,0.85);
+      font-weight: 700;
+    }
+
+    /* Page header — normal flow above player */
+    .page-header {
+      padding: 56px 20px 18px;
+      background: var(--bg-primary);
+      position: relative;
+      z-index: 10;
+    }
+    /* Channel info — inside live-card */
+    .channel {
+      padding: 20px 18px 0;
+    }
+    .channel-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1.8px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .channel-meta-sep { opacity: 0.35; letter-spacing: 0; }
+    .channel-meta-source { color: var(--text-muted); }
+    .channel-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      line-height: 1.3;
+      color: var(--text-primary);
+    }
+    .signal-bars {
+      display: inline-flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 9px;
+    }
+    .signal-bars span {
+      width: 2px;
+      background: var(--success);
+      border-radius: 1px;
+    }
+    .signal-bars span:nth-child(1) { height: 30%; }
+    .signal-bars span:nth-child(2) { height: 55%; }
+    .signal-bars span:nth-child(3) { height: 80%; }
+    .signal-bars span:nth-child(4) { height: 100%; }
+
+    /* (corner-brackets removed — not needed in 5:4 player layout) */
+
+    /* Telemetry — inside live-card; compact value/label asymmetry */
+    .telemetry {
+      padding: 18px 18px 22px;
+      display: grid;
+      grid-template-columns: auto auto 1fr;
+      align-items: end;
+      gap: 22px;
+      background: transparent;
+    }
+    .telemetry-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+    .telemetry-cell:last-child {
+      align-items: flex-end;
+      text-align: right;
+    }
+    .telemetry-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2.2px;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      font-weight: 700;
+      line-height: 1;
+      order: 2;
+    }
+    .telemetry-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      white-space: nowrap;
+      color: var(--text-primary);
+      line-height: 1;
+      order: 1;
+    }
+    .telemetry-sync {
+      padding: 0 18px 18px;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2.2px;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .telemetry-sync::before {
+      content: '';
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--text-faint);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    .telemetry-unit {
+      font-size: 11px;
+      color: rgba(255,255,255,0.55);
+      letter-spacing: 0.5px;
+      margin-left: 4px;
+      font-weight: 400;
+    }
+
+    /* Ambient toggle — matches .icon-btn for cross-tab consistency */
+    .ambient-toggle {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: var(--bg-ui);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      flex-shrink: 0;
+    }
+    .ambient-toggle:active { background: var(--bg-ui-active); }
+    .ambient-toggle .msi {
+      font-size: 18px;
+      color: var(--text-primary);
+    }
+    /* Hide the label — icon-only button now */
+    .ambient-label { display: none; }
+    /* Ambient ON state — accent fill (toggle state indicator) */
+    .ambient-toggle.on {
+      background: var(--accent);
+    }
+    .ambient-toggle.on .msi { color: var(--text-primary); }
+
+    /* Ambient state banner — shown when Ambient mode is ON */
+    .ambient-banner {
+      position: absolute;
+      top: 104px;
+      right: 20px;
+      max-width: 220px;
+      padding: 10px 14px;
+      background: rgba(0,0,0,0.55);
+      border-radius: 8px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 10;
+      opacity: 0;
+      transform: translateY(-6px);
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .ambient-banner.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .ambient-banner-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2.2px;
+      color: var(--text-faint);
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .ambient-banner-sub {
+      font-size: 12px;
+      color: var(--text-85);
+      line-height: 1.4;
+    }
+
+    /* ============ CONTENT SECTION (flows after stage in normal scroll) ============ */
+    .sheet {
+      position: relative;
+      background: var(--bg-primary);
+      border-radius: 0;
+      padding: 32px 0 108px; /* bottom: 84px tabbar + 24px breathing */
+      display: block;
+    }
+    .sheet-handle-area { display: none; }
+    .sheet-content {
+      padding: 0 20px;
+    }
+    /* Always show full sections in scroll mode; entry-row collapsed gateway no longer needed */
+    .sheet .entry-row { display: none; }
+    .sheet .reveal-on-expand { display: block; }
+
+    .sheet-section { margin-bottom: 64px; }
+    .sheet-section:last-child { margin-bottom: 0; }
+    /* .sheet-section-head / .sheet-section-title / .sheet-section-meta → styles/components.css */
+
+    /* Channel cards (horizontal scroll) — contained in sheet-content padding (20px) */
+    .channel-row {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      overflow-y: visible;
+      padding: 4px 0;
+      /* extend only to the right edge so next card can peek past the screen */
+      margin-right: -20px;
+      padding-right: 20px;
+    }
+    .channel-row::-webkit-scrollbar { display: none; }
+
+    /* Twitch-style channel cards — 16:9 thumb + LIVE badge + viewer count overlay */
+    .channel-card {
+      flex-shrink: 0;
+      width: 168px;
+      background: var(--bg-card);
+      border-radius: var(--radius-card);
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.15s ease;
+    }
+    .channel-card.active {
+      background: var(--bg-card-strong);
+    }
+    .channel-thumb {
+      height: 96px; /* 168:96 ≈ 16:9 */
+      background-size: cover;
+      background-position: center;
+      position: relative;
+    }
+    .channel-thumb::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.55) 80%, rgba(0,0,0,0.88) 100%);
+      pointer-events: none;
+    }
+    .channel-thumb-pill {
+      position: absolute;
+      top: 8px; left: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--text-primary);
+      text-shadow: 0 1px 4px rgba(0,0,0,0.7);
+      z-index: 2;
+    }
+    .channel-thumb-pill .dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--live);
+      box-shadow: 0 0 6px rgba(var(--accent-rgb),0.6);
+    }
+    .channel-thumb-viewers {
+      position: absolute;
+      bottom: 6px; left: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.5px;
+      color: var(--text-primary);
+      font-weight: 700;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.7);
+      z-index: 2;
+    }
+    .channel-thumb-viewers .msi {
+      font-size: 12px;
+      color: var(--text-primary);
+    }
+    .channel-card-body { padding: 12px 12px 14px; }
+    .channel-card-meta {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2.2px;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      font-weight: 700;
+    }
+    .channel-card-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      line-height: 1.3;
+      color: var(--text-primary);
+    }
+
+    /* Schedule list */
+    .schedule-item {
+      display: flex;
+      gap: 14px;
+      padding: 12px 0;
+      align-items: center;
+    }
+    .schedule-item:first-child { padding-top: 4px; }
+    .schedule-item:last-child { padding-bottom: 4px; }
+    .schedule-time {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      width: 56px;
+      flex-shrink: 0;
+      letter-spacing: 0.3px;
+    }
+    .schedule-item.is-next .schedule-time { color: var(--accent); }
+    .schedule-content { flex: 1; min-width: 0; }
+    .schedule-title {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      line-height: 1.3;
+      margin-bottom: 4px;
+    }
+    .schedule-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 1.2px;
+      color: var(--text-subtle);
+      text-transform: uppercase;
+    }
+    /* Entry rows (collapsed gateway into Today / DSN) */
+    .entry-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 4px;
+      cursor: pointer;
+    }
+    .entry-row-icon {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--bg-card);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .entry-row-icon .msi {
+      font-size: 16px;
+      color: var(--text-primary);
+    }
+    .entry-row-content { flex: 1; min-width: 0; }
+    .entry-row-title {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      margin-bottom: 3px;
+    }
+    .entry-row-count {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 1px;
+      color: var(--text-subtle);
+      font-weight: 400;
+    }
+    .entry-row-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+    .entry-row-chevron {
+      width: 16px; height: 16px;
+      color: var(--text-subtle);
+      flex-shrink: 0;
+    }
+
+    /* (legacy collapsed/expanded reveal rules removed — scroll mode shows all sections) */
+
+    /* DSN widget (kept for expanded state) */
+    .dsn {
+      background: var(--bg-card);
+      border-radius: var(--radius-card);
+      padding: 16px;
+    }
+    .dsn-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .dsn-title {
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .dsn-status {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2.2px;
+      color: var(--success);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .dsn-status .dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--success);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .dsn-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+    .dsn-cell {
+      background: var(--bg-card-strong);
+      border-radius: 8px;
+      padding: 8px 10px;
+    }
+    .dsn-station {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2.2px;
+      color: var(--text-faint);
+      font-weight: 700;
+      text-transform: uppercase;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .dsn-spacecraft {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+    .dsn-rate {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.3px;
+    }
+
+
+    /* Press feedback for live-specific surfaces (icon-btn is in components.css) */
+    .ambient-toggle, .channel-card, .entry-row {
+      transition: transform 0.12s ease, opacity 0.12s ease, background 0.15s ease;
+    }
+    .ambient-toggle:active { transform: scale(0.94); }
+    .channel-card:active, .entry-row:active {
+      transform: scale(0.98);
+      opacity: 0.92;
+    }
+    /* Extra focus targets specific to live (a/button/icon-btn/tab-item handled by shared) */
+    .channel-card:focus-visible, .entry-row:focus-visible {
+      outline: 2px solid var(--focus-ring);
+      outline-offset: 2px;
+      border-radius: var(--radius-xs);
+    }
+
+
+    /* ----- Live page-specific overrides ----- */
+    /* Topbar sits above the dark video player — stronger divider + worm shadow */
+    .page-topbar-divider { background: rgba(255, 255, 255, 0.28); }
+    .nasa-worm { filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6)); }
+    /* Eyebrow with inline dot (used in live-only contexts) */
+    .page-topbar-eyebrow .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 1.6s ease-in-out infinite;
+    }
+    /* Tabbar — live's .device itself scrolls; needs shadow to separate from content */
+    .tabbar { position: fixed; box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.4); }
+  </style>
+  <script src="../pwa-nav.js" defer></script>
+</head>
+<body>
+
+  <div class="device">
+
+    <!-- Page header — normal flow, sits above player -->
+    <header class="page-header">
+      <div class="page-topbar">
+        <div class="page-topbar-brand">
+          <div class="page-topbar-brand-row">
+            <img class="nasa-worm" src="../icons/nasa_worm.svg" alt="NASA">
+            <span class="page-topbar-divider"></span>
+            <h1 class="page-topbar-title">Live</h1>
+          </div>
+        </div>
+        <div class="page-topbar-actions">
+          <div class="ambient-toggle" role="switch" tabindex="0" aria-checked="false" id="ambientToggle" aria-label="Ambient 모드 - NASA Sounds 켜기">
+            <span class="msi" aria-hidden="true">music_note</span>
+            <span class="ambient-label">SOUNDS</span>
+          </div>
+          <div class="icon-btn" role="button" tabindex="0" aria-label="Cast">
+            <span class="msi" aria-hidden="true">cast</span>
+          </div>
+          <div class="icon-btn" role="button" tabindex="0" aria-label="More">
+            <span class="msi" aria-hidden="true">more_vert</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Live card — player + channel info + telemetry as one elevated surface -->
+    <article class="live-card">
+      <!-- 5:4 Player — overlay carries LIVE pill + UTC -->
+      <div class="player">
+        <div class="stage"></div>
+        <div class="player-overlay">
+          <span class="player-live"><span class="dot"></span>LIVE</span>
+          <span class="player-utc">
+            <span class="mono-met">--:--:-- UTC</span>
+            <span class="signal-bars"><span></span><span></span><span></span><span></span></span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Channel info inside card -->
+      <div class="channel">
+        <div class="channel-meta">
+          <span class="channel-meta-source">NASA TV · ISS LIVE CAM</span>
+        </div>
+        <div class="channel-title">국제우주정거장에서 본<br>지금 이 순간의 지구</div>
+      </div>
+
+      <!-- Spacing divider (no stroke — pure spacing) -->
+      <div class="card-spacer"></div>
+
+      <!-- Telemetry readout inside card -->
+      <div class="telemetry" role="region" aria-label="ISS 실시간 텔레메트리">
+        <div class="telemetry-cell">
+          <span class="telemetry-value">408<span class="telemetry-unit">KM</span></span>
+          <span class="telemetry-label">ALT · 고도</span>
+        </div>
+        <div class="telemetry-cell">
+          <span class="telemetry-value">27,500<span class="telemetry-unit">KM/H</span></span>
+          <span class="telemetry-label">VEL · 속도</span>
+        </div>
+        <div class="telemetry-cell">
+          <span class="telemetry-value">PACIFIC</span>
+          <span class="telemetry-label">OVER · 현재 상공</span>
+        </div>
+      </div>
+      <div class="telemetry-sync">SYNC · 8s AGO · DSN GOLDSTONE</div>
+    </article>
+
+    <!-- Ambient state banner -->
+    <div class="ambient-banner" id="ambientBanner">
+      <div class="ambient-banner-title">NASA SOUNDS · ON</div>
+      <div class="ambient-banner-sub">ISS 캠 + 우주의 소리. 화면이 꺼져도 계속.</div>
+    </div>
+
+    <!-- Content section — flows naturally after stage -->
+    <div class="sheet" id="sheet">
+      <div class="sheet-content">
+
+        <!-- Now Live channels -->
+        <div class="sheet-section">
+          <div class="sheet-section-head">
+            <h3 class="sheet-section-title">지금 라이브</h3>
+          </div>
+          <div class="channel-row">
+            <div class="channel-card active" role="button" tabindex="0">
+              <div class="channel-thumb" data-bg="../images/iss_live.jpg">
+                <span class="channel-thumb-pill"><span class="dot"></span>LIVE</span>
+                <span class="channel-thumb-viewers">
+                  <span class="msi" aria-hidden="true">visibility</span>
+                  ISS FEED
+                </span>
+              </div>
+              <div class="channel-card-body">
+                <div class="channel-card-meta">NASA TV</div>
+                <div class="channel-card-title">ISS Live Cam</div>
+              </div>
+            </div>
+            <div class="channel-card" role="button" tabindex="0">
+              <div class="channel-thumb" data-bg="../images/artemis_orion.jpg">
+                <span class="channel-thumb-pill"><span class="dot"></span>NOW</span>
+                <span class="channel-thumb-viewers">
+                  <span class="msi" aria-hidden="true">visibility</span>
+                  UPDATE
+                </span>
+              </div>
+              <div class="channel-card-body">
+                <div class="channel-card-meta">NASA+</div>
+                <div class="channel-card-title">Mission Updates</div>
+              </div>
+            </div>
+            <div class="channel-card" role="button" tabindex="0">
+              <div class="channel-thumb" data-bg="../images/launch.jpg">
+                <span class="channel-thumb-pill"><span class="dot"></span>NEXT</span>
+                <span class="channel-thumb-viewers">
+                  <span class="msi" aria-hidden="true">visibility</span>
+                  SCHEDULED
+                </span>
+              </div>
+              <div class="channel-card-body">
+                <div class="channel-card-meta">NASA LIVE</div>
+                <div class="channel-card-title">Launch Coverage</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Collapsed entry rows — show when sheet is NOT expanded -->
+        <div class="entry-row" role="button" tabindex="0">
+          <div class="entry-row-icon">
+            <span class="msi" aria-hidden="true">schedule</span>
+          </div>
+          <div class="entry-row-content">
+            <div class="entry-row-title">오늘 일정 <span class="entry-row-count">· 3건</span></div>
+            <div class="entry-row-sub">다음 라이브 커버리지 · 알림 가능</div>
+          </div>
+          <span class="msi entry-row-chevron" aria-hidden="true">chevron_right</span>
+        </div>
+
+        <div class="entry-row" role="button" tabindex="0">
+          <div class="entry-row-icon">
+            <span class="msi" aria-hidden="true">podcasts</span>
+          </div>
+          <div class="entry-row-content">
+            <div class="entry-row-title">Deep Space Network <span class="entry-row-count">· 3 active</span></div>
+            <div class="entry-row-sub">Voyager 1 · Curiosity · Juno</div>
+          </div>
+          <span class="msi entry-row-chevron" aria-hidden="true">chevron_right</span>
+        </div>
+
+        <!-- Expanded: 오늘 일정 (full schedule) -->
+        <div class="sheet-section reveal-on-expand" style="margin-top: 8px;">
+          <div class="sheet-section-head">
+            <h3 class="sheet-section-title">오늘 일정</h3>
+          </div>
+          <div class="schedule-item is-next">
+            <div class="schedule-time">14:30</div>
+            <div class="schedule-content">
+              <div class="schedule-title">Artemis II — Mission Briefing</div>
+              <div class="schedule-sub">NASA+ · LIVE COVERAGE</div>
+            </div>
+          </div>
+          <div class="schedule-item">
+            <div class="schedule-time">19:15</div>
+            <div class="schedule-content">
+              <div class="schedule-title">SpaceX Crew-9 Docking</div>
+              <div class="schedule-sub">ISS · LIVE FROM JSC</div>
+            </div>
+          </div>
+          <div class="schedule-item">
+            <div class="schedule-time">22:00</div>
+            <div class="schedule-content">
+              <div class="schedule-title">JWST Press Conference</div>
+              <div class="schedule-sub">DEEP FIELD REVEAL</div>
+            </div>
+          </div>
+
+          <!-- Empty-state: end of schedule -->
+          <div class="empty-state" style="margin-top: 16px;">
+            <div class="empty-state-eyebrow">TODAY · 3 EVENTS DONE</div>
+            <div class="empty-state-title">오늘 예정된 라이브는 끝났어요.</div>
+            <div class="empty-state-sub">다음 일정은 내일 오전 09:30 Crew-9 dragon undocking.</div>
+            <div class="empty-state-meta">TMR · 09:30 KST · 11H 30M</div>
+          </div>
+        </div>
+
+        <!-- Expanded: Deep Space Network (full widget) -->
+        <div class="sheet-section reveal-on-expand">
+          <div class="sheet-section-head">
+            <h3 class="sheet-section-title">Deep Space Network</h3>
+          </div>
+          <div class="dsn">
+            <div class="dsn-header">
+              <div class="dsn-title">Live Spacecraft Links</div>
+              <div class="dsn-status"><span class="dot"></span>UPLINK · DOWNLINK</div>
+            </div>
+            <div class="dsn-grid">
+              <div class="dsn-cell">
+                <div class="dsn-station">CANBERRA</div>
+                <div class="dsn-spacecraft">VOYAGER 1</div>
+                <div class="dsn-rate">160 bps · 24.5B km</div>
+              </div>
+              <div class="dsn-cell">
+                <div class="dsn-station">MADRID</div>
+                <div class="dsn-spacecraft">CURIOSITY</div>
+                <div class="dsn-rate">2 kbps · 287M km</div>
+              </div>
+              <div class="dsn-cell">
+                <div class="dsn-station">GOLDSTONE</div>
+                <div class="dsn-spacecraft">JUNO</div>
+                <div class="dsn-rate">25 kbps · 778M km</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Tab bar -->
+    <nav class="tabbar">
+      <a class="tab-item" href="today.html">
+        <span class="msi tab-icon" aria-hidden="true">calendar_today</span>
+        <span>Today</span>
+      </a>
+      <a class="tab-item" href="explore.html">
+        <span class="msi tab-icon" aria-hidden="true">explore</span>
+        <span>Explore</span>
+      </a>
+      <a class="tab-item active" href="live.html">
+        <span class="msi tab-icon" aria-hidden="true">smart_display</span>
+        <span>Live</span>
+      </a>
+      <a class="tab-item" href="library.html">
+        <span class="msi tab-icon" aria-hidden="true">photo_library</span>
+        <span>Library</span>
+      </a>
+    </nav>
+
+  </div>
+
+  <script>
+    // Content section now flows in natural scroll — sheet drag logic removed.
+
+    // Channel switching — clicking a channel card swaps the active selection +
+    // updates the top channel meta source + title to reflect the chosen stream.
+    (function () {
+      var cards = document.querySelectorAll('.channel-card');
+      var channelSource = document.querySelector('.channel-meta-source');
+      var channelTitle = document.querySelector('.channel-title');
+      cards.forEach(function (card) {
+        card.addEventListener('click', function () {
+          cards.forEach(function (c) { c.classList.remove('active'); });
+          card.classList.add('active');
+          var meta = card.querySelector('.channel-card-meta');
+          var title = card.querySelector('.channel-card-title');
+          if (channelSource && meta) channelSource.textContent = meta.textContent;
+          if (channelTitle && title) channelTitle.textContent = title.textContent;
+        });
+      });
+    })();
+
+    // Ambient mode toggle — turn on/off + show concept banner
+    (function () {
+      var toggle = document.getElementById('ambientToggle');
+      var banner = document.getElementById('ambientBanner');
+      var label = toggle ? toggle.querySelector('.ambient-label') : null;
+      if (!toggle) return;
+      toggle.addEventListener('click', function () {
+        var on = toggle.classList.toggle('on');
+        if (banner) banner.classList.toggle('show', on);
+        if (label) label.textContent = on ? 'ON' : 'SOUNDS';
+      });
+    })();
+
+    // UTC clock for a credible live data surface.
+    (function () {
+      var el = document.querySelector('.mono-met');
+      if (!el) return;
+      function fmt() {
+        var now = new Date();
+        var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
+        return pad(now.getUTCHours()) + ':' + pad(now.getUTCMinutes()) + ':' + pad(now.getUTCSeconds()) + ' UTC';
+      }
+      el.textContent = fmt();
+      setInterval(function () { el.textContent = fmt(); }, 1000);
+    })();
+
+    // Enter/Space activates role=button/switch elements (a11y)
+    (function () {
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        var t = e.target;
+        if (t.getAttribute('role') === 'button' || t.getAttribute('role') === 'switch') {
+          e.preventDefault();
+          t.click();
+        }
+      });
+    })();
+
+    // Lazy load — set background-image only when element enters viewport
+    (function () {
+      var targets = document.querySelectorAll('[data-bg]');
+      if (!('IntersectionObserver' in window)) {
+        targets.forEach(function (el) {
+          el.style.backgroundImage = "url('" + el.dataset.bg + "')";
+        });
+        return;
+      }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            var el = entry.target;
+            el.style.backgroundImage = "url('" + el.dataset.bg + "')";
+            io.unobserve(el);
+          }
+        });
+      }, { rootMargin: '200px' });
+      targets.forEach(function (el) { io.observe(el); });
+    })();
+  </script>
+
+</body>
+</html>

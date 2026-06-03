@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>To-Scale Solar System · Pocket Mission Control</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#08090c;--accent:#D92906;--t95:rgba(255,255,255,.95);--tmuted:rgba(255,255,255,.6);--tfaint:rgba(255,255,255,.4);}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{overflow-x:hidden;}
+  body{background:var(--bg);color:var(--t95);font-family:'Space Mono',monospace;-webkit-font-smoothing:antialiased;}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.5;
+    background-image:radial-gradient(1px 1px at 20% 30%,#fff,transparent),radial-gradient(1px 1px at 70% 60%,rgba(255,255,255,.6),transparent),
+    radial-gradient(1px 1px at 40% 80%,rgba(255,255,255,.5),transparent),radial-gradient(1px 1px at 85% 25%,#fff,transparent),
+    radial-gradient(1px 1px at 55% 15%,rgba(255,255,255,.6),transparent),radial-gradient(1px 1px at 12% 68%,rgba(255,255,255,.5),transparent);}
+  .head{padding:48px 40px 0;}
+  .eyebrow{font-size:11px;letter-spacing:.24em;color:var(--accent);text-transform:uppercase;margin-bottom:10px;}
+  h1{font-size:24px;font-weight:700;letter-spacing:-.01em;}
+  .sub{font-size:12px;color:var(--tmuted);margin-top:8px;line-height:1.6;}
+  .fit{padding:40px;overflow:hidden;}
+  .row{display:flex;align-items:center;gap:56px;width:max-content;transform-origin:left top;}
+  .cell{height:847px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;flex:0 0 auto;}
+  .cell img{height:auto;display:block;filter:drop-shadow(0 6px 24px rgba(0,0,0,.6));}
+  .lbl{position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:2px;white-space:nowrap;}
+  .lbl .ko{font-size:13px;color:var(--t95);letter-spacing:.04em;}
+  .lbl .en{font-size:9px;color:var(--tfaint);letter-spacing:.18em;}
+  .lbl .km{font-size:10px;color:var(--accent);letter-spacing:.08em;}
+  .foot{padding:0 40px 60px;font-size:11px;color:var(--tfaint);letter-spacing:.06em;}
+</style></head>
+<body>
+  <div class="head">
+    <div class="eyebrow">SOLAR SYSTEM · SIZE RATIO (READABLE)</div>
+    <h1>크기 비율 — 태양계 행성</h1>
+    <div class="sub">실제 지름 기반, 크기차 압축(power 0.27, 외행성 0.72) · 화면 폭 자동 맞춤 · 토성 = Cassini(고리 완전) · 태양 제외</div>
+  </div>
+  <div class="fit" id="fit"><div class="row" id="row">
+    <div class="cell">
+      <img src="./mercury.png" alt="mercury" style="width:192.9px">
+      <div class="lbl"><span class="ko">수성</span><span class="en">MERCURY</span><span class="km">4,879 KM</span></div>
+    </div>
+    <div class="cell">
+      <img src="./venus.png" alt="venus" style="width:246.6px">
+      <div class="lbl"><span class="ko">금성</span><span class="en">VENUS</span><span class="km">12,104 KM</span></div>
+    </div>
+    <div class="cell">
+      <img src="./earth.png" alt="earth" style="width:250.0px">
+      <div class="lbl"><span class="ko">지구</span><span class="en">EARTH</span><span class="km">12,742 KM</span></div>
+    </div>
+    <div class="cell">
+      <img src="./mars.png" alt="mars" style="width:210.8px">
+      <div class="lbl"><span class="ko">화성</span><span class="en">MARS</span><span class="km">6,779 KM</span></div>
+    </div>
+    <div class="cell">
+      <img src="./jupiter.png" alt="jupiter" style="width:343.7px">
+      <div class="lbl"><span class="ko">목성</span><span class="en">JUPITER</span><span class="km">139,820 KM</span></div>
+    </div>
+    <div class="cell">
+      <img src="./saturn_rings.png?v=cassini" alt="saturn" style="width:489.6px">
+      <div class="lbl"><span class="ko">토성</span><span class="en">SATURN</span><span class="km">116,460 KM</span></div>
+    </div>
+    <div class="cell">
+      <img src="./uranus.png" alt="uranus" style="width:261.4px">
+      <div class="lbl"><span class="ko">천왕성</span><span class="en">URANUS</span><span class="km">50,724 KM</span></div>
+    </div>
+    <div class="cell">
+      <img src="./neptune.png" alt="neptune" style="width:259.3px">
+      <div class="lbl"><span class="ko">해왕성</span><span class="en">NEPTUNE</span><span class="km">49,244 KM</span></div>
+    </div>
+  </div></div>
+  <div class="foot">SOURCE · NASA / WIKIMEDIA COMMONS · DIAMETERS: NASA PLANETARY FACT SHEET</div>
+<script>
+  function fit(){
+    const row=document.getElementById('row'), wrap=document.getElementById('fit');
+    row.style.transform='scale(1)';
+    const avail=window.innerWidth-80, w=row.scrollWidth, s=Math.min(1, avail/w);
+    row.style.transform='scale('+s+')'; wrap.style.height=(row.offsetHeight*s)+'px';
+  }
+  window.addEventListener('load',fit); window.addEventListener('resize',fit); fit();
+</script>
+</body></html>
