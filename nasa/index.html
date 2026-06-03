@@ -9861,7 +9861,7 @@
          BOOT_INTRO_ENABLED = true  → intro plays on page load
          BOOT_INTRO_ENABLED = false → intro skipped, page shows immediately
     */
-    const BOOT_INTRO_ENABLED = false;
+    const BOOT_INTRO_ENABLED = true;
     const boot = document.getElementById('boot-sequence');
     // Reveals the staged cover animation (corners → telemetry → countdown → rest)
     const revealCover = () => document.body.classList.add('intro-done');
