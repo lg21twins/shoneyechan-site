@@ -1,3 +1,8 @@
 {
-  "trailingSlash": true
+  "trailingSlash": true,
+  "rewrites": [
+    { "source": "/vc", "destination": "https://vc-silk-six.vercel.app" },
+    { "source": "/vc/", "destination": "https://vc-silk-six.vercel.app" },
+    { "source": "/vc/:path*", "destination": "https://vc-silk-six.vercel.app/:path*" }
+  ]
 }
