@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Artemis II · Launch</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0">
+  <link rel="stylesheet" href="../../styles/tokens.css?v=20260521">
+  <link rel="stylesheet" href="../../styles/components.css?v=20260521">
+  <link rel="stylesheet" href="../../styles/detail.css?v=20260611">
+</head>
+<body>
+  <div class="d-device">
+    <div class="d-topbar" id="topbar">
+      <a class="icon-btn" href="../explore.html" aria-label="뒤로"><span class="msi">arrow_back</span></a>
+      <span class="d-topbar-title">Artemis II</span>
+      <div class="spacer"></div>
+      <button class="icon-btn" aria-label="공유"><span class="msi">ios_share</span></button>
+      <button class="icon-btn" id="bmTop" aria-label="알림"><span class="msi">notifications</span></button>
+    </div>
+
+    <div class="d-hero">
+      <div class="d-hero-img" style="background-image:url('../../images/launch.jpg')"></div>
+      <div class="d-hero-cap">
+        <span class="d-badge live" style="margin-bottom:14px"><span class="dot"></span>UPCOMING · LC-39B</span>
+        <h1 class="d-h1">Artemis II<br>달을 향한 첫 승무원</h1>
+      </div>
+    </div>
+
+    <div class="d-body">
+      <div class="d-section tight">
+        <div class="d-author"><span class="msi">rocket_launch</span>SLS Block 1 · Orion · 4명 탑승</div>
+        <p class="d-lede">반세기 만에 인류가 다시 달로 향합니다. 네 명의 우주인이 달을 돌아 지구로 귀환하는 10일간의 시험 비행입니다.</p>
+      </div>
+
+      <div class="d-section">
+        <div class="rail-head"><h2 class="rail-title">발사까지</h2></div>
+        <div class="d-stats" id="countdown">
+          <div class="d-stat"><div class="d-stat-k">Days</div><div class="d-stat-v" id="cdD">12</div></div>
+          <div class="d-stat"><div class="d-stat-k">Hours</div><div class="d-stat-v" id="cdH">06</div></div>
+          <div class="d-stat"><div class="d-stat-k">Min</div><div class="d-stat-v" id="cdM">41</div></div>
+          <div class="d-stat"><div class="d-stat-k">Sec</div><div class="d-stat-v" id="cdS">08</div></div>
+        </div>
+      </div>
+
+      <div class="d-section">
+        <div class="rail-head"><h2 class="rail-title">발사 정보</h2></div>
+        <div class="d-kv">
+          <div class="d-kv-row"><span class="d-kv-k">발사체</span><span class="d-kv-v">SLS BLOCK 1</span></div>
+          <div class="d-kv-row"><span class="d-kv-k">발사장</span><span class="d-kv-v">KENNEDY · LC-39B</span></div>
+          <div class="d-kv-row"><span class="d-kv-k">윈도우</span><span class="d-kv-v">06.23 09:07 KST</span></div>
+          <div class="d-kv-row"><span class="d-kv-k">미션 기간</span><span class="d-kv-v">~10 DAYS</span></div>
+        </div>
+      </div>
+
+      <div class="d-section d-prose">
+        <div class="rail-head"><h2 class="rail-title">미션 개요</h2></div>
+        <p>오리온 우주선은 지구를 두 바퀴 돈 뒤 <b>달 뒤편</b>까지 날아가, 1972년 이후 인간이 닿은 가장 먼 거리를 다시 한번 넘어섭니다.</p>
+        <p>이번 비행은 사람을 태운 생명유지·통신 시스템의 <b>최종 검증</b>이자, 다음 임무인 <b>달 착륙(Artemis III)</b>으로 가는 마지막 관문입니다.</p>
+      </div>
+
+      <div class="d-section">
+        <div class="rail-head"><h2 class="rail-title">승무원</h2><span class="rail-link">4 CREW</span></div>
+        <div class="d-list">
+          <a class="d-list-item" href="launch.html"><span class="d-list-num">CDR</span><div class="d-list-tx"><div class="d-list-title">Reid Wiseman</div><div class="d-list-meta">선장 · NASA</div></div><span class="msi">chevron_right</span></a>
+          <a class="d-list-item" href="launch.html"><span class="d-list-num">PLT</span><div class="d-list-tx"><div class="d-list-title">Victor Glover</div><div class="d-list-meta">조종사 · NASA</div></div><span class="msi">chevron_right</span></a>
+          <a class="d-list-item" href="launch.html"><span class="d-list-num">MS1</span><div class="d-list-tx"><div class="d-list-title">Christina Koch</div><div class="d-list-meta">미션 스페셜리스트 · NASA</div></div><span class="msi">chevron_right</span></a>
+          <a class="d-list-item" href="launch.html"><span class="d-list-num">MS2</span><div class="d-list-tx"><div class="d-list-title">Jeremy Hansen</div><div class="d-list-meta">미션 스페셜리스트 · CSA</div></div><span class="msi">chevron_right</span></a>
+        </div>
+      </div>
+
+      <div class="d-section">
+        <a class="d-cta" href="../live.html"><span class="msi">notifications</span>발사 알림 받기</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var tb = document.getElementById('topbar');
+    window.addEventListener('scroll', function () { tb.classList.toggle('scrolled', window.scrollY > 220); }, { passive: true });
+    var target = new Date().getTime() + ((12 * 24 + 6) * 3600 + 41 * 60 + 8) * 1000;
+    function pad(n) { return n < 10 ? '0' + n : '' + n; }
+    function tick() {
+      var d = Math.max(0, target - new Date().getTime());
+      document.getElementById('cdD').textContent = pad(Math.floor(d / 86400000));
+      document.getElementById('cdH').textContent = pad(Math.floor((d % 86400000) / 3600000));
+      document.getElementById('cdM').textContent = pad(Math.floor((d % 3600000) / 60000));
+      document.getElementById('cdS').textContent = pad(Math.floor((d % 60000) / 1000));
+    }
+    tick(); setInterval(tick, 1000);
+    var bm = document.getElementById('bmTop');
+    bm.addEventListener('click', function () {
+      var on = bm.classList.toggle('is-on');
+      bm.querySelector('.msi').textContent = on ? 'notifications_active' : 'notifications';
+      bm.querySelector('.msi').style.color = on ? 'var(--accent)' : '';
+    });
+  </script>
+  <nav class="tabbar">
+    <a class="tab-item" href="../today.html"><span class="msi tab-icon" aria-hidden="true">calendar_today</span><span>Today</span></a>
+    <a class="tab-item active" href="../explore.html"><span class="msi tab-icon" aria-hidden="true">explore</span><span>Explore</span></a>
+    <a class="tab-item" href="../live.html"><span class="msi tab-icon" aria-hidden="true">smart_display</span><span>Live</span></a>
+    <a class="tab-item" href="../library.html"><span class="msi tab-icon" aria-hidden="true">photo_library</span><span>Library</span></a>
+  </nav>
+</body>
+</html>

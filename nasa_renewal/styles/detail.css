@@ -1,0 +1,513 @@
+/* =====================================================================
+   NASA Renewal · Detail-Page Components
+   Loaded AFTER tokens.css + components.css by every app/detail/*.html page.
+
+   Purpose: one shared vocabulary for all drill-down (상세) pages so they are
+   provably consistent — same chrome, same stat grids, same rails, same prose.
+   Page-specific layout stays inline in each detail page as a thin override.
+
+   Rules honored: no strokes (면+여백 위계), tokens for every color/radius/space,
+   Space Mono for data/meta, Pretendard for Korean body, Material Symbols icons.
+   ===================================================================== */
+
+/* ---------- Page shell ---------- */
+.d-device {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background: var(--bg-primary);
+  overflow-x: hidden;
+}
+
+/* ---------- Floating topbar (back / actions over content) ---------- */
+.d-topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 52px 20px 16px;
+  transition: background var(--motion-fast);
+}
+.d-topbar.scrolled {
+  background: linear-gradient(180deg, var(--bg-primary) 72%, rgba(8, 9, 12, 0));
+}
+.d-topbar .spacer { flex: 1; }
+/* glassy variant of the shared .icon-btn, for use over imagery */
+.d-topbar .icon-btn {
+  background: rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.d-topbar .icon-btn:active { background: rgba(255, 255, 255, 0.18); }
+
+/* simple title shown in topbar once scrolled (non-image detail pages) */
+.d-topbar-title {
+  font-size: var(--fs-16);
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: var(--text-primary);
+  opacity: 0;
+  transition: opacity var(--motion-fast);
+}
+.d-topbar.scrolled .d-topbar-title { opacity: 1; }
+
+/* ---------- Image hero (image / apod / photo detail types) ---------- */
+.d-hero {
+  position: relative;
+  width: 100%;
+  height: 72vh;
+  min-height: 460px;
+  overflow: hidden;
+}
+.d-hero-img {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  transform: scale(1.06);
+  animation: dKen 24s ease-in-out infinite alternate;
+}
+@keyframes dKen {
+  from { transform: scale(1.06) translate(0, 0); }
+  to   { transform: scale(1.14) translate(-2%, -2%); }
+}
+.d-hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(180deg, rgba(8, 9, 12, 0.40) 0%, rgba(8, 9, 12, 0) 18%),
+    linear-gradient(0deg, var(--bg-primary) 2%, rgba(8, 9, 12, 0.55) 26%, rgba(8, 9, 12, 0) 56%);
+  z-index: 1;
+}
+.d-hero-cap {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  z-index: 2;
+  padding: 0 24px 28px;
+}
+
+/* ---------- Glassy meta pill ---------- */
+.d-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: 'Space Mono', monospace;
+  font-size: var(--fs-11);
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  color: var(--text-95);
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 7px 12px;
+  border-radius: var(--radius-pill);
+  margin-bottom: 16px;
+}
+.d-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+
+/* ---------- Hero title ---------- */
+.d-h1 {
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1.18;
+  letter-spacing: -0.8px;
+  color: #fff;
+  margin: 0;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.5);
+}
+
+/* ---------- Body container + sections ---------- */
+.d-body {
+  position: relative;
+  z-index: 3;
+  padding: 4px 24px 120px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+.d-section { margin-top: 40px; }
+.d-section.tight { margin-top: 8px; }
+
+/* ---------- Credit / author line ---------- */
+.d-author {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Space Mono', monospace;
+  font-size: var(--fs-12);
+  letter-spacing: 0.4px;
+  color: var(--text-muted);
+}
+.d-author .msi { font-size: 16px; color: var(--accent); }
+
+/* ---------- Prose ---------- */
+.d-lede {
+  font-size: var(--fs-20);
+  line-height: 1.6;
+  letter-spacing: -0.2px;
+  color: var(--text-95);
+  font-weight: 600;
+  margin-top: 20px;
+}
+.d-prose p {
+  font-size: var(--fs-16);
+  line-height: 1.75;
+  color: var(--text-85);
+  margin-bottom: 16px;
+}
+.d-prose p:last-child { margin-bottom: 0; }
+.d-prose b { color: var(--text-primary); font-weight: 700; }
+
+/* ---------- Stat grid (2-col by default; .cols-3 for 3) ---------- */
+.d-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+.d-stats.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.d-stat {
+  background: var(--bg-card);
+  padding: 18px 18px 16px;
+}
+.d-stat-k {
+  font-family: 'Space Mono', monospace;
+  font-size: var(--fs-10);
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  font-weight: 700;
+}
+.d-stat-v {
+  font-family: 'Space Mono', monospace;
+  font-size: var(--fs-20);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: 8px;
+  line-height: 1.1;
+}
+.d-stat-v small { font-size: var(--fs-12); color: var(--text-muted); font-weight: 400; }
+
+/* ---------- Action rail (Save / Wallpaper / Original / Info …) ---------- */
+.d-actions {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 2px;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+.d-act {
+  background: var(--bg-card);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 18px 8px;
+  cursor: pointer;
+  transition: background var(--motion-fast);
+  text-decoration: none;
+}
+.d-act:active { background: var(--bg-card-strong); }
+.d-act .msi { font-size: 22px; color: var(--text-primary); }
+.d-act.is-on .msi { color: var(--accent); }
+.d-act span:last-child {
+  font-family: 'Space Mono', monospace;
+  font-size: var(--fs-10);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+/* ---------- Horizontal related rail ---------- */
+.d-rail {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  margin-right: -24px;
+  padding-right: 24px;
+  -webkit-overflow-scrolling: touch;
+}
+.d-rail::-webkit-scrollbar { display: none; }
+.d-rcard { flex: 0 0 148px; scroll-snap-align: start; text-decoration: none; }
+.d-rthumb {
+  width: 148px; height: 186px;
+  border-radius: var(--radius-card);
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  overflow: hidden;
+}
+.d-rthumb::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(0deg, rgba(8, 9, 12, 0.7) 0%, rgba(8, 9, 12, 0) 50%);
+}
+.d-rmeta {
+  font-family: 'Space Mono', monospace;
+  font-size: var(--fs-10);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  font-weight: 700;
+  margin: 10px 2px 4px;
+}
+.d-rtitle {
+  font-size: var(--fs-13);
+  font-weight: 600;
+  color: var(--text-85);
+  line-height: 1.35;
+  padding: 0 2px;
+}
+
+/* ---------- Key-value list row (data strips) ---------- */
+.d-kv {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+.d-kv-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: var(--bg-card);
+  padding: 16px 18px;
+}
+.d-kv-k {
+  font-size: var(--fs-14);
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.d-kv-v {
+  font-family: 'Space Mono', monospace;
+  font-size: var(--fs-14);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.3px;
+}
+
+/* ---------- Footer nav row (next / history) ---------- */
+.d-next {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--bg-card);
+  border-radius: var(--radius-card);
+  padding: 18px 20px;
+  text-decoration: none;
+  margin-top: 16px;
+}
+.d-next .msi { font-size: 24px; color: var(--accent); }
+.d-next-tx { flex: 1; min-width: 0; }
+.d-next-k {
+  font-family: 'Space Mono', monospace;
+  font-size: var(--fs-10);
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  font-weight: 700;
+}
+.d-next-v {
+  font-size: var(--fs-15);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: 4px;
+}
+
+/* ---------- Primary CTA button (full-width, accent) ---------- */
+.d-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: 52px;
+  border-radius: var(--radius-card);
+  background: var(--accent);
+  color: #fff;
+  font-size: var(--fs-16);
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform var(--motion-press), background var(--motion-fast);
+}
+.d-cta:active { transform: scale(0.98); background: var(--accent-hover, #f23410); }
+.d-cta .msi { font-size: 20px; }
+
+/* ---------- Numbered / icon list (chapters, schedule, launches) ---------- */
+.d-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+.d-list-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--bg-card);
+  padding: 16px 18px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--motion-fast);
+}
+.d-list-item:active { background: var(--bg-card-strong); }
+.d-list-num {
+  font-family: 'Space Mono', monospace;
+  font-size: var(--fs-13);
+  font-weight: 700;
+  color: var(--text-faint);
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+  width: 22px;
+}
+.d-list-tx { flex: 1; min-width: 0; }
+.d-list-title {
+  font-size: var(--fs-15);
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+.d-list-meta {
+  font-family: 'Space Mono', monospace;
+  font-size: var(--fs-11);
+  letter-spacing: 0.6px;
+  color: var(--text-subtle);
+  margin-top: 4px;
+}
+.d-list-item > .msi { font-size: 20px; color: var(--text-faint); flex-shrink: 0; }
+.d-list-play {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: var(--bg-ui);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.d-list-play .msi { font-size: 18px; color: var(--text-primary); }
+
+/* ---------- Status badge (ACTIVE / UPCOMING / ARCHIVE) ---------- */
+.d-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Space Mono', monospace;
+  font-size: var(--fs-10);
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-ui);
+  color: var(--text-85);
+}
+.d-badge.active { color: var(--success); }
+.d-badge.active .dot { background: var(--success); }
+.d-badge.live { color: var(--accent); }
+.d-badge.live .dot { background: var(--accent); }
+.d-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); }
+
+/* ---------- Korean typography polish + section red point (2026-06-11 feedback) ---------- */
+.d-device { word-break: keep-all; overflow-wrap: break-word; }
+.d-prose p, .d-lede, .d-h1, .d-list-title, .d-rtitle, .d-author { text-wrap: pretty; }
+/* red "point" dot before every section title — sparse NASA-red rhythm on otherwise all-white pages */
+.d-body .rail-title { display: inline-flex; align-items: center; gap: 9px; }
+.d-body .rail-title::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+/* ---------- Media player (audio chapter / video episode) ---------- */
+.d-player {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--bg-card);
+  border-radius: var(--radius-card);
+  padding: 16px 18px;
+}
+.d-playbtn {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: var(--accent); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; cursor: pointer;
+  transition: transform var(--motion-press);
+}
+.d-playbtn:active { transform: scale(0.92); }
+.d-playbtn .msi { font-size: 26px; }
+.d-player-tx { flex: 1; min-width: 0; }
+.d-player-title { font-size: var(--fs-15); font-weight: 700; color: var(--text-primary); }
+.d-player-bar { height: 4px; border-radius: 2px; background: var(--bg-ui); margin-top: 10px; overflow: hidden; }
+.d-player-fill { height: 100%; width: 32%; background: var(--accent); border-radius: 2px; }
+.d-player-time {
+  display: flex; justify-content: space-between;
+  font-family: 'Space Mono', monospace; font-size: var(--fs-11);
+  color: var(--text-subtle); margin-top: 8px; letter-spacing: 0.5px;
+}
+
+/* ---------- Centered hero play button (video) ---------- */
+.d-hero-play { position: absolute; inset: 0; z-index: 2; display: flex; align-items: center; justify-content: center; }
+.d-hero-play .btn {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: transform var(--motion-press);
+}
+.d-hero-play .btn:active { transform: scale(0.92); }
+.d-hero-play .btn .msi { font-size: 40px; color: #fff; }
+
+/* ---------- Live telemetry strip (stream) ---------- */
+.d-tele { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; border-radius: var(--radius-card); overflow: hidden; }
+.d-tele-cell { background: var(--bg-card); padding: 16px 14px; }
+.d-tele-k { font-family: 'Space Mono', monospace; font-size: var(--fs-10); letter-spacing: 1.6px; text-transform: uppercase; color: var(--text-faint); font-weight: 700; }
+.d-tele-v { font-family: 'Space Mono', monospace; font-size: var(--fs-18); font-weight: 700; color: var(--text-primary); margin-top: 6px; }
+.d-tele-v small { font-size: var(--fs-11); color: var(--text-muted); font-weight: 400; }
+
+/* ---------- Filter chips row ---------- */
+.d-chips { display: flex; gap: 8px; overflow-x: auto; margin-right: -24px; padding-right: 24px; }
+.d-chips::-webkit-scrollbar { display: none; }
+.d-chip {
+  flex-shrink: 0; font-family: 'Space Mono', monospace; font-size: var(--fs-11);
+  letter-spacing: 0.6px; font-weight: 700; color: var(--text-muted);
+  background: var(--bg-card); padding: 9px 14px; border-radius: var(--radius-pill);
+  text-decoration: none; cursor: pointer;
+}
+.d-chip.active { background: var(--accent); color: #fff; }
+
+/* ---------- Photo grid (collection / mission photos) ---------- */
+.d-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.d-grid.dense { grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.d-grid-cell {
+  position: relative; display: block; text-decoration: none;
+  border-radius: var(--radius-card); overflow: hidden;
+  background: var(--bg-card) center / cover no-repeat;
+  aspect-ratio: 1;
+}
+.d-grid.dense .d-grid-cell { border-radius: var(--radius-sm); }
+.d-grid-cell.tall { aspect-ratio: 2 / 3; }
+.d-grid-cell.wide { grid-column: span 2; aspect-ratio: 2 / 1; }
+.d-grid-cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 10px 12px; background: linear-gradient(0deg, rgba(8, 9, 12, 0.82), transparent); }
+.d-grid-cap-t { font-size: var(--fs-12); font-weight: 700; color: #fff; line-height: 1.3; }
+.d-grid-cap-m { font-family: 'Space Mono', monospace; font-size: var(--fs-10); letter-spacing: 0.5px; color: var(--text-85); margin-top: 2px; }
+
+/* ---------- Curator note (library photo) ---------- */
+.d-note { background: var(--bg-card); border-radius: var(--radius-card); padding: 22px; }
+.d-note-quote { font-size: var(--fs-18); line-height: 1.55; color: var(--text-95); font-weight: 600; letter-spacing: -0.2px; }
+.d-note-by { font-family: 'Space Mono', monospace; font-size: var(--fs-11); letter-spacing: 1px; color: var(--accent); text-transform: uppercase; font-weight: 700; margin-top: 14px; }
+
+/* ---------- Short hero (grid / collection pages) ---------- */
+.d-hero.short { height: 36vh; min-height: 240px; }
+.d-count { font-family: 'Space Mono', monospace; font-size: var(--fs-12); letter-spacing: 1px; color: var(--text-subtle); font-weight: 700; }
+
+/* ---------- Bottom tab bar on detail pages (fixed; pins inside iframe) ---------- */
+.tabbar { position: fixed; }

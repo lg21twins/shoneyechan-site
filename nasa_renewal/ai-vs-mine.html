@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 디폴트 vs 직접 설계 — NASA Today</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.min.css">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Pretendard Variable', 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
+    background:#0c0d10; color:#fff; padding:48px 32px 80px;
+  }
+  .page-head { max-width:1100px; margin:0 auto 40px; }
+  .page-head .eyebrow { font-family:ui-monospace,monospace; font-size:12px; letter-spacing:.18em; color:#888; margin-bottom:10px; }
+  .page-head h1 { font-size:30px; font-weight:800; letter-spacing:-.02em; margin-bottom:12px; }
+  .page-head p { font-size:15px; line-height:1.7; color:rgba(255,255,255,.62); max-width:680px; }
+  .page-head .accent { color:#D92906; }
+
+  .compare { display:grid; grid-template-columns:1fr 1fr; gap:48px; max-width:1100px; margin:0 auto; }
+  .col-head { display:flex; align-items:center; gap:10px; margin-bottom:18px; }
+  .col-head .tag { font-family:ui-monospace,monospace; font-size:11px; letter-spacing:.12em; padding:5px 10px; border-radius:4px; }
+  .tag.ai { background:rgba(255,255,255,.08); color:#aaa; }
+  .tag.mine { background:#D92906; color:#fff; }
+  .col-head h2 { font-size:18px; font-weight:700; }
+  .col-head .sub { font-size:13px; color:rgba(255,255,255,.45); margin-left:auto; }
+
+  /* phone frame */
+  .phone { width:375px; height:760px; border-radius:38px; overflow:hidden; margin:0 auto;
+    border:10px solid #1c1c1f; box-shadow:0 40px 100px rgba(0,0,0,.6); position:relative; background:#000; }
+  .phone iframe { width:375px; height:740px; border:0; display:block; }
+
+  /* ====== AI SLOP styles (scoped) ====== */
+  .ai-slop { width:375px; height:740px; overflow-y:auto; background:linear-gradient(160deg,#1a0b3d 0%,#2d1b69 40%,#6b2c91 100%);
+    font-family:Arial,Helvetica,sans-serif; }
+  .ai-slop::-webkit-scrollbar { display:none; }
+  .ai-slop .hero { padding:60px 24px 40px; text-align:center; }
+  .ai-slop .hero .emoji { font-size:54px; margin-bottom:16px; }
+  .ai-slop .hero h1 { font-size:30px; font-weight:bold; background:linear-gradient(90deg,#ff6ec4,#7873f5,#4ADEDE);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:14px; }
+  .ai-slop .hero p { color:rgba(255,255,255,.8); font-size:15px; line-height:1.5; margin-bottom:24px; }
+  .ai-slop .btn { display:inline-block; padding:14px 32px; border-radius:30px;
+    background:linear-gradient(90deg,#7873f5,#ff6ec4); color:#fff; font-weight:bold; font-size:15px; box-shadow:0 8px 24px rgba(120,115,245,.5); }
+  .ai-slop .glass { margin:16px 20px; padding:24px; border-radius:20px; text-align:center;
+    background:rgba(255,255,255,.1); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,.2);
+    box-shadow:0 8px 32px rgba(0,0,0,.2); }
+  .ai-slop .glass .ico { font-size:38px; margin-bottom:12px; }
+  .ai-slop .glass h3 { font-size:19px; font-weight:bold; margin-bottom:8px; background:linear-gradient(90deg,#fff,#c4b5fd);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .ai-slop .glass p { color:rgba(255,255,255,.75); font-size:13px; line-height:1.6; }
+  .ai-slop .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:16px 20px; }
+  .ai-slop .grid2 .glass { margin:0; }
+  .ai-slop .badge { display:inline-block; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:bold;
+    background:linear-gradient(90deg,#f093fb,#f5576c); color:#fff; margin-bottom:10px; }
+  .ai-slop .footer { text-align:center; padding:24px; color:rgba(255,255,255,.5); font-size:12px; }
+  .ai-slop .stat-row { display:flex; justify-content:space-around; margin:16px 20px; padding:20px;
+    background:rgba(255,255,255,.1); backdrop-filter:blur(12px); border-radius:20px; }
+  .ai-slop .stat-row .stat .n { font-size:24px; font-weight:bold; background:linear-gradient(90deg,#4facfe,#00f2fe);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .ai-slop .stat-row .stat .l { font-size:11px; color:rgba(255,255,255,.6); margin-top:4px; }
+
+  /* annotations */
+  .notes { max-width:1100px; margin:56px auto 0; }
+  .notes h2 { font-size:20px; font-weight:800; margin-bottom:24px; }
+  .note-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.08); border-radius:12px; overflow:hidden; }
+  .note-cell { background:#101116; padding:22px 24px; }
+  .note-cell.h { background:#16171d; font-family:ui-monospace,monospace; font-size:11px; letter-spacing:.12em; color:#888; padding:14px 24px; }
+  .note-cell .topic { font-size:13px; font-weight:700; color:#D92906; margin-bottom:8px; letter-spacing:-.01em; }
+  .note-cell p { font-size:14px; line-height:1.65; color:rgba(255,255,255,.72); }
+  .note-cell.ai-side p { color:rgba(255,255,255,.5); }
+  .note-cell.ai-side .topic { color:#9a9aa8; }
+
+  @media (max-width:980px){ .compare,.note-grid{ grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <div class="eyebrow">DESIGN CRITIQUE · 2026.06.04</div>
+  <h1>"AI가 만든 거 아니냐"에 대한 답</h1>
+  <p>왼쪽은 AI에게 <span class="accent">"NASA 우주 앱 홈 화면 만들어줘"</span> 한 줄 넣으면 나오는 디폴트 결과물입니다.
+  오른쪽은 실제 제출한 앱이고요. 같은 주제, 전혀 다른 결과 — <span class="accent">차이는 전부 의도적 결정</span>입니다.
+  AI는 결정을 안 합니다. 그냥 가장 흔한 패턴을 평균 내서 뱉을 뿐이죠.</p>
+</div>
+
+<div class="compare">
+  <!-- LEFT: AI SLOP -->
+  <div>
+    <div class="col-head">
+      <span class="tag ai">AI DEFAULT</span>
+      <h2>프롬프트 한 줄로 나오는 것</h2>
+      <span class="sub">generic slop</span>
+    </div>
+    <div class="phone">
+      <div class="ai-slop">
+        <div class="hero">
+          <div class="emoji">🚀✨🌌</div>
+          <h1>Explore the Universe</h1>
+          <p>Discover the wonders of space with NASA's amazing collection of stunning imagery and data! 🌟</p>
+          <a class="btn">Get Started →</a>
+        </div>
+
+        <div class="glass">
+          <div class="ico">🌠</div>
+          <span class="badge">FEATURED</span>
+          <h3>Astronomy Picture of the Day</h3>
+          <p>Explore breathtaking cosmic imagery captured by telescopes around the world. A new picture every single day!</p>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat"><div class="n">1000+</div><div class="l">Images</div></div>
+          <div class="stat"><div class="n">24/7</div><div class="l">Live</div></div>
+          <div class="stat"><div class="n">∞</div><div class="l">Discovery</div></div>
+        </div>
+
+        <div class="grid2">
+          <div class="glass"><div class="ico">🛰️</div><h3>Live</h3><p>Watch the ISS in real time</p></div>
+          <div class="glass"><div class="ico">🪐</div><h3>Planets</h3><p>Explore the solar system</p></div>
+          <div class="glass"><div class="ico">🌍</div><h3>Earth</h3><p>Beautiful views from space</p></div>
+          <div class="glass"><div class="ico">⭐</div><h3>Stars</h3><p>Deep field galaxies</p></div>
+        </div>
+
+        <div class="glass">
+          <div class="ico">🔭</div>
+          <h3>Mission Control</h3>
+          <p>Track all the exciting NASA missions happening right now across the cosmos! Click to learn more.</p>
+          <a class="btn" style="margin-top:14px;">Learn More</a>
+        </div>
+
+        <div class="footer">Made with ❤️ for space lovers · Powered by NASA API</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: REAL APP -->
+  <div>
+    <div class="col-head">
+      <span class="tag mine">MY DESIGN</span>
+      <h2>실제 제출한 앱</h2>
+      <span class="sub">today.html</span>
+    </div>
+    <div class="phone">
+      <iframe src="app/today.html" title="실제 NASA Today 앱"></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- ANNOTATIONS -->
+<div class="notes">
+  <h2>차이는 전부 "내가 내린 결정"입니다</h2>
+  <div class="note-grid">
+    <div class="note-cell h">AI 디폴트 — 결정을 회피한다</div>
+    <div class="note-cell h" style="color:#D92906;">내 결정 — 이유가 있다</div>
+
+    <div class="note-cell ai-side">
+      <div class="topic">보라색 그라데이션</div>
+      <p>"우주" = 보라/파랑 그라데이션. AI가 가장 많이 학습한 클리셰. 모든 AI 우주 앱이 똑같이 생김.</p>
+    </div>
+    <div class="note-cell">
+      <div class="topic">#08090c 플랫 다크 + NASA Red #D92906</div>
+      <p>그라데이션 금지. NASA 로고 실측에서 뽑은 단 하나의 액센트. SpaceX·Apple TV+ 시네마틱 톤을 레퍼런스로 정한 결과.</p>
+    </div>
+
+    <div class="note-cell ai-side">
+      <div class="topic">글래스모피즘 카드 전부</div>
+      <p>blur + 반투명 + 그림자. 2021년 디자인 트렌드를 무지성 반복. 위계도 없고 가독성도 떨어짐.</p>
+    </div>
+    <div class="note-cell">
+      <div class="topic">솔리드 면(#11141a) + 여백으로만 위계</div>
+      <p>stroke·border·glass 전부 제거. 카드 = 섹션 동일 톤, spacing으로만 분리. 8pt 그리드 일관 적용.</p>
+    </div>
+
+    <div class="note-cell ai-side">
+      <div class="topic">이모지 아이콘 🚀🪐⭐</div>
+      <p>OS마다 다르게 보이고 톤이 유치함. AI는 "아이콘 시스템"이라는 개념 자체가 없음.</p>
+    </div>
+    <div class="note-cell">
+      <div class="topic">Material Symbols 통일 (FILL=1)</div>
+      <p>전 화면 동일 아이콘 세트·웨이트. 12/14/16/18/22/24 사이즈 스케일 고정.</p>
+    </div>
+
+    <div class="note-cell ai-side">
+      <div class="topic">Arial / 시스템 폰트 1종</div>
+      <p>타이포 위계 없음. 본문도 데이터도 같은 폰트. 그라데이션 텍스트로 "예뻐 보이려" 함.</p>
+    </div>
+    <div class="note-cell">
+      <div class="topic">Pretendard + Space Mono 역할 분리</div>
+      <p>한글 본문은 따뜻한 Pretendard, 데이터·좌표·카운트다운은 차가운 Space Mono. 미션컨트롤 메타포.</p>
+    </div>
+
+    <div class="note-cell ai-side">
+      <div class="topic">"Explore the Universe! ✨"</div>
+      <p>영혼 없는 제네릭 카피. 누구나 쓸 수 있는, 아무 정보도 없는 마케팅 문구.</p>
+    </div>
+    <div class="note-cell">
+      <div class="topic">실제 NASA 데이터 + 타겟 카피</div>
+      <p>APOD·ISS 고도·NEO 거리(0.04 LD)·오늘 밤 하늘. "우주 덕후"라는 정의된 페르소나를 위한 정보 밀도.</p>
+    </div>
+
+    <div class="note-cell ai-side">
+      <div class="topic">가운데 정렬 + 똑같은 카드 반복</div>
+      <p>구조 없음. 모든 게 센터 정렬된 카드 나열. IA(정보구조)라는 개념이 없음.</p>
+    </div>
+    <div class="note-cell">
+      <div class="topic">8섹션 내러티브 + 4탭 IA</div>
+      <p>Hero→Live→일정→Sky Tonight→NEO→시선→Empty. 사용자 의도(Today/Explore/Live/Library)로 재편한 정보구조.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ EVIDENCE SECTIONS ============ -->
+<style>
+  .ev { max-width:1100px; margin:88px auto 0; }
+  .ev-head { margin-bottom:28px; }
+  .ev-head .k { font-family:ui-monospace,monospace; font-size:11px; letter-spacing:.18em; color:#D92906; margin-bottom:10px; }
+  .ev-head h2 { font-size:24px; font-weight:800; letter-spacing:-.02em; margin-bottom:10px; }
+  .ev-head p { font-size:14px; line-height:1.7; color:rgba(255,255,255,.58); max-width:720px; }
+  .ev-head p b { color:rgba(255,255,255,.9); font-weight:600; }
+
+  /* token kit */
+  .kit { background:#101116; border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:32px; }
+  .kit-block + .kit-block { margin-top:36px; padding-top:36px; border-top:1px solid rgba(255,255,255,.07); }
+  .kit-label { font-family:ui-monospace,monospace; font-size:11px; letter-spacing:.14em; color:#777; margin-bottom:18px; }
+  .swatches { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:14px; }
+  .sw { border-radius:10px; overflow:hidden; border:1px solid rgba(255,255,255,.08); }
+  .sw .chip { height:64px; }
+  .sw .meta { padding:10px 12px; background:#16171d; }
+  .sw .meta .nm { font-size:12px; font-weight:600; margin-bottom:3px; }
+  .sw .meta .hx { font-family:ui-monospace,monospace; font-size:11px; color:rgba(255,255,255,.5); }
+
+  .type-row { display:flex; align-items:baseline; gap:18px; padding:12px 0; border-bottom:1px solid rgba(255,255,255,.05); }
+  .type-row:last-child { border-bottom:0; }
+  .type-row .role { width:130px; flex-shrink:0; font-family:ui-monospace,monospace; font-size:11px; color:#777; letter-spacing:.08em; }
+  .type-row .spec { flex:1; }
+  .pre { font-family: 'Pretendard Variable', 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif; }
+  .mono { font-family:'Space Mono',ui-monospace,monospace; }
+
+  .spacing-scale { display:flex; align-items:flex-end; gap:10px; }
+  .sp { text-align:center; }
+  .sp .bar { background:#D92906; border-radius:3px 3px 0 0; width:30px; }
+  .sp .v { font-family:ui-monospace,monospace; font-size:10px; color:rgba(255,255,255,.45); margin-top:6px; }
+
+  .comp-row { display:flex; flex-wrap:wrap; gap:14px; align-items:center; }
+  .demo-card { background:#11141a; border-radius:8px; padding:18px 20px; min-width:200px; }
+  .demo-card .ch { font-family:ui-monospace,monospace; font-size:10px; color:#D92906; letter-spacing:.1em; margin-bottom:8px; }
+  .demo-card .ct { font-size:15px; font-weight:600; }
+  .demo-btn { background:#D92906; color:#fff; border-radius:8px; height:46px; padding:0 26px; display:inline-flex; align-items:center; font-weight:600; font-size:14px; }
+  .demo-pill { display:inline-flex; align-items:center; gap:6px; background:#11141a; border-radius:100px; padding:7px 14px; font-family:'Space Mono',monospace; font-size:11px; color:rgba(255,255,255,.7); }
+  .demo-pill::before { content:""; width:6px; height:6px; border-radius:50%; background:#D92906; }
+  .demo-badge { background:#D92906; color:#fff; font-family:'Space Mono',monospace; font-size:10px; font-weight:700; letter-spacing:.08em; padding:4px 9px; border-radius:4px; }
+
+  /* AI side contrast strip */
+  .contrast-strip { display:grid; grid-template-columns:1fr 1fr; gap:1px; margin-top:20px; background:rgba(255,255,255,.08); border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,.08); }
+  .cs { padding:20px 22px; background:#101116; }
+  .cs .h { font-family:ui-monospace,monospace; font-size:10px; letter-spacing:.12em; margin-bottom:10px; }
+  .cs.bad { background:#0e0a14; }
+  .cs.bad .h { color:#9a9aa8; }
+  .cs.good .h { color:#D92906; }
+  .cs code { font-family:ui-monospace,monospace; font-size:11px; line-height:1.9; color:rgba(255,255,255,.6); display:block; white-space:pre-wrap; }
+  .cs.bad code { color:rgba(255,255,255,.4); }
+
+  /* explorations gallery */
+  .expl-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:12px; }
+  .expl { background:#101116; border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:16px; }
+  .expl .fn { font-family:ui-monospace,monospace; font-size:11px; color:#D92906; margin-bottom:6px; word-break:break-all; }
+  .expl .ds { font-size:12px; color:rgba(255,255,255,.55); line-height:1.5; }
+
+  /* timeline */
+  .tl { border-left:2px solid rgba(255,255,255,.1); margin-left:8px; padding-left:24px; }
+  .tl-item { position:relative; padding-bottom:26px; }
+  .tl-item::before { content:""; position:absolute; left:-31px; top:4px; width:10px; height:10px; border-radius:50%; background:#D92906; box-shadow:0 0 0 4px #0c0d10; }
+  .tl-item .dt { font-family:ui-monospace,monospace; font-size:11px; color:#D92906; letter-spacing:.06em; margin-bottom:5px; }
+  .tl-item .tx { font-size:14px; line-height:1.6; color:rgba(255,255,255,.78); }
+  .tl-item .tx b { color:#fff; }
+
+  /* accent journey */
+  .journey { display:flex; align-items:center; gap:0; margin-top:8px; flex-wrap:wrap; }
+  .jstep { display:flex; align-items:center; gap:14px; }
+  .jchip { width:54px; height:54px; border-radius:10px; flex-shrink:0; }
+  .jchip-meta .jh { font-family:ui-monospace,monospace; font-size:12px; font-weight:600; }
+  .jchip-meta .jl { font-size:11px; color:rgba(255,255,255,.5); margin-top:2px; }
+  .jarrow { color:rgba(255,255,255,.3); font-size:20px; margin:0 18px; }
+  .jstep.final .jh { color:#D92906; }
+
+  @media (max-width:980px){ .contrast-strip{ grid-template-columns:1fr; } .journey{ flex-direction:column; align-items:flex-start; gap:14px; } .jarrow{ transform:rotate(90deg); margin:0 0 0 18px; } }
+</style>
+
+<!-- 1. UI KIT -->
+<section class="ev">
+  <div class="ev-head">
+    <div class="k">EVIDENCE 01 · DESIGN SYSTEM</div>
+    <h2>이건 "예쁜 화면"이 아니라 UI 키트입니다</h2>
+    <p>화면 하나를 그린 게 아니라 <b>토큰 시스템을 먼저 정의하고</b> 거기서 모든 화면을 조립했습니다.
+    아래 토큰들은 <b>4개 탭 HTML 전부에 동일하게 정의</b>돼 있습니다 — 색을 바꾸려면 한 군데만 고치면 전 화면이 따라옵니다.
+    AI 슬롭에는 토큰이 없습니다. 매 요소마다 즉흥적인 hex가 인라인으로 박힐 뿐이죠.</p>
+  </div>
+
+  <div class="kit">
+    <!-- color tokens -->
+    <div class="kit-block">
+      <div class="kit-label">COLOR TOKENS — 면 / 텍스트 / 상태</div>
+      <div class="swatches">
+        <div class="sw"><div class="chip" style="background:#08090c"></div><div class="meta"><div class="nm">bg-primary</div><div class="hx">#08090c</div></div></div>
+        <div class="sw"><div class="chip" style="background:#11141a"></div><div class="meta"><div class="nm">bg-section / card</div><div class="hx">#11141a</div></div></div>
+        <div class="sw"><div class="chip" style="background:#161a22"></div><div class="meta"><div class="nm">bg-card-strong</div><div class="hx">#161a22</div></div></div>
+        <div class="sw"><div class="chip" style="background:#D92906"></div><div class="meta"><div class="nm">accent · NASA Red</div><div class="hx">#D92906</div></div></div>
+        <div class="sw"><div class="chip" style="background:#4ADE80"></div><div class="meta"><div class="nm">success</div><div class="hx">#4ADE80</div></div></div>
+        <div class="sw"><div class="chip" style="background:#FBBF24"></div><div class="meta"><div class="nm">warning</div><div class="hx">#FBBF24</div></div></div>
+        <div class="sw"><div class="chip" style="background:#fff"></div><div class="meta"><div class="nm">text-primary</div><div class="hx">#ffffff</div></div></div>
+        <div class="sw"><div class="chip" style="background:rgba(255,255,255,.65)"></div><div class="meta"><div class="nm">text-muted</div><div class="hx">white / 65%</div></div></div>
+      </div>
+    </div>
+
+    <!-- typography -->
+    <div class="kit-block">
+      <div class="kit-label">TYPOGRAPHY — 역할 분리 (한글 본문 ↔ 영문 데이터)</div>
+      <div class="type-row"><div class="role">HERO · Pretendard</div><div class="spec pre" style="font-size:26px;font-weight:800;letter-spacing:-.02em;">내 손안의 우주 관제센터</div></div>
+      <div class="type-row"><div class="role">BODY · Pretendard</div><div class="spec pre" style="font-size:15px;color:rgba(255,255,255,.75);">오늘 밤, 토성이 가장 잘 보입니다. 남동쪽 하늘을 올려다보세요.</div></div>
+      <div class="type-row"><div class="role">DATA · Space Mono</div><div class="spec mono" style="font-size:15px;color:rgba(255,255,255,.85);">ALT 408 KM · VEL 27,500 KM/H · 0.04 LD</div></div>
+      <div class="type-row"><div class="role">META · Space Mono</div><div class="spec mono" style="font-size:12px;letter-spacing:.06em;color:rgba(255,255,255,.5);">● APOD · 2026.05.28 · HUBBLE</div></div>
+    </div>
+
+    <!-- spacing -->
+    <div class="kit-block">
+      <div class="kit-label">SPACING — 8pt 그리드 (4 / 8 / 12 / 16 / 24 / 32 / 48 / 64)</div>
+      <div class="spacing-scale">
+        <div class="sp"><div class="bar" style="height:4px"></div><div class="v">4</div></div>
+        <div class="sp"><div class="bar" style="height:8px"></div><div class="v">8</div></div>
+        <div class="sp"><div class="bar" style="height:12px"></div><div class="v">12</div></div>
+        <div class="sp"><div class="bar" style="height:16px"></div><div class="v">16</div></div>
+        <div class="sp"><div class="bar" style="height:24px"></div><div class="v">24</div></div>
+        <div class="sp"><div class="bar" style="height:32px"></div><div class="v">32</div></div>
+        <div class="sp"><div class="bar" style="height:48px"></div><div class="v">48</div></div>
+        <div class="sp"><div class="bar" style="height:64px"></div><div class="v">64</div></div>
+      </div>
+    </div>
+
+    <!-- components -->
+    <div class="kit-block">
+      <div class="kit-label">COMPONENTS — 전 화면 공유 (rounded 8px · border 금지 · 면+여백 위계)</div>
+      <div class="comp-row">
+        <div class="demo-card"><div class="ch">SECTION CARD</div><div class="ct">오늘 밤 하늘</div></div>
+        <span class="demo-btn">설명 읽기</span>
+        <span class="demo-pill">LIVE NOW</span>
+        <span class="demo-badge">D-1</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- token contrast -->
+  <div class="contrast-strip">
+    <div class="cs bad">
+      <div class="h">AI 슬롭 — 토큰 없음, 매번 즉흥 hex</div>
+      <code>background:linear-gradient(160deg,#1a0b3d,#6b2c91);
+background:rgba(255,255,255,.1);
+color:#c4b5fd;  /* 이 보라는 어디서 왔나? */
+border:1px solid rgba(255,255,255,.2);
+/* 다음 화면엔 또 다른 보라가 나옴 */</code>
+    </div>
+    <div class="cs good">
+      <div class="h">내 시스템 — 토큰 참조, 전 화면 동기화</div>
+      <code>:root{ --accent:#D92906; --bg-card:#11141a; }
+background:var(--bg-card);
+color:var(--text-muted);
+/* border 금지 — 면+여백으로만 위계 */
+/* 토큰 한 줄 고치면 전 화면이 따라옴 */</code>
+    </div>
+  </div>
+</section>
+
+<!-- 2. ITERATION -->
+<section class="ev">
+  <div class="ev-head">
+    <div class="k">EVIDENCE 02 · ITERATION</div>
+    <h2>기획은 한 번에 안 나옵니다 — 버린 것들이 증거입니다</h2>
+    <p>AI는 첫 출력이 최종 출력입니다. 사람은 <b>탐색하고, 비교하고, 버립니다.</b>
+    아래는 실제 프로젝트 폴더에 남아있는 <b>탐색 변형본 9개</b>입니다 — 폰트 페어링만 5번 시도했습니다.
+    살아남은 한 조합을 위해 4개를 버렸다는 뜻이죠.</p>
+  </div>
+
+  <div class="expl-grid">
+    <div class="expl"><div class="fn">font-pairing.html</div><div class="ds">폰트 페어링 1차 — 후보 조합 탐색</div></div>
+    <div class="expl"><div class="fn">font-pairing-v2.html</div><div class="ds">2차 — 위계 비율 조정</div></div>
+    <div class="expl"><div class="fn">font-pairing-v3.html</div><div class="ds">3차 — 최종 후보 압축</div></div>
+    <div class="expl"><div class="fn">font-pairing-spacemono.html</div><div class="ds">Space Mono 데이터 톤 검증</div></div>
+    <div class="expl"><div class="fn">font-pairing-spacemono-mono.html</div><div class="ds">모노 전면 적용 실험 → 폐기</div></div>
+    <div class="expl"><div class="fn">bg-options.html</div><div class="ds">배경 다크 톤 옵션 비교</div></div>
+    <div class="expl"><div class="fn">hero-options.html</div><div class="ds">Hero 레이아웃 변형 탐색</div></div>
+    <div class="expl"><div class="fn">keyword-options.html</div><div class="ds">키워드 섹션 카피/구성 옵션</div></div>
+    <div class="expl"><div class="fn">keyword-section-options.html</div><div class="ds">키워드 섹션 2차 변형</div></div>
+  </div>
+
+  <div class="ev-head" style="margin-top:40px;margin-bottom:20px;">
+    <div class="k">ACCENT COLOR — 3번 바꿔 확정</div>
+    <p>"빨강이니까 빨강" 이 아니라, <b>NASA 로고 실측 톤</b>에 맞을 때까지 세 번 바꿨습니다.</p>
+  </div>
+  <div class="journey">
+    <div class="jstep"><div class="jchip" style="background:#FC3D21"></div><div class="jchip-meta"><div class="jh">#FC3D21</div><div class="jl">미트볼 톤 (초기)</div></div></div>
+    <span class="jarrow">→</span>
+    <div class="jstep"><div class="jchip" style="background:#E4002B"></div><div class="jchip-meta"><div class="jh">#E4002B</div><div class="jl">너무 선명 — 폐기</div></div></div>
+    <span class="jarrow">→</span>
+    <div class="jstep final"><div class="jchip" style="background:#D92906"></div><div class="jchip-meta"><div class="jh">#D92906 ✓</div><div class="jl">로고 실측 — 확정</div></div></div>
+  </div>
+</section>
+
+<!-- 3. IA / decision log -->
+<section class="ev">
+  <div class="ev-head">
+    <div class="k">EVIDENCE 03 · INFORMATION ARCHITECTURE</div>
+    <h2>화면을 그리기 전에 구조를 다시 짰습니다</h2>
+    <p>현재 NASA 앱은 <b>콘텐츠 타입</b>으로 나뉜 5탭(Image/Video/News)입니다.
+    저는 이걸 <b>사용자 의도</b> 기반 4탭으로 재편했습니다 — Today / Explore / Live / Library, 총 30개 노드.
+    이건 디자인이 아니라 <b>정보설계</b>고, AI가 절대 자발적으로 하지 않는 작업입니다.</p>
+  </div>
+
+  <div class="tl">
+    <div class="tl-item"><div class="dt">2026.05.07</div><div class="tx"><b>IA 확정</b> — 5탭(콘텐츠 타입) → 4탭(사용자 의도)로 재편 결정. "우주 덕후" 페르소나 정의.</div></div>
+    <div class="tl-item"><div class="dt">2026.05.10</div><div class="tx"><b>현재 앱 정밀 분석</b> — NASA 공식 앱 전수 캡처 + 문제점 감사 문서(Current State Audit) 작성.</div></div>
+    <div class="tl-item"><div class="dt">2026.05.21</div><div class="tx"><b>디자인 시스템 토큰 통일</b> — 액센트 #D92906 확정, Pretendard + Space Mono 역할 분리 확립. 활성 HTML 17개 일괄 정비.</div></div>
+    <div class="tl-item"><div class="dt">2026.05.28</div><div class="tx"><b>흩어진 NASA 자산 통합</b> — APOD·Eyes·DSN·Mars Raw 등 메인 앱 밖 11개 "히든 젬"을 새 IA로 흡수. Mission Control 대시보드 신설.</div></div>
+    <div class="tl-item"><div class="dt">2026.06.03</div><div class="tx"><b>전수 정리 + 웹 배포</b> — 파일 구조 정리, 깨진 참조 복구, shonyechan.com 라이브 배포.</div></div>
+  </div>
+
+  <p style="margin-top:32px;font-size:15px;line-height:1.8;color:rgba(255,255,255,.7);max-width:760px;">
+    <b style="color:#D92906;">핵심:</b> AI는 "NASA 앱 만들어줘" 한 문장에 즉시 답합니다.
+    저는 <b style="color:#fff;">한 달간 분석 → 구조 재설계 → 토큰 시스템 → 9번의 탐색 → 3번의 색 결정</b>을 거쳤습니다.
+    왼쪽 위 보라색 화면이 "AI가 만들면 나오는 것"이고, 그 모든 결정의 합이 오른쪽 앱입니다.
+  </p>
+</section>
+
+<!-- ============ EVIDENCE 04-08 ============ -->
+<style>
+  /* before / after */
+  .ba { display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:start; }
+  .ba-side .ba-tag { font-family:ui-monospace,monospace; font-size:11px; letter-spacing:.12em; margin-bottom:14px; display:inline-block; padding:5px 10px; border-radius:4px; }
+  .ba-tag.before { background:rgba(255,255,255,.08); color:#999; }
+  .ba-tag.after { background:#D92906; color:#fff; }
+  .ba-shots { display:flex; gap:12px; }
+  .ba-shots img { width:100%; max-width:160px; border-radius:14px; border:1px solid rgba(255,255,255,.1); display:block; }
+  .ba-cap { font-size:13px; line-height:1.6; color:rgba(255,255,255,.55); margin-top:14px; }
+  .ba-cap b { color:rgba(255,255,255,.85); }
+  .ba-phone { width:300px; height:610px; border-radius:34px; overflow:hidden; border:9px solid #1c1c1f; box-shadow:0 30px 70px rgba(0,0,0,.55); background:#000; }
+  .ba-phone iframe { width:375px; height:740px; border:0; transform:scale(.8); transform-origin:top left; }
+
+  /* multiscreen row */
+  .screens-row { display:flex; gap:20px; overflow-x:auto; padding:8px 4px 20px; }
+  .mini-phone { flex-shrink:0; }
+  .mini-phone .frame { width:220px; height:446px; border-radius:26px; overflow:hidden; border:7px solid #1c1c1f; box-shadow:0 22px 50px rgba(0,0,0,.5); background:#000; }
+  .mini-phone iframe { width:375px; height:760px; border:0; transform:scale(.5867); transform-origin:top left; }
+  .mini-phone .lbl { text-align:center; margin-top:12px; font-family:ui-monospace,monospace; font-size:11px; letter-spacing:.1em; color:rgba(255,255,255,.55); }
+  .mini-phone .lbl b { color:#D92906; }
+
+  /* research map */
+  .gems { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:1px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.08); border-radius:12px; overflow:hidden; }
+  .gem { background:#101116; padding:18px 20px; }
+  .gem .src { font-family:ui-monospace,monospace; font-size:11px; color:#D92906; margin-bottom:6px; letter-spacing:.04em; }
+  .gem .dsc { font-size:13px; color:rgba(255,255,255,.62); line-height:1.5; margin-bottom:10px; }
+  .gem .to { font-size:12px; color:rgba(255,255,255,.45); }
+  .gem .to b { color:rgba(255,255,255,.8); font-weight:600; }
+
+  /* interaction states */
+  .states { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; }
+  .state-card { background:#101116; border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:20px; }
+  .state-card .nm { font-size:14px; font-weight:700; margin-bottom:4px; }
+  .state-card .fl { font-family:ui-monospace,monospace; font-size:11px; color:#D92906; margin-bottom:14px; }
+  .state-vis { display:flex; align-items:center; gap:10px; }
+  .sv-btn { width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .sv-arrow { color:rgba(255,255,255,.3); }
+  .sv-lbl { font-size:12px; color:rgba(255,255,255,.6); }
+
+  /* benchmark */
+  .bench { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:14px; }
+  .bm { background:#101116; border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:20px; }
+  .bm .ref { font-size:15px; font-weight:700; margin-bottom:4px; }
+  .bm .cat { font-family:ui-monospace,monospace; font-size:10px; color:#777; letter-spacing:.1em; margin-bottom:12px; }
+  .bm .arrow { color:#D92906; font-size:12px; margin-bottom:4px; }
+  .bm .dec { font-size:13px; line-height:1.55; color:rgba(255,255,255,.7); }
+
+  @media (max-width:980px){ .ba{ grid-template-columns:1fr; } }
+</style>
+
+<!-- 4. BEFORE / AFTER -->
+<section class="ev">
+  <div class="ev-head">
+    <div class="k">EVIDENCE 04 · REDESIGN (BEFORE / AFTER)</div>
+    <h2>"새로 만든 것"이 아니라 "다시 설계한 것"입니다</h2>
+    <p>AI는 무에서 그럴듯한 화면을 생성합니다. 저는 <b>현존하는 NASA 공식 앱을 전수 분석</b>하고,
+    그 구조적 문제(카탈로그형 정부 사이트 구조)를 진단한 뒤 다시 설계했습니다.
+    리디자인은 <b>기준점이 있는 작업</b>이고, 그게 AI 생성물과의 결정적 차이입니다.</p>
+  </div>
+  <div class="ba">
+    <div class="ba-side">
+      <span class="ba-tag before">BEFORE · 현재 NASA 공식 앱</span>
+      <div class="ba-shots">
+        <img src="legacy/IMG_9439.PNG" alt="현재 NASA 앱 1" loading="lazy">
+        <img src="legacy/IMG_9445.PNG" alt="현재 NASA 앱 2" loading="lazy">
+        <img src="legacy/IMG_9452.PNG" alt="현재 NASA 앱 3" loading="lazy">
+      </div>
+      <div class="ba-cap"><b>진단:</b> 5탭 콘텐츠 카탈로그. 평면 그리드에 썸네일이 나열될 뿐,
+      NASA가 가진 압도적 콘텐츠 자산(APOD 30년치·실시간 ISS·화성 사진)이 묻혀 있음. "지금" 감각도, 몰입도 없음.</div>
+    </div>
+    <div class="ba-side">
+      <span class="ba-tag after">AFTER · 리뉴얼</span>
+      <div class="ba-phone"><iframe src="app/today.html" title="리뉴얼 Today" loading="lazy"></iframe></div>
+      <div class="ba-cap"><b>처방:</b> 풀블리드 시네마틱 + 큐레이티드 피드. 사용자 의도 기반 4탭으로 재편하고,
+      흩어진 NASA 자산을 메인으로 끌어옴. 카탈로그 → <b>매일 찾아오는 데일리 의식</b>으로 전환.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 5. MULTI-SCREEN SYSTEM -->
+<section class="ev">
+  <div class="ev-head">
+    <div class="k">EVIDENCE 05 · SYSTEM CONSISTENCY</div>
+    <h2>한 화면 운빨이 아니라, 4개 탭이 같은 언어를 씁니다</h2>
+    <p>AI는 화면 하나를 뽑습니다. 두 번째 화면을 시키면 톤이 어긋나죠.
+    제 앱은 <b>4개 메인 탭 + 서브페이지까지 8개 화면</b>이 동일한 토큰·아이콘·섹션 헤더·간격 시스템을 공유합니다.
+    아래 네 화면을 나란히 보면 — <b>같은 손에서 나온 게 보입니다.</b></p>
+  </div>
+  <div class="screens-row">
+    <div class="mini-phone"><div class="frame"><iframe src="app/today.html" loading="lazy"></iframe></div><div class="lbl"><b>01</b> TODAY</div></div>
+    <div class="mini-phone"><div class="frame"><iframe src="app/explore.html" loading="lazy"></iframe></div><div class="lbl"><b>02</b> EXPLORE</div></div>
+    <div class="mini-phone"><div class="frame"><iframe src="app/live.html" loading="lazy"></iframe></div><div class="lbl"><b>03</b> LIVE</div></div>
+    <div class="mini-phone"><div class="frame"><iframe src="app/library.html" loading="lazy"></iframe></div><div class="lbl"><b>04</b> LIBRARY</div></div>
+  </div>
+</section>
+
+<!-- 6. CONTENT RESEARCH -->
+<section class="ev">
+  <div class="ev-head">
+    <div class="k">EVIDENCE 06 · CONTENT RESEARCH</div>
+    <h2>콘텐츠를 지어내지 않고, 실재하는 자산을 발굴했습니다</h2>
+    <p>AI 슬롭의 "1000+ Images · ∞ Discovery"는 <b>가짜 숫자</b>입니다. 아무 의미 없는 채움이죠.
+    저는 NASA가 실제로 운영하지만 <b>메인 앱 밖에 흩어져 있는 11개 자산</b>을 찾아내고, 각각을 새 IA의 어느 자리로 끌어올지 매핑했습니다.</p>
+  </div>
+  <div class="gems">
+    <div class="gem"><div class="src">APOD · 1995~</div><div class="dsc">30년간 매일 1장. 천문 사진 아카이브.</div><div class="to">→ <b>Today · Hero 카드</b></div></div>
+    <div class="gem"><div class="src">ISS Live Cam</div><div class="dsc">YouTube 실시간 지구 관측 캠.</div><div class="to">→ <b>Live · 메인 플레이어</b></div></div>
+    <div class="gem"><div class="src">DSN Now</div><div class="dsc">Deep Space Network 실시간 통신 현황.</div><div class="to">→ <b>Live · 안테나 3-col</b></div></div>
+    <div class="gem"><div class="src">NASA's Eyes</div><div class="dsc">3D 인터랙티브 (태양계/지구/외계행성).</div><div class="to">→ <b>Explore · Universe Map</b></div></div>
+    <div class="gem"><div class="src">Mars Rover Raw</div><div class="dsc">화성에서 매일 송신되는 원본 사진.</div><div class="to">→ <b>Today · 오늘의 시선</b></div></div>
+    <div class="gem"><div class="src">Earth Observatory</div><div class="dsc">지구 관측 Image of the Day.</div><div class="to">→ <b>Today · 2-col 포스터</b></div></div>
+    <div class="gem"><div class="src">Spot the Station</div><div class="dsc">ISS 통과 시각 알림.</div><div class="to">→ <b>Today · Sky Tonight</b></div></div>
+    <div class="gem"><div class="src">Near-Earth Objects</div><div class="dsc">지구 근접 천체 거리/속도 데이터.</div><div class="to">→ <b>Today · NEO 리스트</b></div></div>
+    <div class="gem"><div class="src">NASA+ Originals</div><div class="dsc">Cosmic Dawn 등 오리지널 영상.</div><div class="to">→ <b>Explore · Related Videos</b></div></div>
+    <div class="gem"><div class="src">Astronaut Photography</div><div class="dsc">우주비행사가 ISS에서 찍은 사진.</div><div class="to">→ <b>Library · Memories</b></div></div>
+    <div class="gem"><div class="src">JWST / Hubble</div><div class="dsc">우주망원경 딥필드 이미지 아카이브.</div><div class="to">→ <b>Library · Collections</b></div></div>
+  </div>
+</section>
+
+<!-- 7. INTERACTION DESIGN -->
+<section class="ev">
+  <div class="ev-head">
+    <div class="k">EVIDENCE 07 · INTERACTION</div>
+    <h2>정적인 그림이 아니라, 상태가 설계돼 있습니다</h2>
+    <p>AI 슬롭은 멈춰 있는 목업입니다. 누르면 아무 일도 안 일어나죠.
+    제 화면엔 <b>실제 동작하는 상태 전이</b>가 들어있습니다 — 누르고, 토글하고, 펼치고, 실시간으로 갱신됩니다.</p>
+  </div>
+  <div class="states">
+    <div class="state-card">
+      <div class="nm">APOD 더블탭 저장</div>
+      <div class="fl">today.html</div>
+      <div class="state-vis">
+        <div class="sv-btn" style="background:#11141a;color:rgba(255,255,255,.5)">♡</div>
+        <span class="sv-arrow">→</span>
+        <div class="sv-btn" style="background:#D92906;color:#fff">♥</div>
+        <span class="sv-lbl">.saved 토글</span>
+      </div>
+    </div>
+    <div class="state-card">
+      <div class="nm">Ambient 사운드 토글</div>
+      <div class="fl">live.html</div>
+      <div class="state-vis">
+        <div class="sv-btn" style="background:#11141a;color:rgba(255,255,255,.5)">♪</div>
+        <span class="sv-arrow">→</span>
+        <div class="sv-btn" style="background:#D92906;color:#fff">♪</div>
+        <span class="sv-lbl">배너 슬라이드 인</span>
+      </div>
+    </div>
+    <div class="state-card">
+      <div class="nm">Upcoming Launches 전개</div>
+      <div class="fl">explore.html</div>
+      <div class="state-vis">
+        <span class="sv-lbl">2개 표시</span>
+        <span class="sv-arrow">→</span>
+        <span class="sv-lbl" style="color:#D92906">＋3개 (.expanded)</span>
+      </div>
+    </div>
+    <div class="state-card">
+      <div class="nm">UTC 실시간 시계</div>
+      <div class="fl">live.html</div>
+      <div class="state-vis">
+        <span class="mono" style="font-size:14px;color:rgba(255,255,255,.85)">14:32:07</span>
+        <span class="sv-arrow">↻</span>
+        <span class="sv-lbl">setInterval 1s</span>
+      </div>
+    </div>
+    <div class="state-card">
+      <div class="nm">큐레이터 노트 토글</div>
+      <div class="fl">library-viewer.html</div>
+      <div class="state-vis">
+        <span class="sv-lbl">메타만</span>
+        <span class="sv-arrow">→</span>
+        <span class="sv-lbl" style="color:#D92906">Stats·Quote·Credits 확장</span>
+      </div>
+    </div>
+    <div class="state-card">
+      <div class="nm">Lazy load (IntersectionObserver)</div>
+      <div class="fl">전 화면 공통</div>
+      <div class="state-vis">
+        <span class="sv-lbl">data-bg</span>
+        <span class="sv-arrow">→</span>
+        <span class="sv-lbl" style="color:#D92906">뷰포트 진입 시 로드</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8. BENCHMARK -->
+<section class="ev">
+  <div class="ev-head">
+    <div class="k">EVIDENCE 08 · BENCHMARK</div>
+    <h2>레퍼런스를 분석해서 결정의 근거로 삼았습니다</h2>
+    <p>각 디자인 결정엔 출처가 있습니다. "그냥 멋있어서"가 아니라,
+    <b>검증된 제품에서 무엇을 왜 가져왔는지</b>가 명확합니다. AI는 레퍼런스를 분석하지 않습니다 — 평균을 흉내 낼 뿐이죠.</p>
+  </div>
+  <div class="bench">
+    <div class="bm"><div class="ref">SpaceX</div><div class="cat">WEBSITE</div><div class="arrow">↳ 가져온 것</div><div class="dec">다크 + 우주 시네마틱의 정점. 풀블리드 이미지 + 절제된 타이포.</div></div>
+    <div class="bm"><div class="ref">Apple TV+</div><div class="cat">STREAMING</div><div class="arrow">↳ 가져온 것</div><div class="dec">다크 모드 시네마틱 UI 교과서. 포스터 위계, 가로 스크롤 레일.</div></div>
+    <div class="bm"><div class="ref">Sky Guide</div><div class="cat">ASTRONOMY APP</div><div class="arrow">↳ 가져온 것</div><div class="dec">미니멀 다크 천문 앱 — 가장 가까운 직접 경쟁자. 정보 밀도와 절제.</div></div>
+    <div class="bm"><div class="ref">Headspace</div><div class="cat">WELLNESS</div><div class="arrow">↳ 가져온 것</div><div class="dec">Today 탭의 "데일리 의식" 컨셉. 매일 찾아오는 리듬.</div></div>
+    <div class="bm"><div class="ref">Bloomberg / CNBC</div><div class="cat">DATA / LIVE</div><div class="arrow">↳ 가져온 것</div><div class="dec">Live 탭의 텔레메트리 HUD. 실시간 데이터를 모노 폰트로.</div></div>
+    <div class="bm"><div class="ref">Apple Photos Memories</div><div class="cat">GALLERY</div><div class="arrow">↳ 가져온 것</div><div class="dec">Library의 큐레이티드 카로셀. 평면 그리드 대신 기억의 묶음.</div></div>
+  </div>
+
+  <p style="margin-top:36px;font-size:15px;line-height:1.8;color:rgba(255,255,255,.7);max-width:760px;">
+    <b style="color:#D92906;">결론.</b> AI는 <b style="color:#fff;">결정·근거·과정·기준점</b>이 없습니다 — 평균을 한 번에 뱉습니다.
+    이 페이지의 8개 증거는 전부 그 4가지가 존재한다는 기록입니다.
+    그게 "AI가 만들었냐"에 대한 답입니다.
+  </p>
+</section>
+
+<!-- ============ EVIDENCE 09-10 ============ -->
+<style>
+  /* copywriting */
+  .copy-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.08); border-radius:14px; overflow:hidden; }
+  .copy-col { background:#101116; padding:26px 28px; }
+  .copy-col .ch { font-family:ui-monospace,monospace; font-size:11px; letter-spacing:.12em; color:#777; margin-bottom:4px; }
+  .copy-col .cr { font-size:13px; color:#D92906; margin-bottom:22px; font-weight:600; }
+  .copy-ex { padding:14px 0; border-bottom:1px solid rgba(255,255,255,.06); }
+  .copy-ex:last-child { border-bottom:0; }
+  .copy-ex .ko { font-family: 'Pretendard Variable', 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif; font-size:16px; line-height:1.5; color:rgba(255,255,255,.92); }
+  .copy-ex .en { font-family:'Space Mono',ui-monospace,monospace; font-size:14px; color:rgba(255,255,255,.85); letter-spacing:0; }
+  .copy-ex .note { font-size:11px; color:rgba(255,255,255,.4); margin-top:6px; }
+  .copy-rule { margin-top:22px; padding:18px 20px; background:#16171d; border-radius:10px; font-size:13px; line-height:1.7; color:rgba(255,255,255,.65); }
+  .copy-rule b { color:#fff; }
+
+  /* accessibility opacity ladder */
+  .opacity-ladder { display:flex; flex-direction:column; gap:0; background:#08090c; border-radius:14px; overflow:hidden; border:1px solid rgba(255,255,255,.08); }
+  .op-row { display:flex; align-items:center; gap:20px; padding:16px 24px; }
+  .op-row .sample { font-size:17px; font-weight:600; flex:1; }
+  .op-row .tok { font-family:ui-monospace,monospace; font-size:11px; color:rgba(255,255,255,.45); width:120px; }
+  .op-row .use { font-size:12px; color:rgba(255,255,255,.4); width:160px; text-align:right; }
+  .a11y-note { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; margin-top:20px; }
+  .a11y-card { background:#101116; border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:18px 20px; }
+  .a11y-card .t { font-size:13px; font-weight:700; color:#D92906; margin-bottom:6px; }
+  .a11y-card p { font-size:13px; line-height:1.55; color:rgba(255,255,255,.6); }
+</style>
+
+<!-- 9. COPYWRITING -->
+<section class="ev">
+  <div class="ev-head">
+    <div class="k">EVIDENCE 09 · COPYWRITING SYSTEM</div>
+    <h2>글자에도 규칙이 있습니다 — 두 개의 목소리</h2>
+    <p>AI 슬롭의 "Discover the wonders of space! 🌟"는 <b>목소리가 하나</b>입니다 — 들뜬 마케팅 톤.
+    제 카피는 <b>두 목소리를 의도적으로 분리</b>했습니다. 한글 본문은 따뜻하고 시적(Pretendard),
+    영문 데이터는 차갑고 정확(Space Mono). 미션 컨트롤이 시(詩)를 읽어주는 느낌이죠.</p>
+  </div>
+  <div class="copy-grid">
+    <div class="copy-col">
+      <div class="ch">VOICE A · 한글 본문</div>
+      <div class="cr">따뜻하고 시적 · Pretendard</div>
+      <div class="copy-ex"><div class="ko">오늘 밤, 토성이 가장 잘 보입니다.</div><div class="note">정보를 감정으로 — "데이터" 아닌 "초대"</div></div>
+      <div class="copy-ex"><div class="ko">내 손안의 우주 관제센터</div><div class="note">제품 슬로건 — 소유감 + 권위</div></div>
+      <div class="copy-ex"><div class="ko">지구를 스치는 것들</div><div class="note">NEO 섹션 제목 — 기술 용어를 시어로</div></div>
+      <div class="copy-ex"><div class="ko">오늘의 시선</div><div class="note">이미지 섹션 — 누가 무엇을 봤는가</div></div>
+    </div>
+    <div class="copy-col">
+      <div class="ch">VOICE B · 영문 데이터</div>
+      <div class="cr">차갑고 정확 · Space Mono</div>
+      <div class="copy-ex"><div class="en">0.04 LD · 27,500 KM/H</div><div class="note">NEO 데이터 — 단위까지 정확하게</div></div>
+      <div class="copy-ex"><div class="en">● APOD · 2026.05.28</div><div class="note">메타 pill — 출처 + 날짜</div></div>
+      <div class="copy-ex"><div class="en">ALT 408 KM · VEL 27,500</div><div class="note">텔레메트리 — 관제 화면 그대로</div></div>
+      <div class="copy-ex"><div class="en">UPDATED 12s AGO · DSN GOLDSTONE</div><div class="note">실시간 동기화 — 신뢰의 디테일</div></div>
+    </div>
+  </div>
+  <div class="copy-rule">
+    <b>철칙:</b> 한글 본문에 절대 모노를 쓰지 않는다. 영문 데이터에 절대 본문 폰트를 쓰지 않는다.
+    이 한 줄 규칙이 전 화면의 카피 톤을 통제합니다 — AI에겐 이런 규칙 자체가 없습니다.
+  </div>
+</section>
+
+<!-- 10. ACCESSIBILITY -->
+<section class="ev">
+  <div class="ev-head">
+    <div class="k">EVIDENCE 10 · ACCESSIBILITY & CONTRAST</div>
+    <h2>위계는 색이 아니라 "투명도 사다리"로 만듭니다</h2>
+    <p>AI 슬롭은 위계를 그라데이션 텍스트로 흉내 냅니다 — 예뻐 보이지만 <b>가독성은 망가집니다.</b>
+    제 시스템은 흰색 하나를 <b>투명도 5단계</b>로 나눠 위계를 만듭니다.
+    다크 배경(#08090c) 위에서 각 단계가 어떤 역할을 맡는지 정해져 있습니다.</p>
+  </div>
+  <div class="opacity-ladder">
+    <div class="op-row"><div class="sample" style="color:#fff">우주는 늘 거기 있었다</div><div class="tok">text-primary</div><div class="use">제목 · 100%</div></div>
+    <div class="op-row"><div class="sample" style="color:rgba(255,255,255,.85)">매일 한 장의 우주</div><div class="tok">text-85</div><div class="use">부제 · 85%</div></div>
+    <div class="op-row"><div class="sample" style="color:rgba(255,255,255,.65)">오늘 밤 토성이 가장 잘 보입니다</div><div class="tok">text-muted</div><div class="use">본문 · 65%</div></div>
+    <div class="op-row"><div class="sample" style="color:rgba(255,255,255,.56)">설명을 더 읽으려면 탭하세요</div><div class="tok">text-subtle</div><div class="use">보조 · 56%</div></div>
+    <div class="op-row"><div class="sample" style="color:rgba(255,255,255,.40)">2026 NASA · 모든 데이터 실시간</div><div class="tok">text-faint</div><div class="use">캡션 · 40%</div></div>
+  </div>
+  <div class="a11y-note">
+    <div class="a11y-card"><div class="t">왜 색이 아니라 투명도인가</div><p>같은 흰색의 농도만 바꾸면 어떤 배경 위에서도 위계가 일관됩니다. 색을 늘리면 통제 불능이 됩니다.</p></div>
+    <div class="a11y-card"><div class="t">액센트는 강조 전용</div><p>#D92906은 LIVE·CTA·경고에만. 본문에 빨강을 쓰지 않아 "진짜 중요한 것"만 빨개집니다.</p></div>
+    <div class="a11y-card"><div class="t">그라데이션 텍스트 금지</div><p>AI가 좋아하는 무지개 텍스트는 대비를 무너뜨립니다. 솔리드 + 투명도만 사용.</p></div>
+  </div>
+</section>
+
+<!-- ============ EVIDENCE 11-12 ============ -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet">
+<style>
+  .msym { font-family:'Material Symbols Rounded'; font-weight:normal; font-style:normal; font-variation-settings:'FILL' 0; line-height:1; -webkit-font-feature-settings:'liga'; }
+
+  /* mobile constraints */
+  .mob { display:grid; grid-template-columns:300px 1fr; gap:48px; align-items:center; }
+  .reach-phone { width:280px; height:570px; border-radius:34px; border:9px solid #1c1c1f; position:relative; overflow:hidden;
+    background:linear-gradient(to top, rgba(var(--accent-rgb), .45) 0%, rgba(var(--accent-rgb), .18) 32%, rgba(255,255,255,.04) 62%, rgba(255,255,255,.0) 100%); }
+  .reach-phone .zone { position:absolute; left:0; right:0; padding:10px 16px; font-family:ui-monospace,monospace; font-size:10px; letter-spacing:.1em; color:rgba(255,255,255,.7); }
+  .reach-phone .z-hard { top:14px; }
+  .reach-phone .z-ok { top:38%; }
+  .reach-phone .z-easy { bottom:74px; color:#fff; }
+  .reach-phone .tabbar { position:absolute; bottom:0; left:0; right:0; height:62px; background:#0c0d10; border-top:1px solid rgba(255,255,255,.1);
+    display:flex; align-items:center; justify-content:space-around; }
+  .reach-phone .tabbar .ti { font-size:22px; color:rgba(255,255,255,.5); }
+  .reach-phone .tabbar .ti.on { color:#D92906; }
+  .reach-phone .safe { position:absolute; bottom:6px; left:50%; transform:translateX(-50%); width:120px; height:4px; border-radius:2px; background:rgba(255,255,255,.3); }
+  .mob-notes .mn { padding:14px 0; border-bottom:1px solid rgba(255,255,255,.07); }
+  .mob-notes .mn:last-child { border-bottom:0; }
+  .mob-notes .mn .h { font-size:14px; font-weight:700; color:#D92906; margin-bottom:5px; }
+  .mob-notes .mn p { font-size:13px; line-height:1.6; color:rgba(255,255,255,.65); }
+  .mob-notes .mn .mono { font-family:'Space Mono',monospace; color:rgba(255,255,255,.85); }
+
+  /* icon system */
+  .icon-compare { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.08); border-radius:14px; overflow:hidden; }
+  .icon-col { background:#101116; padding:26px 28px; }
+  .icon-col.bad { background:#0e0a14; }
+  .icon-col .ch { font-family:ui-monospace,monospace; font-size:11px; letter-spacing:.12em; margin-bottom:18px; }
+  .icon-col.bad .ch { color:#9a9aa8; }
+  .icon-col.good .ch { color:#D92906; }
+  .icon-row { display:flex; gap:18px; flex-wrap:wrap; margin-bottom:18px; }
+  .icon-row .ic { display:flex; flex-direction:column; align-items:center; gap:6px; width:64px; }
+  .icon-row .ic .gl { font-size:30px; height:34px; display:flex; align-items:center; color:rgba(255,255,255,.9); }
+  .icon-row .ic .cap { font-size:10px; color:rgba(255,255,255,.45); text-align:center; }
+  .icon-col p { font-size:13px; line-height:1.6; color:rgba(255,255,255,.6); }
+  .icon-col.bad p { color:rgba(255,255,255,.42); }
+  .scale-row { display:flex; align-items:flex-end; gap:16px; margin-top:8px; }
+  .scale-row .si { display:flex; flex-direction:column; align-items:center; gap:6px; }
+  .scale-row .si .gl { color:#D92906; }
+  .scale-row .si .n { font-family:ui-monospace,monospace; font-size:10px; color:rgba(255,255,255,.45); }
+
+  @media (max-width:980px){ .mob{ grid-template-columns:1fr; justify-items:center; } .icon-compare{ grid-template-columns:1fr; } }
+</style>
+
+<!-- 11. MOBILE CONSTRAINTS -->
+<section class="ev">
+  <div class="ev-head">
+    <div class="k">EVIDENCE 11 · MOBILE-FIRST CONSTRAINTS</div>
+    <h2>웹페이지가 아니라 "엄지로 쓰는 앱"으로 설계했습니다</h2>
+    <p>AI 슬롭은 화면이 무한히 늘어나는 웹 문서입니다 — 기기 제약이 없죠.
+    저는 <b>375×812 실제 디바이스</b>를 기준으로, 엄지 도달 범위·하단 고정 탭바·세이프 에어리어·44px 터치 타깃을 지키며 배치했습니다.</p>
+  </div>
+  <div class="mob">
+    <div class="reach-phone">
+      <div class="zone z-hard">△ HARD — 상단: 정보 표시만</div>
+      <div class="zone z-ok">○ OK — 중단: 콘텐츠</div>
+      <div class="zone z-easy">● EASY — 엄지존: 주요 액션</div>
+      <div class="tabbar">
+        <span class="msym ti on">today</span>
+        <span class="msym ti">explore</span>
+        <span class="msym ti">sensors</span>
+        <span class="msym ti">photo_library</span>
+      </div>
+      <div class="safe"></div>
+    </div>
+    <div class="mob-notes">
+      <div class="mn"><div class="h">엄지 도달 범위 (Thumb Zone)</div><p>주요 액션(저장·CTA·탭 전환)은 화면 하단 <span class="mono">엄지존</span>에. 상단은 정보 표시 전용. 빨간 영역일수록 닿기 쉬움.</p></div>
+      <div class="mn"><div class="h">하단 고정 탭바</div><p>4탭(Today/Explore/Live/Library) <span class="mono">bottom-fixed</span>. 스크롤해도 항상 엄지 밑에 있음.</p></div>
+      <div class="mn"><div class="h">세이프 에어리어</div><p>홈 인디케이터·노치 영역 확보. 콘텐츠가 시스템 UI에 가리지 않음.</p></div>
+      <div class="mn"><div class="h">터치 타깃 ≥ 44px</div><p>버튼 높이 <span class="mono">44–48px</span> 고정. 손가락으로 정확히 누를 수 있는 최소 크기.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 12. ICON SYSTEM -->
+<section class="ev">
+  <div class="ev-head">
+    <div class="k">EVIDENCE 12 · ICON SYSTEM</div>
+    <h2>아이콘도 하나의 폰트로 통일했습니다</h2>
+    <p>AI 슬롭은 이모지를 씁니다 🚀🪐⭐ — OS·기기마다 다르게 보이고, 두께·톤이 제멋대로죠.
+    저는 <b>Material Symbols Rounded 한 세트(FILL=1)</b>로 전 화면을 통일했습니다. 같은 두께, 같은 곡률, 같은 광학 사이즈.</p>
+  </div>
+  <div class="icon-compare">
+    <div class="icon-col bad">
+      <div class="ch">AI 슬롭 — 이모지</div>
+      <div class="icon-row">
+        <div class="ic"><div class="gl">🚀</div><div class="cap">발사</div></div>
+        <div class="ic"><div class="gl">🪐</div><div class="cap">행성</div></div>
+        <div class="ic"><div class="gl">🛰️</div><div class="cap">위성</div></div>
+        <div class="ic"><div class="gl">🔭</div><div class="cap">망원경</div></div>
+        <div class="ic"><div class="gl">⭐</div><div class="cap">별</div></div>
+        <div class="ic"><div class="gl">🌍</div><div class="cap">지구</div></div>
+      </div>
+      <p>색·두께·관점 전부 제각각. iOS와 Android에서 다르게 렌더. 다크 시네마틱 톤과 충돌하는 알록달록함.</p>
+    </div>
+    <div class="icon-col good">
+      <div class="ch">내 시스템 — Material Symbols Rounded</div>
+      <div class="icon-row">
+        <div class="ic"><div class="gl msym">rocket_launch</div><div class="cap">발사</div></div>
+        <div class="ic"><div class="gl msym">planet</div><div class="cap">행성</div></div>
+        <div class="ic"><div class="gl msym">satellite_alt</div><div class="cap">위성</div></div>
+        <div class="ic"><div class="gl msym">visibility</div><div class="cap">관측</div></div>
+        <div class="ic"><div class="gl msym">bookmark</div><div class="cap">저장</div></div>
+        <div class="ic"><div class="gl msym">public</div><div class="cap">지구</div></div>
+      </div>
+      <p>단색·동일 두께·동일 곡률. 모든 기기에서 동일. 사이즈 스케일도 고정돼 있음 ↓</p>
+      <div class="scale-row">
+        <div class="si"><span class="gl msym" style="font-size:12px">bookmark</span><span class="n">12</span></div>
+        <div class="si"><span class="gl msym" style="font-size:14px">bookmark</span><span class="n">14</span></div>
+        <div class="si"><span class="gl msym" style="font-size:16px">bookmark</span><span class="n">16</span></div>
+        <div class="si"><span class="gl msym" style="font-size:18px">bookmark</span><span class="n">18</span></div>
+        <div class="si"><span class="gl msym" style="font-size:22px">bookmark</span><span class="n">22</span></div>
+        <div class="si"><span class="gl msym" style="font-size:24px">bookmark</span><span class="n">24</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ EVIDENCE 13-14 ============ -->
+<style>
+  /* card variants */
+  .cards3 { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+  .cv { }
+  .cv .cv-demo { border-radius:10px; overflow:hidden; border:1px solid rgba(255,255,255,.08); margin-bottom:14px; }
+  .cv .cv-name { font-size:14px; font-weight:700; margin-bottom:4px; }
+  .cv .cv-where { font-family:ui-monospace,monospace; font-size:10px; color:#D92906; letter-spacing:.08em; margin-bottom:8px; }
+  .cv .cv-why { font-size:12px; line-height:1.55; color:rgba(255,255,255,.6); }
+
+  /* variant 1 hero overlay */
+  .vd-hero { height:170px; background:linear-gradient(to top, rgba(0,0,0,.85), rgba(0,0,0,.1)), radial-gradient(circle at 30% 30%, #2a3550, #0a0d14); position:relative; }
+  .vd-hero .ov { position:absolute; left:14px; bottom:14px; right:14px; }
+  .vd-hero .ov .p { display:inline-block; font-family:'Space Mono',monospace; font-size:9px; color:#fff; background:rgba(var(--accent-rgb), .9); padding:3px 7px; border-radius:3px; margin-bottom:8px; }
+  .vd-hero .ov .t { font-size:15px; font-weight:700; color:#fff; }
+  /* variant 2 grid below */
+  .vd-grid { height:170px; background:#11141a; padding:12px; display:flex; flex-direction:column; }
+  .vd-grid .img { flex:1; border-radius:6px; background:radial-gradient(circle at 60% 40%, #3a2540, #12131a); margin-bottom:10px; }
+  .vd-grid .m { font-family:'Space Mono',monospace; font-size:9px; color:rgba(255,255,255,.5); margin-bottom:4px; }
+  .vd-grid .t { font-size:13px; font-weight:600; color:#fff; }
+  /* variant 3 timeline nested */
+  .vd-tl { height:170px; background:#11141a; padding:14px; }
+  .vd-tl .row { display:flex; gap:12px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,.06); }
+  .vd-tl .row:last-child { border-bottom:0; }
+  .vd-tl .row .tm { font-family:'Space Mono',monospace; font-size:11px; color:#D92906; width:42px; flex-shrink:0; }
+  .vd-tl .row .tx { font-size:11px; color:rgba(255,255,255,.8); }
+
+  /* multi-medium */
+  .medium-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+  .med { background:#101116; border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:24px; }
+  .med .mh { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .med .mh .ico { font-size:24px; color:#D92906; }
+  .med .mh .nm { font-size:15px; font-weight:700; }
+  .med .badge { font-family:ui-monospace,monospace; font-size:10px; padding:3px 8px; border-radius:4px; background:rgba(var(--accent-rgb), .15); color:#D92906; letter-spacing:.06em; }
+  .med p { font-size:13px; line-height:1.6; color:rgba(255,255,255,.62); margin-top:6px; }
+  .med .meta { font-family:'Space Mono',monospace; font-size:11px; color:rgba(255,255,255,.45); margin-top:12px; }
+  @media (max-width:980px){ .cards3,.medium-grid{ grid-template-columns:1fr; } }
+</style>
+
+<!-- 13. CARD VARIANTS -->
+<section class="ev">
+  <div class="ev-head">
+    <div class="k">EVIDENCE 13 · COMPONENT VARIANTS</div>
+    <h2>카드는 3종류 — 닮았지만 "일부러 다릅니다"</h2>
+    <p>AI는 카드 하나를 복붙해서 화면을 채웁니다. 저는 <b>콘텐츠의 역할에 따라 카드를 3패턴으로 분기</b>했습니다.
+    몰입형 Hero, 정보형 Grid, 시간형 Timeline — 같은 토큰을 쓰지만 위계와 목적이 다릅니다. 이건 우연이 아니라 <b>설계 결정</b>입니다.</p>
+  </div>
+  <div class="cards3">
+    <div class="cv">
+      <div class="cv-demo"><div class="vd-hero"><div class="ov"><span class="p">● APOD</span><div class="t">창조의 기둥, 다시 보다</div></div></div></div>
+      <div class="cv-name">① Hero Overlay</div>
+      <div class="cv-where">TODAY · EXPLORE 상단</div>
+      <div class="cv-why">이미지 위에 텍스트를 얹어 몰입을 만든다. 풀블리드 + 하단 그라데이션. "지금 이걸 봐" 라는 카드.</div>
+    </div>
+    <div class="cv">
+      <div class="cv-demo"><div class="vd-grid"><div class="img"></div><div class="m">MARS · SOL 1042</div><div class="t">화성의 오늘</div></div></div>
+      <div class="cv-name">② Grid Below</div>
+      <div class="cv-where">LIBRARY · 오늘의 시선</div>
+      <div class="cv-why">이미지 아래 메타를 분리. 정보를 또박또박 읽게 한다. 나란히 비교·스캔하기 좋은 카드.</div>
+    </div>
+    <div class="cv">
+      <div class="cv-demo"><div class="vd-tl">
+        <div class="row"><span class="tm">14:30</span><span class="tx">ISS 한국 상공 통과</span></div>
+        <div class="row"><span class="tm">19:02</span><span class="tx">Crew-11 도킹 LIVE</span></div>
+        <div class="row"><span class="tm">21:45</span><span class="tx">달-토성 근접</span></div>
+        <div class="row"><span class="tm">D-1</span><span class="tx">Artemis 브리핑</span></div>
+      </div></div>
+      <div class="cv-name">③ Timeline Nested</div>
+      <div class="cv-where">TODAY 일정 · LIVE 스케줄</div>
+      <div class="cv-why">시간순 항목을 한 카드 안에 중첩. 모노 시간 + 본문 제목. "언제 무엇이" 를 빠르게 훑는 카드.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 14. MULTI-MEDIUM -->
+<section class="ev">
+  <div class="ev-head">
+    <div class="k">EVIDENCE 14 · SYSTEM PORTABILITY</div>
+    <h2>같은 디자인 시스템을 3개 매체로 이식했습니다</h2>
+    <p>운으로 나온 화면은 다른 매체로 옮길 수 없습니다. <b>진짜 시스템만이 이식됩니다.</b>
+    저는 동일한 토큰·컴포넌트를 HTML 앱 → Figma → VR 공간으로 옮겼습니다. 시스템이 매체를 건너 살아남는다는 게 곧 "설계가 존재한다"는 증명입니다.</p>
+  </div>
+  <div class="medium-grid">
+    <div class="med">
+      <div class="mh"><span class="msym ico">code</span><span class="nm">HTML 앱</span></div>
+      <span class="badge">SOURCE OF TRUTH</span>
+      <p>8개 화면, 단일 HTML, 토큰 기반. 모든 디자인 결정이 코드로 검증 가능한 원본.</p>
+      <div class="meta">app/*.html · 4탭 + 서브 4</div>
+    </div>
+    <div class="med">
+      <div class="mh"><span class="msym ico">design_services</span><span class="nm">Figma</span></div>
+      <span class="badge">DESIGN HANDOFF</span>
+      <p>동일 토큰·컴포넌트를 Figma로 이관. 발표·협업·핸드오프용 디자인 파일로 재구성.</p>
+      <div class="meta">figma-web/ · 77MB 산출물</div>
+    </div>
+    <div class="med">
+      <div class="mh"><span class="msym ico">view_in_ar</span><span class="nm">VR / WebXR</span></div>
+      <span class="badge">SPATIAL</span>
+      <p>같은 카드 시스템을 3D 공간 대시보드로. 성운 스카이박스 + 3D 행성, Quest에서 접속.</p>
+      <div class="meta">vr/index.html · A-Frame</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ EVIDENCE 15-16 ============ -->
+<style>
+  .ds-embed { border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,.1); box-shadow:0 30px 70px rgba(0,0,0,.5); background:#08090c; }
+  .ds-embed iframe { width:100%; height:640px; border:0; display:block; }
+  .ds-cap { font-size:13px; color:rgba(255,255,255,.5); margin-top:14px; text-align:center; }
+  .ds-cap a { color:#D92906; text-decoration:none; }
+
+  /* scorecard */
+  .score { width:100%; border-collapse:collapse; border:1px solid rgba(255,255,255,.1); border-radius:14px; overflow:hidden; }
+  .score th, .score td { padding:14px 18px; text-align:left; border-bottom:1px solid rgba(255,255,255,.07); font-size:14px; vertical-align:top; }
+  .score thead th { background:#16171d; font-family:ui-monospace,monospace; font-size:11px; letter-spacing:.1em; color:#888; font-weight:400; }
+  .score thead th:last-child { color:#D92906; }
+  .score tbody tr:last-child td { border-bottom:0; }
+  .score .dim { font-weight:600; color:#fff; width:22%; }
+  .score .ai { color:rgba(255,255,255,.42); width:39%; }
+  .score .me { color:rgba(255,255,255,.82); width:39%; }
+  .score .me b { color:#D92906; font-weight:600; }
+  .score tbody tr:hover { background:rgba(255,255,255,.02); }
+  .verdict { margin-top:40px; text-align:center; padding:40px 32px; background:radial-gradient(circle at 50% 0%, rgba(var(--accent-rgb), .12), transparent 70%); border:1px solid rgba(var(--accent-rgb), .2); border-radius:18px; }
+  .verdict .big { font-size:26px; font-weight:800; letter-spacing:-.02em; line-height:1.4; margin-bottom:14px; }
+  .verdict .big .r { color:#D92906; }
+  .verdict p { font-size:14px; line-height:1.7; color:rgba(255,255,255,.6); max-width:600px; margin:0 auto; }
+
+  @media (max-width:980px){ .score, .score thead, .score tbody, .score th, .score td, .score tr{ display:block; } .score thead{ display:none; } .score td{ border-bottom:0; } .score tr{ border-bottom:1px solid rgba(255,255,255,.1); padding:8px 0; } .score .dim,.score .ai,.score .me{ width:auto; } .score .ai::before{ content:"AI: "; color:#666; font-family:monospace; font-size:11px; } .score .me::before{ content:"ME: "; color:#D92906; font-family:monospace; font-size:11px; } }
+</style>
+
+<!-- ============ EVIDENCE 15-16 (motion / restraint) ============ -->
+<style>
+  /* motion */
+  .motion-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:16px; }
+  .mo { background:#101116; border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:20px; }
+  .mo .demo { height:80px; border-radius:8px; overflow:hidden; position:relative; margin-bottom:14px; background:#08090c; display:flex; align-items:center; justify-content:center; }
+  .mo .nm { font-size:14px; font-weight:700; margin-bottom:4px; }
+  .mo .ds { font-size:12px; line-height:1.5; color:rgba(255,255,255,.55); }
+  .mo .fl { font-family:ui-monospace,monospace; font-size:10px; color:#D92906; margin-top:8px; }
+  /* ken burns demo */
+  .kb { position:absolute; inset:0; background:radial-gradient(circle at 40% 40%, #3a2a50, #0a0d14); animation:kbzoom 6s ease-in-out infinite alternate; }
+  @keyframes kbzoom { from{ transform:scale(1) } to{ transform:scale(1.18) translate(-4%,-3%) } }
+  /* count up */
+  .cu { font-family:'Space Mono',monospace; font-size:30px; font-weight:700; color:#fff; }
+  /* pulsing live */
+  .pl { display:flex; align-items:center; gap:8px; font-family:'Space Mono',monospace; font-size:13px; color:#fff; }
+  .pl .dot { width:10px; height:10px; border-radius:50%; background:#D92906; animation:pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{ box-shadow:0 0 0 0 rgba(var(--accent-rgb), .6); opacity:1 } 50%{ box-shadow:0 0 0 8px rgba(var(--accent-rgb), 0); opacity:.7 } }
+  /* drift */
+  .dr { width:40px; height:40px; border-radius:50%; background:radial-gradient(circle at 35% 35%, #c98b5a, #6b3410); animation:drift 5s ease-in-out infinite alternate; }
+  @keyframes drift { from{ transform:translateX(-30px) } to{ transform:translateX(30px) } }
+  /* progress */
+  .pb { width:80%; height:5px; border-radius:3px; background:rgba(255,255,255,.12); overflow:hidden; }
+  .pb i { display:block; height:100%; background:#D92906; width:40%; animation:fill 3s ease-in-out infinite; }
+  @keyframes fill { 0%{ width:5% } 50%{ width:85% } 100%{ width:5% } }
+  /* fade */
+  .fd { font-size:13px; font-weight:700; color:#fff; animation:fade 2.4s ease-in-out infinite; }
+  @keyframes fade { 0%,100%{ opacity:0 } 50%{ opacity:1 } }
+
+  /* restraint */
+  .cut-list { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px; }
+  .cut { background:#101116; border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:18px 20px; position:relative; }
+  .cut .x { position:absolute; top:16px; right:18px; color:rgba(255,255,255,.25); font-size:18px; }
+  .cut .nm { font-size:14px; font-weight:700; margin-bottom:6px; color:#fff; }
+  .cut .nm s { color:rgba(255,255,255,.4); }
+  .cut p { font-size:12px; line-height:1.55; color:rgba(255,255,255,.6); }
+  .cut p b { color:#D92906; }
+  .empty-demo { margin-top:24px; background:#08090c; border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:46px 24px; text-align:center; }
+  .empty-demo .ico { font-size:36px; color:rgba(255,255,255,.3); }
+  .empty-demo .t { font-family:'Space Mono',monospace; font-size:13px; letter-spacing:.15em; color:rgba(255,255,255,.5); margin-top:14px; }
+  .empty-demo .s { font-size:13px; color:rgba(255,255,255,.4); margin-top:8px; }
+</style>
+
+<!-- 15. MOTION DISCIPLINE -->
+<section class="ev">
+  <div class="ev-head">
+    <div class="k">EVIDENCE 15 · MOTION DISCIPLINE</div>
+    <h2>움직임에도 절제가 있습니다 — 의미 있을 때만</h2>
+    <p>AI 슬롭은 멈춰 있거나, 시키면 아무 데나 통통 튀는 애니메이션을 답니다.
+    제 모션은 <b>전부 목적이 있습니다</b> — 시선을 끌거나(Live), 시간의 흐름을 보여주거나(Ken Burns), 데이터의 생동을 전하거나.
+    아래는 실제로 앱에서 도는 애니메이션입니다.</p>
+  </div>
+  <div class="motion-grid">
+    <div class="mo"><div class="demo"><div class="kb"></div></div><div class="nm">Ken Burns</div><div class="ds">APOD 이미지가 천천히 줌·팬. 정지 사진에 시간을 부여.</div><div class="fl">today.html · hero</div></div>
+    <div class="mo"><div class="demo"><div class="cu">80</div></div><div class="nm">Count-up</div><div class="ds">Active Missions 숫자가 0→80으로. "지금 운영 중"의 무게.</div><div class="fl">explore · overview</div></div>
+    <div class="mo"><div class="demo"><div class="pl"><span class="dot"></span>LIVE</div></div><div class="nm">Pulsing Dot</div><div class="ds">LIVE 인디케이터 맥박. "지금 이 순간"의 긴장감.</div><div class="fl">live · 채널</div></div>
+    <div class="mo"><div class="demo"><div class="dr"></div></div><div class="nm">Planet Drift</div><div class="ds">배경 행성이 미세하게 부유. 우주의 정적인 운동.</div><div class="fl">showing · 배경</div></div>
+    <div class="mo"><div class="demo"><div class="pb"><i></i></div></div><div class="nm">Progress Sync</div><div class="ds">로딩·재생바가 콘텐츠와 동기화. 진행감을 정확히.</div><div class="fl">showing · boot</div></div>
+    <div class="mo"><div class="demo"><div class="fd">POCKET MISSION CONTROL</div></div><div class="nm">Splash Fade</div><div class="ds">초방문 0.9s 페이드. 한 번만, 부담 없이.</div><div class="fl">today · intro</div></div>
+  </div>
+</section>
+
+<!-- 16. RESTRAINT -->
+<section class="ev">
+  <div class="ev-head">
+    <div class="k">EVIDENCE 16 · RESTRAINT</div>
+    <h2>디자인은 더하는 게 아니라 — 빼는 것입니다</h2>
+    <p>AI는 채웁니다. 이모지, 그라데이션, 배지, CTA를 계속 더하죠.
+    가장 어려운 디자인 결정은 <b>"무엇을 뺄까"</b> 입니다. 아래는 제가 <b>일부러 넣지 않은 것들</b>입니다 — 각각 이유가 있습니다.</p>
+  </div>
+  <div class="cut-list">
+    <div class="cut"><span class="x">✕</span><div class="nm"><s>SNS 좋아요 / 하트</s></div><p><b>NASA는 인스타그램이 아니다.</b> 뷰어에서 좋아요·공유 버튼을 빼고, Save/Wallpaper/Original/Info만 남김.</p></div>
+    <div class="cut"><span class="x">✕</span><div class="nm"><s>그라데이션</s></div><p>다크 + 플랫이 우주를 더 진짜처럼 보이게 함. <b>그라데이션은 화면을 싸구려로 만든다.</b></p></div>
+    <div class="cut"><span class="x">✕</span><div class="nm"><s>글래스모피즘</s></div><p>2021 트렌드. 위계도 가독성도 떨어뜨림. <b>솔리드 면 + 여백</b>으로 대체.</p></div>
+    <div class="cut"><span class="x">✕</span><div class="nm"><s>카드 좌측 액센트 보더</s></div><p>흔한 패턴이지만 화면을 어수선하게 함. <b>border 자체를 금지</b>하고 spacing으로 분리.</p></div>
+    <div class="cut"><span class="x">✕</span><div class="nm"><s>모든 곳의 빨강</s></div><p>액센트를 남발하면 강조가 죽음. <b>#D92906은 LIVE·CTA·경고에만.</b></p></div>
+    <div class="cut"><span class="x">✕</span><div class="nm"><s>이모지</s></div><p>유치하고 기기마다 다름. <b>Material Symbols 단일 세트</b>로 통일.</p></div>
+  </div>
+  <div class="empty-demo">
+    <div class="ico msym">check_circle</div>
+    <div class="t">ALL CAUGHT UP</div>
+    <div class="s">오늘 치 우주를 다 봤습니다. 내일 또 만나요.</div>
+  </div>
+  <p style="margin-top:18px;font-size:13px;color:rgba(255,255,255,.45);text-align:center;">↑ AI는 빈 화면을 설계하지 않습니다. 저는 <b style="color:#D92906">Empty State</b>까지 카피를 썼습니다.</p>
+</section>
+
+<!-- ============ EVIDENCE 17-18 (brand / scope) ============ -->
+<style>
+  .brand-compare { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.08); border-radius:14px; overflow:hidden; }
+  .brand-col { background:#101116; padding:32px 28px; }
+  .brand-col.bad { background:#0e0a14; }
+  .brand-col .ch { font-family:ui-monospace,monospace; font-size:11px; letter-spacing:.12em; margin-bottom:22px; }
+  .brand-col.bad .ch { color:#9a9aa8; }
+  .brand-col.good .ch { color:#D92906; }
+  .brand-stage { height:120px; display:flex; align-items:center; justify-content:center; gap:18px; background:#08090c; border-radius:10px; margin-bottom:18px; }
+  .brand-stage .fake { font-size:44px; }
+  .brand-stage img { height:34px; }
+  .brand-col p { font-size:13px; line-height:1.6; color:rgba(255,255,255,.6); }
+  .brand-col.bad p { color:rgba(255,255,255,.42); }
+  .brand-col p b { color:#D92906; }
+  .brand-swatch { display:inline-flex; align-items:center; gap:8px; margin-top:12px; font-family:'Space Mono',monospace; font-size:11px; color:rgba(255,255,255,.7); }
+  .brand-swatch i { width:16px; height:16px; border-radius:3px; display:inline-block; }
+
+  /* scope */
+  .scope-tbl { width:100%; border-collapse:collapse; border:1px solid rgba(255,255,255,.1); border-radius:12px; overflow:hidden; }
+  .scope-tbl th, .scope-tbl td { padding:13px 16px; text-align:left; border-bottom:1px solid rgba(255,255,255,.07); font-size:13px; vertical-align:top; }
+  .scope-tbl thead th { background:#16171d; font-family:ui-monospace,monospace; font-size:10px; letter-spacing:.1em; color:#888; font-weight:400; }
+  .scope-tbl tbody tr:last-child td { border-bottom:0; }
+  .scope-tbl .feat { font-weight:600; color:#fff; width:30%; }
+  .scope-tbl .plan { color:rgba(255,255,255,.5); width:35%; }
+  .scope-tbl .real { color:rgba(255,255,255,.82); width:35%; }
+  .scope-tbl .real b { color:#D92906; }
+  .scope-note { margin-top:20px; padding:20px 24px; background:#101116; border-radius:12px; border-left:3px solid #D92906; font-size:14px; line-height:1.7; color:rgba(255,255,255,.72); }
+  .scope-note b { color:#fff; }
+  @media (max-width:980px){ .brand-compare{ grid-template-columns:1fr; } }
+</style>
+
+<!-- 17. BRAND FIDELITY -->
+<section class="ev">
+  <div class="ev-head">
+    <div class="k">EVIDENCE 17 · BRAND FIDELITY</div>
+    <h2>NASA는 세계 최강의 브랜드 — 그걸 정확히 썼습니다</h2>
+    <p>AI는 우주 = 🚀 로켓 이모지로 갑니다. 가짜 로고를 지어내기도 하죠.
+    NASA에는 <b>실제 브랜드 시스템</b>이 있습니다 — 웜(worm) 워드마크, 미트볼 인시그니아, 공식 레드.
+    저는 그 자산을 정확히 가져왔습니다. 브랜드 충실도는 디자이너가 <b>리서치를 했다는</b> 직접 증거입니다.</p>
+  </div>
+  <div class="brand-compare">
+    <div class="brand-col bad">
+      <div class="ch">AI 슬롭 — 지어낸 브랜드</div>
+      <div class="brand-stage"><span class="fake">🚀</span><span class="fake">🌌</span><span class="fake">✨</span></div>
+      <p>이모지 = 브랜드 없음. 어느 우주 앱에나 붙는 제네릭. NASA만의 정체성이 0. 공식 톤·로고 무시.</p>
+    </div>
+    <div class="brand-col good">
+      <div class="ch">내 앱 — 실제 NASA 브랜드</div>
+      <div class="brand-stage"><img src="icons/nasa_worm.svg" alt="NASA worm logo"></div>
+      <p>NASA <b>웜 워드마크</b> 실제 벡터 사용. 로고 실측에서 뽑은 액센트 레드. 미션컨트롤 타이포(Space Mono)로 브랜드 톤까지 일치.</p>
+      <div class="brand-swatch"><i style="background:#D92906"></i> #D92906 · 로고 실측 레드</div>
+    </div>
+  </div>
+</section>
+
+<!-- 18. HONEST SCOPE -->
+<section class="ev">
+  <div class="ev-head">
+    <div class="k">EVIDENCE 18 · DESIGN MATURITY</div>
+    <h2>무엇을 만들고, 무엇을 미룰지 알았습니다</h2>
+    <p>AI는 "다 된다"고 말합니다 — 동작하지 않는 걸 동작하는 척하죠.
+    성숙한 디자이너는 <b>스코프를 정직하게 판단</b>합니다. 아래는 제가 기획에서 의도적으로 조정한 것들과, 그 이유입니다.
+    이 정직함 자체가 사람이 했다는 증거입니다 — AI는 자기 한계를 문서화하지 않으니까요.</p>
+  </div>
+  <table class="scope-tbl">
+    <thead><tr><th>기획</th><th>원안</th><th>실제 구현 (의도적 조정)</th></tr></thead>
+    <tbody>
+      <tr><td class="feat">Library 탐색</td><td class="plan">Reels식 상하 스와이프</td><td class="real">페이지 스크롤 + <b>큐레이션 모자이크</b> — 웹 환경에 더 맞고 콘텐츠를 한눈에</td></tr>
+      <tr><td class="feat">APOD 히스토리</td><td class="plan">좌우 스와이프 시간 역순</td><td class="real">상단 <b>History 아이콘</b>으로 진입점만 — 핵심 동선 우선</td></tr>
+      <tr><td class="feat">Ambient 사운드</td><td class="plan">실제 음성 재생</td><td class="real"><b>UI 토글까지</b> 구현 — 디자인 검증이 목적, 오디오는 범위 밖</td></tr>
+      <tr><td class="feat">필터 칩</td><td class="plan">클릭 시 실시간 필터링</td><td class="real"><b>UI 패턴만</b> — 인터랙션 설계 시연, 데이터 로직은 백로그</td></tr>
+    </tbody>
+  </table>
+  <div class="scope-note">
+    <b>이게 왜 강점인가:</b> 6주 학교 프로젝트의 목표는 "동작하는 앱"이 아니라 "설득력 있는 디자인 제안"입니다.
+    무엇을 깊게 파고 무엇을 표면만 보여줄지 <b>판단</b>한 것 — 그게 프로의 스코프 관리고, 문서로 다 남겨뒀습니다.
+    AI는 이런 메타 판단을 하지 않습니다.
+  </div>
+</section>
+
+<!-- 19. DESIGN SYSTEM ORIGINAL -->
+<section class="ev">
+  <div class="ev-head">
+    <div class="k">EVIDENCE 19 · THE ACTUAL KIT</div>
+    <h2>말로만 하는 게 아니라 — 실제 UI 키트 문서가 있습니다</h2>
+    <p>앞의 모든 토큰·컴포넌트는 이 한 장의 디자인 시스템 문서에서 나옵니다.
+    <b>외부 CSS(tokens.css · components.css)를 링크</b>해서 만든 실물 키트 — 화면 시안이 아니라 <b>시스템 명세서</b>입니다.
+    아래는 그 원본을 그대로 임베드한 것입니다.</p>
+  </div>
+  <div class="ds-embed">
+    <iframe src="design-system.html" title="NASA 디자인 시스템 원본" loading="lazy"></iframe>
+  </div>
+  <div class="ds-cap">↑ 스크롤해서 전체 키트를 보세요 · <a href="design-system.html" target="_blank">새 탭에서 열기</a></div>
+</section>
+
+<!-- 16. SCORECARD -->
+<section class="ev">
+  <div class="ev-head">
+    <div class="k">EVIDENCE 20 · THE SCORECARD</div>
+    <h2>한 장 요약 — AI는 평균을, 나는 결정을</h2>
+    <p>지금까지의 19개 증거를 한 표로 압축했습니다. 왼쪽은 AI가 디폴트로 내놓는 것,
+    오른쪽은 제가 <b>이유를 가지고 내린 결정</b>입니다.</p>
+  </div>
+  <table class="score">
+    <thead><tr><th>차원</th><th>AI 디폴트</th><th>내 결정</th></tr></thead>
+    <tbody>
+      <tr><td class="dim">컬러</td><td class="ai">보라 그라데이션 클리셰</td><td class="me"><b>#D92906</b> 로고 실측 단일 액센트 + 토큰</td></tr>
+      <tr><td class="dim">표면</td><td class="ai">글래스모피즘 도배</td><td class="me">솔리드 면 + <b>여백</b>으로만 위계 (border 금지)</td></tr>
+      <tr><td class="dim">타이포</td><td class="ai">시스템 폰트 1종</td><td class="me"><b>Pretendard + Space Mono</b> 역할 분리</td></tr>
+      <tr><td class="dim">아이콘</td><td class="ai">이모지 🚀🪐⭐</td><td class="me"><b>Material Symbols</b> 단일 세트 (FILL=1)</td></tr>
+      <tr><td class="dim">간격</td><td class="ai">제멋대로 px</td><td class="me"><b>8pt 그리드</b> · 섹션 간 64px 통일</td></tr>
+      <tr><td class="dim">카피</td><td class="ai">"Explore the Universe! ✨"</td><td class="me">한글 시적 + 영문 정확, <b>두 목소리</b></td></tr>
+      <tr><td class="dim">위계</td><td class="ai">그라데이션 텍스트</td><td class="me">흰색 <b>투명도 5단계</b> 사다리</td></tr>
+      <tr><td class="dim">콘텐츠</td><td class="ai">가짜 "1000+ ∞"</td><td class="me">실재 NASA 자산 <b>11개 발굴</b> → IA 매핑</td></tr>
+      <tr><td class="dim">구조</td><td class="ai">카드 무한 나열</td><td class="me">사용자 의도 <b>4탭 IA · 30 노드</b></td></tr>
+      <tr><td class="dim">컴포넌트</td><td class="ai">카드 하나 복붙</td><td class="me">역할별 <b>카드 3패턴</b> 의도적 분기</td></tr>
+      <tr><td class="dim">인터랙션</td><td class="ai">정적 목업</td><td class="me">저장·토글·전개·실시간 <b>상태 설계</b></td></tr>
+      <tr><td class="dim">모바일</td><td class="ai">무한 웹 문서</td><td class="me">375×812 · <b>엄지존 · 세이프에어리어</b></td></tr>
+      <tr><td class="dim">과정</td><td class="ai">첫 출력 = 최종</td><td class="me"><b>탐색 9회 · 색 3회 변경 · 한 달</b></td></tr>
+      <tr><td class="dim">근거</td><td class="ai">없음</td><td class="me">레퍼런스 <b>6종 벤치마킹</b> → 결정</td></tr>
+      <tr><td class="dim">시스템성</td><td class="ai">한 화면 한정</td><td class="me">HTML→Figma→VR <b>3매체 이식</b></td></tr>
+      <tr><td class="dim">모션</td><td class="ai">없거나 무작위 통통</td><td class="me">목적 있는 <b>6종 애니메이션</b> (Ken Burns·펄싱·카운트업)</td></tr>
+      <tr><td class="dim">절제</td><td class="ai">계속 더함</td><td class="me">일부러 <b>뺀 것들</b> + Empty State 카피까지</td></tr>
+      <tr><td class="dim">브랜드</td><td class="ai">🚀 이모지 · 가짜 로고</td><td class="me">실제 <b>NASA 웜 워드마크</b> + 로고 실측 레드</td></tr>
+      <tr><td class="dim">성숙도</td><td class="ai">"다 된다" (거짓)</td><td class="me">정직한 <b>스코프 판단</b> + 트레이드오프 문서화</td></tr>
+    </tbody>
+  </table>
+
+  <div class="verdict">
+    <div class="big">AI는 한 문장에 <span class="r">평균</span>을 뱉습니다.<br>저는 한 달 동안 <span class="r">19개의 결정</span>을 내렸습니다.</div>
+    <p>"AI가 만든 거 아니냐"의 답은 이 표 전체입니다. 결정·근거·과정·기준점 — AI에게 없는 네 가지가, 여기 전부 기록돼 있습니다.</p>
+  </div>
+</section>
+
+<!-- ============ APPENDIX · 발표 스크립트 ============ -->
+<style>
+  .script-wrap { background:#101116; border:1px solid rgba(255,255,255,.1); border-radius:18px; padding:36px; }
+  .script-30 { background:#08090c; border-left:3px solid #D92906; border-radius:0 10px 10px 0; padding:24px 28px; margin-bottom:32px; }
+  .script-30 .lbl { font-family:ui-monospace,monospace; font-size:11px; letter-spacing:.12em; color:#D92906; margin-bottom:14px; }
+  .script-30 p { font-size:17px; line-height:1.85; color:rgba(255,255,255,.92); font-weight:500; }
+  .script-30 p .hl { color:#D92906; font-weight:700; }
+  .beats { display:grid; gap:1px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.08); border-radius:12px; overflow:hidden; }
+  .beat { background:#101116; padding:16px 20px; display:grid; grid-template-columns:130px 1fr; gap:18px; align-items:baseline; }
+  .beat .when { font-family:ui-monospace,monospace; font-size:11px; color:#D92906; letter-spacing:.06em; }
+  .beat .say { font-size:14px; line-height:1.6; color:rgba(255,255,255,.78); }
+  .beat .say b { color:#fff; }
+  .qa { margin-top:28px; }
+  .qa .qrow { padding:16px 0; border-bottom:1px solid rgba(255,255,255,.07); }
+  .qa .qrow:last-child { border-bottom:0; }
+  .qa .q { font-size:14px; font-weight:700; color:#fff; margin-bottom:6px; }
+  .qa .q::before { content:"Q. "; color:#D92906; }
+  .qa .a { font-size:13px; line-height:1.65; color:rgba(255,255,255,.65); }
+  .qa .a::before { content:"A. "; color:#D92906; font-weight:700; }
+  @media (max-width:980px){ .beat{ grid-template-columns:1fr; gap:6px; } }
+</style>
+
+<section class="ev">
+  <div class="ev-head">
+    <div class="k">APPENDIX · PRESENTATION SCRIPT</div>
+    <h2>이 페이지로 어떻게 말할 것인가</h2>
+    <p>증거를 모았으면 이제 <b>입으로 전달</b>해야 합니다. 아래는 교수님의 "AI가 만든 거 아니냐"에 대한
+    30초 반박 + 페이지 스크롤 순서대로의 발표 비트 + 예상 Q&A입니다.</p>
+  </div>
+
+  <div class="script-wrap">
+    <div class="script-30">
+      <div class="lbl">30초 반박 — 첫 마디</div>
+      <p>"AI한테 'NASA 우주 앱 만들어줘' 하면 <span class="hl">이게 나옵니다</span> (왼쪽 보라색).
+      제 앱이 AI 산출물이었다면 이렇게 생겼어야 합니다. 그런데 제 앱의 모든 차이 —
+      <span class="hl">단일 액센트, 토큰 시스템, 두 폰트의 역할 분리, 4탭 정보구조</span> — 는
+      전부 제가 이유를 가지고 내린 결정이고, 그 근거는 날짜별로 문서에 남아 있습니다.
+      AI는 결정을 안 합니다. <span class="hl">평균을 뱉을 뿐이죠.</span>"</p>
+    </div>
+
+    <div class="beats">
+      <div class="beat"><div class="when">맨 위 (비교)</div><div class="say">"같은 주제, 전혀 다른 결과입니다. <b>왼쪽이 AI 디폴트, 오른쪽이 제 앱</b>이에요."</div></div>
+      <div class="beat"><div class="when">EVIDENCE 01</div><div class="say">"이건 화면이 아니라 <b>UI 키트</b>입니다. 토큰 한 줄 고치면 전 화면이 따라옵니다."</div></div>
+      <div class="beat"><div class="when">EVIDENCE 02</div><div class="say">"기획은 한 번에 안 나옵니다. <b>폰트만 5번, 색을 3번</b> 바꿨고, 버린 게 다 남아있어요."</div></div>
+      <div class="beat"><div class="when">EVIDENCE 04</div><div class="say">"무에서 만든 게 아니라 <b>현재 NASA 앱을 분석하고 다시 설계</b>했습니다. 기준점이 있어요."</div></div>
+      <div class="beat"><div class="when">EVIDENCE 05</div><div class="say">"한 화면 운빨이 아닙니다. <b>4개 탭이 같은 언어</b>를 씁니다 — 같은 손이 보이죠."</div></div>
+      <div class="beat"><div class="when">EVIDENCE 16</div><div class="say">"15개 차원을 한 표로. <b>AI는 평균, 저는 결정</b>입니다. 이게 답입니다."</div></div>
+    </div>
+
+    <div class="qa">
+      <div class="qrow">
+        <div class="q">"그래도 코드는 AI가 짠 거 아니야?"</div>
+        <div class="a">"코드 생성은 도구입니다. 붓을 누가 만들었냐가 아니라 <b>무엇을 그릴지 결정한 사람</b>이 작가죠.
+        토큰 값, IA 구조, 카피 톤, 카드 분기 — 이 결정들은 전부 제가 했고 문서로 증명됩니다."</div>
+      </div>
+      <div class="qrow">
+        <div class="q">"이 보라색 버전도 네가 만든 거잖아?"</div>
+        <div class="a">"네, <b>AI가 어떻게 만드는지 보여주려고 일부러</b> AI 디폴트 패턴(보라 그라데이션·글래스·이모지)을
+        재현한 겁니다. 핵심은 제 실제 앱엔 이 패턴이 <b>하나도 없다</b>는 거예요 — 의식적으로 다 피했습니다."</div>
+      </div>
+      <div class="qrow">
+        <div class="q">"결정에 진짜 근거가 있어?"</div>
+        <div class="a">"액센트 #D92906은 <b>NASA 로고 실측</b>, 폰트 분리는 <b>미션컨트롤 메타포</b>,
+        4탭은 <b>사용자 의도 기반 IA 재편</b>. EVIDENCE 08의 레퍼런스 6종이 각 결정의 출처입니다."</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

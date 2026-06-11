@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Deep Space Network · Live</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0">
+  <link rel="stylesheet" href="../../styles/tokens.css?v=20260521">
+  <link rel="stylesheet" href="../../styles/components.css?v=20260521">
+  <link rel="stylesheet" href="../../styles/detail.css?v=20260611">
+</head>
+<body>
+  <div class="d-device">
+    <div class="d-topbar" id="topbar">
+      <a class="icon-btn" href="../live.html" aria-label="뒤로"><span class="msi">arrow_back</span></a>
+      <span class="d-topbar-title">Deep Space Network</span>
+      <div class="spacer"></div>
+      <button class="icon-btn" aria-label="공유"><span class="msi">ios_share</span></button>
+      <button class="icon-btn" id="bmTop" aria-label="저장"><span class="msi">bookmark</span></button>
+    </div>
+
+    <div class="d-hero">
+      <div class="d-hero-img" style="background-image:url('../../images/jwst_deepfield.jpg')"></div>
+      <div class="d-hero-cap">
+        <span class="d-badge live" style="margin-bottom:14px"><span class="dot"></span>LIVE · GOLDSTONE DSS-14</span>
+        <h1 class="d-h1">심우주를<br>듣는 70m 귀</h1>
+      </div>
+    </div>
+
+    <div class="d-body">
+      <div class="d-section tight">
+        <div class="d-author"><span class="msi">satellite_alt</span>지금 통신 중 · Voyager 1</div>
+        <p class="d-lede">캘리포니아 사막의 거대한 안테나가, 240억 km 밖 보이저 1호가 보내는 가냘픈 신호를 받고 있습니다.</p>
+      </div>
+
+      <div class="d-section">
+        <div class="rail-head"><h2 class="rail-title">신호</h2></div>
+        <div class="d-tele">
+          <div class="d-tele-cell"><div class="d-tele-k">Distance</div><div class="d-tele-v">24.6<small> B km</small></div></div>
+          <div class="d-tele-cell"><div class="d-tele-k">Downlink</div><div class="d-tele-v">160<small> bps</small></div></div>
+          <div class="d-tele-cell"><div class="d-tele-k">Light time</div><div class="d-tele-v">22.8<small> hr</small></div></div>
+        </div>
+      </div>
+
+      <div class="d-section">
+        <div class="rail-head"><h2 class="rail-title">3개 관제소</h2><span class="rail-link">120° 간격</span></div>
+        <div class="d-list">
+          <a class="d-list-item" href="dsn.html"><span class="d-list-play" style="background:var(--accent)"><span class="msi" style="color:#fff">cell_tower</span></span><div class="d-list-tx"><div class="d-list-title">Goldstone · 미국</div><div class="d-list-meta">● 통신 중 · Voyager 1</div></div><span class="msi">chevron_right</span></a>
+          <a class="d-list-item" href="dsn.html"><span class="d-list-play"><span class="msi">cell_tower</span></span><div class="d-list-tx"><div class="d-list-title">Madrid · 스페인</div><div class="d-list-meta">대기 · 다음 패스 02:40</div></div><span class="msi">chevron_right</span></a>
+          <a class="d-list-item" href="dsn.html"><span class="d-list-play"><span class="msi">cell_tower</span></span><div class="d-list-tx"><div class="d-list-title">Canberra · 호주</div><div class="d-list-meta">● 통신 중 · Voyager 2</div></div><span class="msi">chevron_right</span></a>
+        </div>
+      </div>
+
+      <div class="d-section">
+        <div class="rail-head"><h2 class="rail-title">지금 교신 중인 우주선</h2></div>
+        <div class="d-list">
+          <a class="d-list-item" href="mission.html"><span class="d-list-num">VGR1</span><div class="d-list-tx"><div class="d-list-title">Voyager 1</div><div class="d-list-meta">성간 우주 · 1977 발사</div></div><span class="msi">downloading</span></a>
+          <a class="d-list-item" href="mission.html"><span class="d-list-num">M20</span><div class="d-list-tx"><div class="d-list-title">Perseverance</div><div class="d-list-meta">화성 · 예제로 분화구</div></div><span class="msi">downloading</span></a>
+          <a class="d-list-item" href="mission.html"><span class="d-list-num">JWST</span><div class="d-list-tx"><div class="d-list-title">James Webb</div><div class="d-list-meta">L2 · 관측 데이터 수신</div></div><span class="msi">downloading</span></a>
+        </div>
+      </div>
+
+      <div class="d-section">
+        <a class="d-cta" href="https://eyes.nasa.gov/dsn/dsn.html" target="_blank" rel="noopener"><span class="msi">lan</span>DSN Now 실시간 보기</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var tb = document.getElementById('topbar');
+    window.addEventListener('scroll', function () { tb.classList.toggle('scrolled', window.scrollY > 220); }, { passive: true });
+    var bm = document.getElementById('bmTop');
+    bm.addEventListener('click', function () {
+      var on = bm.classList.toggle('is-on');
+      bm.querySelector('.msi').textContent = on ? 'bookmark_added' : 'bookmark';
+      bm.querySelector('.msi').style.color = on ? 'var(--accent)' : '';
+    });
+  </script>
+  <nav class="tabbar">
+    <a class="tab-item" href="../today.html"><span class="msi tab-icon" aria-hidden="true">calendar_today</span><span>Today</span></a>
+    <a class="tab-item" href="../explore.html"><span class="msi tab-icon" aria-hidden="true">explore</span><span>Explore</span></a>
+    <a class="tab-item active" href="../live.html"><span class="msi tab-icon" aria-hidden="true">smart_display</span><span>Live</span></a>
+    <a class="tab-item" href="../library.html"><span class="msi tab-icon" aria-hidden="true">photo_library</span><span>Library</span></a>
+  </nav>
+</body>
+</html>

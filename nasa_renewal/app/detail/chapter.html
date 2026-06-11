@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>L2 라그랑주 포인트 · Chapter</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0">
+  <link rel="stylesheet" href="../../styles/tokens.css?v=20260521">
+  <link rel="stylesheet" href="../../styles/components.css?v=20260521">
+  <link rel="stylesheet" href="../../styles/detail.css?v=20260611">
+</head>
+<body>
+  <div class="d-device">
+    <div class="d-topbar" id="topbar">
+      <a class="icon-btn" href="mission.html" aria-label="뒤로"><span class="msi">arrow_back</span></a>
+      <span class="d-topbar-title">Chapter 01</span>
+      <div class="spacer"></div>
+      <button class="icon-btn" aria-label="공유"><span class="msi">ios_share</span></button>
+      <button class="icon-btn" id="bmTop" aria-label="저장"><span class="msi">bookmark</span></button>
+    </div>
+
+    <div class="d-hero">
+      <div class="d-hero-img" style="background-image:url('../../images/jwst_deepfield.jpg')"></div>
+      <div class="d-hero-cap">
+        <span class="d-pill"><span class="dot"></span>JAMES WEBB · CH 01</span>
+        <h1 class="d-h1">L2<br>라그랑주 포인트</h1>
+      </div>
+    </div>
+
+    <div class="d-body">
+      <div class="d-section tight">
+        <div class="d-player">
+          <div class="d-playbtn" id="play"><span class="msi">play_arrow</span></div>
+          <div class="d-player-tx">
+            <div class="d-player-title">제임스 웹은 왜 그곳에 있나</div>
+            <div class="d-player-bar"><div class="d-player-fill"></div></div>
+            <div class="d-player-time"><span>2:34</span><span>8:00</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-section d-prose">
+        <div class="rail-head"><h2 class="rail-title">스크립트</h2></div>
+        <p>지구에서 태양 반대 방향으로 <b>150만 km</b>. 그곳엔 지구와 태양의 중력이 절묘하게 균형을 이루는 점이 있습니다. 천문학자들은 이곳을 <b>L2</b>, 두 번째 라그랑주 포인트라고 부릅니다.</p>
+        <p>L2에 자리 잡은 망원경은 지구·달·태양을 늘 <b>등 뒤에 두고</b> 한 방향만 바라볼 수 있습니다. 덕분에 차양막 한 장으로 세 빛을 모두 가리고, 우주를 영하 233도의 어둠 속에서 응시합니다.</p>
+        <p>제임스 웹은 이 점을 중심으로 <b>헤일로 궤도</b>를 그리며 돕니다. 연료를 거의 쓰지 않고도 20년 넘게 그 자리를 지킬 수 있는, 우주에서 가장 고요한 관측대입니다.</p>
+      </div>
+
+      <div class="d-section">
+        <div class="rail-head"><h2 class="rail-title">다음 챕터</h2><span class="rail-link">5 EPISODES</span></div>
+        <div class="d-list">
+          <a class="d-list-item" href="chapter.html"><span class="d-list-num">02</span><div class="d-list-tx"><div class="d-list-title">금박 거울의 비밀</div><div class="d-list-meta">11 MIN · 광학</div></div><span class="d-list-play"><span class="msi">play_arrow</span></span></a>
+          <a class="d-list-item" href="chapter.html"><span class="d-list-num">03</span><div class="d-list-tx"><div class="d-list-title">최초의 빛을 보다</div><div class="d-list-meta">9 MIN · 우주론</div></div><span class="d-list-play"><span class="msi">play_arrow</span></span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var tb = document.getElementById('topbar');
+    window.addEventListener('scroll', function () { tb.classList.toggle('scrolled', window.scrollY > 220); }, { passive: true });
+    var playing = false, play = document.getElementById('play');
+    play.addEventListener('click', function () {
+      playing = !playing;
+      play.querySelector('.msi').textContent = playing ? 'pause' : 'play_arrow';
+    });
+    var bm = document.getElementById('bmTop');
+    bm.addEventListener('click', function () {
+      var on = bm.classList.toggle('is-on');
+      bm.querySelector('.msi').textContent = on ? 'bookmark_added' : 'bookmark';
+      bm.querySelector('.msi').style.color = on ? 'var(--accent)' : '';
+    });
+  </script>
+  <nav class="tabbar">
+    <a class="tab-item" href="../today.html"><span class="msi tab-icon" aria-hidden="true">calendar_today</span><span>Today</span></a>
+    <a class="tab-item active" href="../explore.html"><span class="msi tab-icon" aria-hidden="true">explore</span><span>Explore</span></a>
+    <a class="tab-item" href="../live.html"><span class="msi tab-icon" aria-hidden="true">smart_display</span><span>Live</span></a>
+    <a class="tab-item" href="../library.html"><span class="msi tab-icon" aria-hidden="true">photo_library</span><span>Library</span></a>
+  </nav>
+</body>
+</html>

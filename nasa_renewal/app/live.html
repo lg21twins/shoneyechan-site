@@ -215,6 +215,7 @@
       text-transform: uppercase;
       font-weight: 700;
       line-height: 1;
+      white-space: nowrap;
       order: 2;
     }
     .telemetry-value {
@@ -677,7 +678,7 @@
         </div>
         <div class="telemetry-cell">
           <span class="telemetry-value">PACIFIC</span>
-          <span class="telemetry-label">OVER · 현재 상공</span>
+          <span class="telemetry-label">OVR · 상공</span>
         </div>
       </div>
       <div class="telemetry-sync">SYNC · 8s AGO · DSN GOLDSTONE</div>
@@ -936,5 +937,15 @@
     })();
   </script>
 
+  <script>
+    /* card → detail drill-down (added 2026-06-11) */
+    (function(){
+      function wire(sel,url){document.querySelectorAll(sel).forEach(function(el){el.style.cursor='pointer';el.addEventListener('click',function(e){if(e.target.closest('button, a'))return;location.href=url;});});}
+      wire('.live-card','detail/stream.html');
+      wire('.channel-card','detail/stream.html');
+      wire('.entry-row','detail/event.html');
+      wire('.dsn-cell','detail/dsn.html');
+    })();
+  </script>
 </body>
 </html>
